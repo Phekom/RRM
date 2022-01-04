@@ -27,12 +27,13 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
@@ -44,12 +45,11 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
-import za.co.xisystems.traffic_count.delegates.viewBinding
 
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
     override val di by closestDI()
-    private val factory: AuthViewModelFactory by instance<AuthViewModelFactory>()
+    private val factory: AuthViewModelFactory by instance()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)
     private lateinit var enteredPin: String
@@ -166,11 +166,12 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
             Intent(this, MainActivity::class.java).also { mainAct ->
                 mainAct.flags =
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
                 startActivity(mainAct)
             }
             reset()
         } catch (t: Throwable) {
-            val xiErr = Error(t, "Failed to login")
+            val xiErr = XIResult.Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
                 XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),

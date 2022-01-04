@@ -1,16 +1,16 @@
 package za.co.xisystems.itis_rrm.custom.notifications
 
-import www.sanju.motiontoast.MotionToast
+import www.sanju.motiontoast.MotionToastStyle
 
-enum class ToastStyle(private val value: String) {
-    SUCCESS(MotionToast.TOAST_SUCCESS),
-    ERROR(MotionToast.TOAST_ERROR),
-    NO_INTERNET(MotionToast.TOAST_NO_INTERNET),
-    WARNING(MotionToast.TOAST_WARNING),
-    INFO(MotionToast.TOAST_INFO),
-    DELETE(MotionToast.TOAST_DELETE);
+enum class ToastStyle(private val value: MotionToastStyle) {
+    SUCCESS(MotionToastStyle.SUCCESS),
+    ERROR(MotionToastStyle.ERROR),
+    NO_INTERNET(MotionToastStyle.NO_INTERNET),
+    WARNING(MotionToastStyle.WARNING),
+    INFO(MotionToastStyle.INFO),
+    DELETE(MotionToastStyle.DELETE);
 
-    fun getValue(): String {
+    fun getValue(): MotionToastStyle {
         return value
     }
 }

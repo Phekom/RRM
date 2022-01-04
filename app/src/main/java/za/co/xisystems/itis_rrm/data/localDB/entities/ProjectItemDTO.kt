@@ -20,9 +20,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.annotations.Nullable
-import java.io.Serializable
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -31,7 +31,8 @@ import java.io.Serializable
 const val PROJECT_ITEM_TABLE = "PROJECT_ITEM_TABLE"
 
 @Entity(
-    tableName = PROJECT_ITEM_TABLE, foreignKeys = [
+    tableName = PROJECT_ITEM_TABLE,
+    foreignKeys = [
         ForeignKey(
             entity = ProjectDTO::class,
             parentColumns = arrayOf("projectId"),

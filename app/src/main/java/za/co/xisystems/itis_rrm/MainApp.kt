@@ -21,6 +21,7 @@ import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.androidXModule
 import org.kodein.di.bind
+import org.kodein.di.eagerSingleton
 import org.kodein.di.instance
 import org.kodein.di.provider
 import org.kodein.di.singleton
@@ -29,6 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
+import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
@@ -36,12 +38,12 @@ import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.forge.Sage
-import za.co.xisystems.itis_rrm.forge.Scribe
+import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.logging.LameCrashLibrary
 import za.co.xisystems.itis_rrm.services.DeferredLocationRepository
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
@@ -56,6 +58,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
+import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
@@ -69,13 +73,11 @@ open class MainApp : Application(), DIAware {
     override val di = DI.lazy {
 
         import(androidXModule(this@MainApp))
-        bind { singleton { Sage.getInstance(instance()) } }
-        bind { singleton { Scribe.getInstance(instance(), instance()) } }
-        bind { singleton { XIArmoury.getInstance(instance(), instance(), instance()) } }
-        bind { singleton { PhotoUtil.getInstance(instance()) } }
+        bind { eagerSingleton { XIArmoury.getInstance(instance()) } }
+        bind { singleton { AppDatabase(instance(), instance()) } }
+        bind { eagerSingleton { PhotoUtil.getInstance(instance()) } }
         bind { singleton { NetworkConnectionInterceptor(instance()) } }
         bind { singleton { BaseConnectionApi(instance()) } }
-        bind { singleton { AppDatabase(instance(), instance()) } }
         bind { singleton { PreferenceProvider(instance()) } }
         bind { singleton { UserRepository(instance(), instance()) } }
         bind { singleton { OfflineDataRepository(api = instance(), appDb = instance(), photoUtil = instance()) } }
@@ -85,7 +87,9 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureCreationDataRepository(instance(), instance(), instance()) } }
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
-        bind { provider { AuthViewModelFactory(instance(), instance(), this@MainApp) } }
+        bind { singleton { CapturedPictureRepository(instance()) } }
+        bind { provider { GoToViewModelFactory(instance()) } }
+        bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
 
         bind {
             provider {
@@ -100,9 +104,10 @@ open class MainApp : Application(), DIAware {
         bind {
             provider {
                 CreateViewModelFactory(
-                    instance(),
-                    instance(),
-                    this@MainApp
+                    jobCreationDataRepository = instance(),
+                    userRepository = instance(),
+                    application = this@MainApp,
+                    photoUtil = instance()
                 )
             }
         }
@@ -112,7 +117,8 @@ open class MainApp : Application(), DIAware {
                 ApproveMeasureViewModelFactory(
                     this@MainApp,
                     instance(),
-                    instance()
+                    instance(),
+                    instance(),
                 )
             }
         }
@@ -136,6 +142,7 @@ open class MainApp : Application(), DIAware {
         bind { provider { MainActivityViewModelFactory(instance()) } }
         bind { provider { LocationViewModelFactory(this@MainApp) } }
         bind { provider { SharedViewModelFactory(instance()) } }
+        bind { provider { CarouselViewModelFactory(instance(), instance(), this@MainApp) } }
     }
 
     override fun onCreate() {
@@ -167,10 +174,18 @@ open class MainApp : Application(), DIAware {
             override fun onActivityStopped(p0: Activity) {
                 // Count activity references
                 isActivityChangingConfigurations = p0.isChangingConfigurations
+
                 if (--activityReferences == 0 && !isActivityChangingConfigurations) {
                     Timber.d("App in background.")
-                    when (p0 is BaseActivity && p0.takingPhotos) {
-                        true -> Timber.i("Taking photographs")
+                    when (p0 is BaseActivity && XIArmoury.checkTimeout() && !p0.takingPhotos) {
+                        true -> {
+                            if (p0 is LoginActivity) {
+                                p0.exitApplication()
+                            } else {
+                                p0.logoutApplication()
+                            }
+                        }
+                        else -> Timber.i("Long running external process")
                     }
                 }
             }
@@ -209,5 +224,11 @@ open class MainApp : Application(), DIAware {
                 }
             }
         }
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        AppDatabase.closeDown()
+        XIArmoury.closeArmoury()
     }
 }

@@ -11,7 +11,8 @@
         android:layout_marginTop="?android:attr/actionBarSize"
         android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UseCompoundDrawables">
 
         <ImageView
             android:id="@+id/userImg"
@@ -19,7 +20,8 @@
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:layout_margin="@dimen/xsmall"
-            android:src="@drawable/user" />
+            android:src="@drawable/user"
+            android:contentDescription="@string/user_icon" />
 
         <TextView
             android:id="@+id/username1"
@@ -32,68 +34,46 @@
 
     </LinearLayout>
 
-<LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:gravity="center"
         android:layout_height="wrap_content"
-    android:orientation="horizontal">
+        android:orientation="horizontal">
 
-    <Button
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reset_pin"
             android:id="@+id/reset_pin_button"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
-        android:background="@drawable/round_corner_orange"
-        android:textColor="@android:color/white"
+            android:textColor="@color/primaryColor"
             android:padding="5dp"
             android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            android:layout_marginRight="15dp"
+            style="?android:attr/buttonBarButtonStyle" />
 
-    <Button
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/reset_app"
             android:id="@+id/button_reset_app"
             android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/round_corner_orange"
-        android:textColor="@android:color/white"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/primaryColor"
             android:padding="5dp"
             android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp" />
+            android:layout_marginRight="15dp"
+            style="?android:attr/buttonBarButtonStyle" />
 
 
-</LinearLayout>
-
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/update_server"-->
-<!--        android:id="@+id/serverUrlTextView"-->
-<!--        android:layout_marginTop="10dp"-->
-<!--        android:padding="5dp"-->
-<!--        android:layout_marginLeft="15dp"-->
-<!--        android:layout_marginRight="15dp" />-->
-
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/update_server"-->
-<!--        android:id="@+id/serviceVersionTextView"-->
-<!--        android:layout_marginTop="@dimen/medium"-->
-<!--        android:padding="5dp"-->
-<!--        android:layout_marginLeft="15dp"-->
-<!--        android:layout_marginRight="15dp" />-->
-
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/settings"
-            android:layout_gravity="center"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 
 
 </LinearLayout>

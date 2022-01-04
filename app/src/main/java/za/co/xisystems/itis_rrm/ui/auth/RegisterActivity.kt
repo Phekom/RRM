@@ -10,11 +10,9 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -53,23 +51,31 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         val TAG: String = RegisterActivity::class.java.simpleName
     }
 
+    private lateinit var binding: ActivityRegisterBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
         viewModel.setupAuthListener(this)
-        binding.viewmodel = viewModel
-
-
 
         Coroutines.main {
+            binding.registerbutton.setOnClickListener {
+                val username = binding.registerusernameeditText
+                val password = binding.registerpasswordeditText
+                viewModel.onRegButtonClick(it, username, password)
+                // ToastUtils().toastServerAddress(this.applicationContext)
+            }
+
             when (this@RegisterActivity.isConnected) {
                 true -> {
                     val loggedInUser = viewModel.user.await()
@@ -97,11 +103,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
                 }
             }
 
-            serverTextView.setOnClickListener {
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(this.applicationContext)
             }
         }
@@ -200,19 +206,19 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         toast("You are registered as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

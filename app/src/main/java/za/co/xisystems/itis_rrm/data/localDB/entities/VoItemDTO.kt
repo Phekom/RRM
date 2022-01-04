@@ -23,12 +23,15 @@ import java.io.Serializable
 const val TABLE_JOB_VO_ITEM = "TABLE_JOB_VO_ITEM"
 
 @Entity(
-    tableName = TABLE_JOB_VO_ITEM, foreignKeys = [ForeignKey(
-        entity = ProjectDTO::class,
-        parentColumns = arrayOf("projectId"),
-        childColumns = arrayOf("projectId"),
-        onDelete = ForeignKey.CASCADE
-    )]
+    tableName = TABLE_JOB_VO_ITEM,
+    foreignKeys = [
+        ForeignKey(
+            entity = ProjectDTO::class,
+            parentColumns = arrayOf("projectId"),
+            childColumns = arrayOf("projectId"),
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
 )
 data class VoItemDTO(
     @PrimaryKey

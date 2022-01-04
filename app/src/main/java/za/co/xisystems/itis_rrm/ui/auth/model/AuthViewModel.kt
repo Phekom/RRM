@@ -9,8 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import com.github.ajalt.timberkt.Timber
+import com.google.android.material.textfield.TextInputEditText
 import com.password4j.SecureString
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -24,6 +24,8 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.AuthListener
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -37,20 +39,14 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class AuthViewModel(
     private val repository: UserRepository,
     private val armoury: XIArmoury,
-    application: Application
+    private val photoUtil: PhotoUtil,
+    application: Application,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
     private val supervisorJob = SupervisorJob()
-    private val ioContext = Dispatchers.IO + Job(supervisorJob)
+    private val ioContext = dispatchers.io() + Job(supervisorJob)
 
-    var username: String? = null
-    var password: String? = null
-    var enterPin: String? = null
-    var confirmPin: String? = null
-    var enterOldPin: String? = null
-    var enterNewPin: String? = null
-    var confirmNewPin: String? = null
     var authListener: AuthListener? = null
-    private val photoUtil: PhotoUtil = PhotoUtil.getInstance(this.getApplication())
 
     val user by lazyDeferred {
         repository.getUser().distinctUntilChanged()
@@ -62,78 +58,85 @@ class AuthViewModel(
         const val PIN_SIZE = 4
     }
 
-    fun onResetPinButtonClick(view: View) {
-        viewModelScope.launch(ioContext) {
-            listenerNotify {
-                view.isClickable = false
-            }
-            try {
-                when {
-                    enterOldPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please enter current PIN")
-                        }
-                    }
-                    enterNewPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please enter new PIN")
-                        }
-                    }
-                    confirmNewPin.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onFailure("Please confirm new PIN")
-                        }
-                    }
-                    enterOldPin == enterNewPin -> {
-                        listenerNotify {
-                            authListener?.onFailure("New PIN cannot be the same as original Pin")
-                        }
-                    }
-                    enterNewPin != confirmNewPin -> {
-                        listenerNotify {
-                            authListener?.onFailure("New PINs do not match")
-                        }
-                    }
-                    confirmNewPin!!.length != PIN_SIZE -> {
-                        listenerNotify {
-                            authListener?.onFailure("PIN should be 4 (four) digits long")
-                        }
-                    }
+    fun onResetPinButtonClick(view: View, oldPin: String?, newPin: String?, confirmNewPin: String?) {
+        updateUserPin(view, oldPin, newPin, confirmNewPin)
+    }
 
-                    else -> {
-                        validateAndUpdatePin()
+    private fun updateUserPin(
+        view: View,
+        enterOldPin: String?,
+        enterNewPin: String?,
+        confirmNewPin: String?
+    ) = viewModelScope.launch(ioContext) {
+        listenerNotify {
+            view.isClickable = false
+        }
+        try {
+            when {
+                enterOldPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please enter current PIN")
                     }
                 }
-            } catch (t: Throwable) {
-                listenerNotify {
-                    postError(t)
+                enterNewPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please enter new PIN")
+                    }
                 }
-            } finally {
-                listenerNotify {
-                    view.isClickable = true
+                confirmNewPin.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onFailure("Please confirm new PIN")
+                    }
                 }
+                enterOldPin == enterNewPin -> {
+                    listenerNotify {
+                        authListener?.onFailure("New PIN cannot be the same as original Pin")
+                    }
+                }
+                enterNewPin != confirmNewPin -> {
+                    listenerNotify {
+                        authListener?.onFailure("New PINs do not match")
+                    }
+                }
+                confirmNewPin.length != PIN_SIZE -> {
+                    listenerNotify {
+                        authListener?.onFailure("PIN should be 4 (four) digits long")
+                    }
+                }
+
+                else -> {
+                    validateAndUpdatePin(enterOldPin, confirmNewPin)
+                }
+            }
+        } catch (t: Throwable) {
+            listenerNotify {
+                postError(t)
+            }
+        } finally {
+            listenerNotify {
+                view.isClickable = true
             }
         }
     }
 
     private suspend fun listenerNotify(notification: () -> Unit) {
-        withContext(Dispatchers.Main.immediate) {
+        withContext(dispatchers.ui()) {
             notification()
         }
     }
 
-    private suspend fun validateAndUpdatePin() {
+    private suspend fun validateAndUpdatePin(enterOldPin: String, confirmNewPin: String) {
 
         val currentUser = user.await().value
 
         if (currentUser != null) {
             withContext(ioContext) {
                 try {
-                    val oldTokenGood = validateUserPin(currentUser, enterOldPin!!)
+                    val oldTokenGood = validateUserPin(currentUser, enterOldPin)
                     Timber.d(message = { "^*^ Old Token Valid: $oldTokenGood ^*^" })
 
                     if (oldTokenGood) {
-                        registerUserPin(currentUser, confirmNewPin!!)
+                        registerUserPin1(currentUser, confirmNewPin)
                         repository.authenticatePin()
                         listenerNotify {
                             validPin.value = true
@@ -152,7 +155,7 @@ class AuthViewModel(
         }
     }
 
-    private suspend fun registerUserPin(currentUser: UserDTO, newPin: String) {
+    private suspend fun registerUserPin1(currentUser: UserDTO, newPin: String) {
         val newTokenString = SecureString(
             currentUser.userName
                 .plus(currentUser.device)
@@ -181,7 +184,7 @@ class AuthViewModel(
         return armoury.validateToken(oldTokenString, repository.getHash().toString())
     }
 
-    fun onRegPinButtonClick(view: View) {
+    fun onRegPinButtonClick(view: View, enterPin: TextInputEditText, confirmPin: TextInputEditText) {
         viewModelScope.launch(ioContext) {
 
             listenerNotify {
@@ -191,28 +194,28 @@ class AuthViewModel(
             try {
 
                 when {
-                    enterPin.isNullOrEmpty() -> {
+                    enterPin.text.isNullOrEmpty() -> {
                         listenerNotify {
                             authListener?.onWarn("Please Enter PIN")
                         }
                     }
-                    confirmPin.isNullOrEmpty() -> {
+                    confirmPin.text.isNullOrEmpty() -> {
                         listenerNotify {
                             authListener?.onWarn("Please Confirm PIN")
                         }
                     }
-                    enterPin != confirmPin -> {
+                    enterPin.text.toString() != confirmPin.text.toString() -> {
                         listenerNotify {
                             authListener?.onWarn("PINs do not match")
                         }
                     }
-                    confirmPin!!.length != PIN_SIZE -> {
+                    confirmPin.text.toString().length != PIN_SIZE -> {
                         listenerNotify {
                             authListener?.onWarn("PIN should be 4 (four) digits long")
                         }
                     }
                     else -> {
-                        registerUserPin(view)
+                        registerUserPin(view, confirmPin.text.toString())
                     }
                 }
             } catch (t: Throwable) {
@@ -227,7 +230,7 @@ class AuthViewModel(
         }
     }
 
-    private suspend fun registerUserPin(view: View) = viewModelScope.launch(ioContext) {
+    private suspend fun registerUserPin(view: View, confirmPin: String) = viewModelScope.launch(ioContext) {
         try {
             val loggedInUser = user.await().value
             loggedInUser?.let { it ->
@@ -236,7 +239,7 @@ class AuthViewModel(
                     "${R.string.android_sdk} ${VERSION.SDK_INT} " +
                         "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
 
-                val hashInput = it.userName.plus(androidDevice).plus(confirmPin!!)
+                val hashInput = it.userName.plus(androidDevice).plus(confirmPin)
                 repository.updateUser(
                     it.phoneNumber.toString(),
                     imie,
@@ -270,37 +273,39 @@ class AuthViewModel(
         }
     }
 
-    fun onRegButtonClick(view: View) {
-        viewModelScope.launch(ioContext) {
-            try {
-                listenerNotify {
-                    authListener?.onStarted()
-                    view.isClickable = false
-                }
-                when {
-                    username.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onWarn("UserName is required")
-                        }
+    fun onRegButtonClick(
+        view: View,
+        username: TextInputEditText,
+        password: TextInputEditText
+    ) = viewModelScope.launch(ioContext) {
+        try {
+            listenerNotify {
+                authListener?.onStarted()
+                view.isClickable = false
+            }
+            when {
+                username.text.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onWarn("UserName is required")
                     }
+                }
 
-                    password.isNullOrEmpty() -> {
-                        listenerNotify {
-                            authListener?.onWarn("Password is required")
-                        }
-                    }
-                    else -> {
-                        registerNewUser(username, password)
+                password.text.isNullOrEmpty() -> {
+                    listenerNotify {
+                        authListener?.onWarn("Password is required")
                     }
                 }
-            } catch (t: Throwable) {
-                listenerNotify {
-                    postError(t)
+                else -> {
+                    registerNewUser(username.text.toString(), password.text.toString())
                 }
-            } finally {
-                listenerNotify {
-                    view.isClickable = true
-                }
+            }
+        } catch (t: Throwable) {
+            listenerNotify {
+                postError(t)
+            }
+        } finally {
+            listenerNotify {
+                view.isClickable = true
             }
         }
     }
@@ -321,21 +326,20 @@ class AuthViewModel(
                 imie,
                 androidDevice
             )
-
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             listenerNotify {
-                postError(e)
+                postError(t)
             }
         }
     }
 
     private fun postError(t: Throwable) {
-        val xiError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+        val xiError = XIResult.Error(t.cause ?: t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
         val readableMessage = XIErrorHandler.humanReadable(xiError)
         authListener?.onFailure(readableMessage)
     }
 
-    suspend fun expirePin() {
+    fun expirePin() = viewModelScope.launch(ioContext) {
         repository.expirePin()
     }
 
@@ -346,7 +350,8 @@ class AuthViewModel(
         val loggedInUser = user.await().value
         val inputHash = SecureString(
             loggedInUser!!.userName
-                .plus(loggedInUser.device).plus(pin).toCharArray(), false
+                .plus(loggedInUser.device).plus(pin).toCharArray(),
+            false
         )
         val result = armoury.validateToken(
             inputHash, loggedInUser.pinHash!!
@@ -361,7 +366,7 @@ class AuthViewModel(
             }
             listenerNotify { authListener?.onSuccess(loggedInUser) }
         }
-        withContext(Dispatchers.Main) {
+        withContext(dispatchers.main()) {
             validPin.value = result
         }
     }

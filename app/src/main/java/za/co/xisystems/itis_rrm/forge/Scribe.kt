@@ -8,20 +8,21 @@ package za.co.xisystems.itis_rrm.forge
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.StrictMode
 import androidx.annotation.WorkerThread
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.password4j.SecureString
-import kotlinx.coroutines.asExecutor
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import timber.log.Timber
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 
 /**
  * Create, read and write Encrypted shared preferences.
@@ -34,49 +35,38 @@ class Scribe private constructor(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
 
-    lateinit var securePrefs: SharedPreferences
+    var mSecurePrefs: SharedPreferences? = null
+    private val securedPrefs get() = mSecurePrefs!!
     private var armouryScope = ArmouryScope()
-    private lateinit var masterKey: MasterKey
-    var mOperational: Boolean = this::securePrefs.isInitialized
+    private var mOperational: Boolean = mSecurePrefs != null
 
     val operational get() = mOperational
 
-    private val QUARTER_SECOND = 250
-
     init {
-        armouryScope.onCreate()
-        armouryScope.launch {
-            initPreferences(context = context, masterKey = sageInstance.masterKeyAlias).also { cryptoPrefs ->
-                this@Scribe.securePrefs = cryptoPrefs
-            }
-            while (!this@Scribe::securePrefs.isInitialized) {
-                delay(100)
-            }
-        }
+        this.mSecurePrefs =
+            createPreferences(context = context, masterKey = sageInstance.masterKeyAlias)
     }
 
     companion object {
+        @Volatile
+        private var instance: Scribe? = null
+        private val Lock = Any()
         const val PASS_KEY = "za.co.xisystems.itis_rmm.forge.Scribe.Passphrase"
         const val SESSION_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.SessionKey"
         const val USER_KEY = "za.co.xisystems.itis_rrm.forge.Scribe.UserKey"
         const val NOT_SET = "NoPassphraseSet"
         const val NOT_INITIALIZED: String = "NoInitialization"
         const val PREFS_FILE = "special_styles_and_colours"
-        fun getInstance(
-            context: Context,
-            sageInstance: Sage,
-            prefsFile: String = PREFS_FILE
-        ): Scribe {
-            val instance = Scribe(context = context, sageInstance = sageInstance)
-            instance.securePrefs = instance.createPreferences(
-                context = context,
-                masterKey = sageInstance.masterKeyAlias,
-                prefsFile = prefsFile
-            ).also { securePrefs ->
-                val passphrase = securePrefs.getString(PASS_KEY, "NOT_SET")
-            }
 
-            return instance
+        fun getInstance(
+            appContext: Context,
+            sageInstance: Sage
+        ): Scribe {
+            return instance ?: synchronized(Lock) {
+                Scribe(context = appContext, sageInstance = sageInstance).also {
+                    instance = it
+                }
+            }
         }
     }
 
@@ -87,31 +77,24 @@ class Scribe private constructor(
      * @param prefsFile String
      * @return Unit
      */
-    suspend fun initPreferences(
-        context: Context,
-        masterKey: MasterKey,
-        prefsFile: String = "special_styles_and_colours"
-    ): SharedPreferences = withContext(dispatchers.io()) {
-        return@withContext createPreferences(context, prefsFile, masterKey)
-    }
-
-    suspend fun latePreferences(
+    fun initSecurePrefsAsync(
         context: Context,
         masterKey: MasterKey,
         prefsFile: String = PREFS_FILE
-    ): Scribe = withContext(dispatchers.io()) {
-        this@Scribe.securePrefs = initPreferences(context, masterKey, prefsFile)
-        return@withContext this@Scribe
+    ): Deferred<SharedPreferences> = armouryScope.async(dispatchers.io()) {
+        return@async createPreferences(context, prefsFile, masterKey)
     }
 
     @WorkerThread
     fun createPreferences(
         context: Context,
-        prefsFile: String = "specialstylesandcolours",
+        prefsFile: String = PREFS_FILE,
         masterKey: MasterKey
     ): SharedPreferences {
+        StrictMode.allowThreadDiskReads()
+        StrictMode.allowThreadDiskWrites()
         val preferences = EncryptedSharedPreferences.create(
-            context.applicationContext,
+            context,
             prefsFile,
             masterKey,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
@@ -131,7 +114,7 @@ class Scribe private constructor(
 
     @WorkerThread
     fun readPassphrase(): String {
-        return securePrefs.getString(PASS_KEY, NOT_SET)!!
+        return securedPrefs.getString(PASS_KEY, NOT_SET)!!
     }
 
     /**
@@ -143,26 +126,26 @@ class Scribe private constructor(
         writePassphrase(passphrase)
     }
 
-    private fun writePassphrase(passphrase: String) = with(securePrefs.edit()) {
-        putString(PASS_KEY, passphrase.trim()).apply()
+    private fun writePassphrase(passphrase: String) = with(securedPrefs.edit()) {
+        putString(PASS_KEY, passphrase.trim()).commit()
     }
 
-    fun writeSessionKey(sessionKey: String) = with(securePrefs.edit()) {
+    fun writeSessionKey(sessionKey: String) = with(securedPrefs.edit()) {
         putString(SESSION_KEY, sessionKey).commit()
     }
 
     fun readSessionKey(): String {
-        return securePrefs.getString(SESSION_KEY, "").orEmpty()
+        return securedPrefs.getString(SESSION_KEY, "").orEmpty()
     }
 
     fun writeUserObject(userObject: String) = dispatchers.io().asExecutor().execute {
-        with(securePrefs.edit()) {
+        with(securedPrefs.edit()) {
             putString(USER_KEY, userObject).apply()
         }
     }
 
     suspend fun readUserObject(): SecureString = withContext(dispatchers.io()) {
-        val nakedObject = securePrefs.getString(USER_KEY, "")!!
+        val nakedObject = securedPrefs.getString(USER_KEY, "")!!
         return@withContext SecureString(nakedObject.toCharArray())
     }
 
@@ -283,7 +266,7 @@ class Scribe private constructor(
     }
 
     fun eraseSessionKey() {
-        with(securePrefs.edit()) {
+        with(securedPrefs.edit()) {
             remove(SESSION_KEY).apply()
         }
     }

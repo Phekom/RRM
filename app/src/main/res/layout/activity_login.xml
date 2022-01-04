@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/login"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".new_app.ui.auth.LoginActivity">
+        tools:context=".ui.auth.LoginActivity">
 
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -56,7 +56,8 @@
                     android:text="@string/please_enter_your_unique_code"
                     android:textColor="@color/primaryTextColor"
                     android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:labelFor="@id/pinField"/>
 
                 <com.poovam.pinedittextfield.CirclePinField
                     android:layout_width="wrap_content"
@@ -72,7 +73,8 @@
                     app:fillerRadius="10dp"
                     app:fillerColor="@color/sanral_burnt_green"
                     android:id="@+id/pinField"
-                    android:layout_marginTop="15dp" />
+                    android:layout_marginTop="15dp"
+                    tools:ignore="DuplicateSpeakableTextCheck" />
 
                 <ImageView
                     android:id="@+id/logo"
@@ -80,7 +82,9 @@
                     android:layout_height="fill_parent"
                     android:alpha="0.1"
                     app:srcCompat="@drawable/logo_new_large"
-                    android:contentDescription="@string/sanral_logo" />
+                    android:contentDescription="@string/sanral_logo"
+                    tools:ignore="ImageContrastCheck" />
+
             </LinearLayout>
 
             <ProgressBar
@@ -143,6 +147,6 @@
         </RelativeLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+
 
 

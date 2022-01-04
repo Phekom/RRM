@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
 interface LookupDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLookup(lookups: LookupDTO): Long
+    fun insertLookup(lookups: LookupDTO): Long
 
     @Query("SELECT * FROM LOOKUP_TABLE WHERE lookupName = :lookupName")
     fun checkIfLookupExist(lookupName: String): Boolean

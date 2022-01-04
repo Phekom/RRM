@@ -8,13 +8,17 @@ package za.co.xisystems.itis_rrm.utils
 
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
@@ -28,35 +32,60 @@ import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.io.*
-import java.util.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.Base64
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 import kotlin.math.roundToLong
 
-class PhotoUtil private constructor(private var appContext: Context) {
+class PhotoUtil private constructor(
+    private var appContext: Context,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+) {
 
     lateinit var pictureFolder: File
 
     companion object {
-        private lateinit var instance: PhotoUtil
+        private var mInstance: PhotoUtil? = null
+        val instance get() = mInstance!!
         private const val BMP_LOAD_FAILED = "Failed to load bitmap"
 
-        private fun initInstance(appContext: Context): PhotoUtil {
-            instance = PhotoUtil(appContext)
+        @JvmStatic
+        private fun initInstance(
+            context: Context,
+            dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+        ): PhotoUtil {
+            mInstance = PhotoUtil(context, dispatchers)
             Coroutines.io {
-                instance.pictureFolder = appContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
+                instance.pictureFolder =
+                    context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)!!
                 if (!instance.pictureFolder.exists()) {
                     instance.pictureFolder.mkdirs()
                 }
             }.also { return instance }
         }
 
+        @JvmStatic
         fun getInstance(appContext: Context): PhotoUtil {
-            return if (!this::instance.isInitialized) {
+            return if (mInstance == null) {
                 Timber.d("Initializing PhotoUtil")
                 initInstance(appContext)
             } else {
                 instance
+            }
+        }
+
+        fun shutdown() {
+            if (mInstance != null) {
+                mInstance = null
             }
         }
     }
@@ -113,7 +142,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
             }
     }
 
-    suspend fun photoExist(fileName: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun photoExist(fileName: String): Boolean = withContext(dispatchers.io()) {
         val image =
             File(getPhotoPathFromExternalDirectory(fileName).path!!)
         return@withContext image.exists()
@@ -121,7 +150,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
     suspend fun getPhotoPathFromExternalDirectory(
         photoName: String
-    ): Uri = withContext(Dispatchers.IO) {
+    ): Uri = withContext(dispatchers.io()) {
         var pictureName = photoName
         pictureName =
             if (!pictureName.lowercase(Locale.ROOT)
@@ -137,15 +166,12 @@ class PhotoUtil private constructor(private var appContext: Context) {
     suspend fun getPhotoBitmapFromFile(
         selectedImage: Uri?,
         photoQuality: PhotoQuality
-    ): Bitmap? = withContext(Dispatchers.IO) {
+    ): Bitmap? = withContext(dispatchers.io()) {
         return@withContext try {
             val options = BitmapFactory.Options()
             options.inSampleSize = photoQuality.value
             val fileDescriptor: AssetFileDescriptor =
-                selectedImage?.let {
-                    appContext.contentResolver
-                        .openAssetFileDescriptor(it, "r")
-                } ?: throw IllegalArgumentException(BMP_LOAD_FAILED)
+                getImageFileDescriptor(selectedImage)
             val bm = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.fileDescriptor,
                 null,
@@ -165,10 +191,16 @@ class PhotoUtil private constructor(private var appContext: Context) {
         }
     }
 
+    @WorkerThread
+    private fun getImageFileDescriptor(selectedImage: Uri?) = selectedImage?.let {
+        appContext.contentResolver
+            .openAssetFileDescriptor(it, "r")
+    } ?: throw IllegalArgumentException(BMP_LOAD_FAILED)
+
     suspend fun getCompressedPhotoWithExifInfo(
         bitmap: Bitmap,
         fileName: String
-    ): ByteArray = withContext(Dispatchers.IO) {
+    ): ByteArray = withContext(dispatchers.io()) {
         var byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)
         var data = byteArrayOutputStream.toByteArray()
@@ -239,7 +271,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
 //    public static Map<String, String> saveImageToInternalStorage(Context context, Bitmap bitmap) {
     suspend fun saveImageToInternalStorage(
         imageUri: Uri
-    ): HashMap<String, String>? = withContext(Dispatchers.IO) {
+    ): HashMap<String, String>? = withContext(dispatchers.io()) {
         var scaledUri = imageUri
         return@withContext try {
             lateinit var scaledBitmap: Bitmap
@@ -436,7 +468,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
 
     suspend fun deleteImageFile(
         imagePath: String?
-    ): Boolean = withContext(Dispatchers.IO) { // Get the file
+    ): Boolean = withContext(dispatchers.io()) { // Get the file
         return@withContext if (imagePath != null) {
             val imageFile = File(imagePath)
             // Delete the image
@@ -494,7 +526,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
         }
     }
 
-    private suspend fun getUriFromPath(filePath: String): Uri? = withContext(Dispatchers.IO) {
+    suspend fun getUriFromPath(filePath: String): Uri? = withContext(dispatchers.io()) {
         return@withContext try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)
@@ -506,7 +538,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
     }
 
     suspend fun prepareGalleryPairs(filenames: List<String>): List<Pair<Uri, Bitmap>> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val photoQuality = when (filenames.size) {
                 in 1..4 -> PhotoQuality.HIGH
                 in 5..16 -> PhotoQuality.MEDIUM
@@ -532,7 +564,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
             }
         }
 
-    suspend fun getUri(): Uri? = withContext(Dispatchers.IO) {
+    suspend fun getUri(): Uri? = withContext(dispatchers.io()) {
         try {
             return@withContext FileProvider.getUriForFile(
                 appContext,
@@ -546,7 +578,7 @@ class PhotoUtil private constructor(private var appContext: Context) {
     }
 
     @Throws(IOException::class)
-    private suspend fun createImageFile(): File? = withContext(Dispatchers.IO) {
+    private suspend fun createImageFile(): File? = withContext(dispatchers.io()) {
         val imageFileName = UUID.randomUUID()
         return@withContext try {
             File(pictureFolder, "$imageFileName.jpg")

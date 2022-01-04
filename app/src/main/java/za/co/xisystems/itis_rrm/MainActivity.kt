@@ -20,7 +20,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -35,7 +34,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
@@ -44,6 +42,7 @@ import timber.log.Timber
 import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
@@ -56,7 +55,9 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
+class MainActivity :
+    BaseActivity(),
+    NavigationView.OnNavigationItemSelectedListener,
     DIAware {
 
     override val di by closestDI()
@@ -75,15 +76,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var gpsEnabled = false
     private var networkEnabled = false
     private var uiScope = UiLifecycleScope()
-    private lateinit var ui: ActivityMainBinding
     private var doubleBackToExitPressed = 0
-    private var progressBar: ProgressBar? = null
+    private val binding by viewBinding(ActivityMainBinding::inflate)
+
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
                 R.id.nav_home
             ),
-            ui.drawerLayout
+            binding.drawerLayout
         )
     }
 
@@ -105,10 +106,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        ui = ActivityMainBinding.inflate(layoutInflater)
-        val view = ui.root
-        setContentView(view)
-        setSupportActionBar(ui.toolbar)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         // Get a support ActionBar corresponding to this toolbar
         val ab: ActionBar? = supportActionBar
@@ -132,16 +131,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-        navigationView = ui.navView
+        navigationView = binding.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
-        NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
+        NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfiguration)
 
         Coroutines.io {
             RaygunClient.init(application)
             RaygunClient.enableCrashReporting()
         }
 
-        this.mainActivityViewModel = ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+        this.mainActivityViewModel = ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
 
         initializeCountDrawer()
 
@@ -151,19 +150,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         displayPromptForEnablingGPS(this)
         this.toggle = ActionBarDrawerToggle(
             this,
-            drawer_layout,
-            toolbar,
+            binding.drawerLayout,
+            binding.toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
 
-        drawer_layout.addDrawerListener(toggle!!)
+        binding.drawerLayout.addDrawerListener(toggle!!)
 
         toggle!!.syncState()
 
         this.hideKeyboard()
 
-        nav_view.setNavigationItemSelectedListener(this)
+        binding.navView.setNavigationItemSelectedListener(this)
         badgeUnSubmitted =
             navigationView.menu.findItem(R.id.nav_unSubmitted).actionView as TextView
 //        nav_correction =
@@ -176,13 +175,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
-
-        progressBar = findViewById(R.id.progressbar)
-
-        if (savedInstanceState == null) {
-            val home = HomeFragmentDirections.actionGlobalNavHome()
-            navController.navigate(home)
-        }
     }
 
     private fun displayPromptForEnablingGPS(
@@ -222,8 +214,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onBackPressed() {
 
-        if (ui.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            ui.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             if (navHostFragment.childFragmentManager.backStackEntryCount > 1) {
                 super.onBackPressed()
@@ -232,7 +224,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 doubleBackToExitPressed++
                 if (doubleBackToExitPressed == 2) {
                     logoutApplication()
-                    finish()
+                    finishAndRemoveTask()
                 } else {
 
                     toast("Please press Back again to exit")
@@ -294,7 +286,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun onSupportNavigateUp(): Boolean {
 
-        return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController, binding.drawerLayout) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -350,7 +342,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
 
-        drawer_layout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -481,7 +473,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun startLongRunningTask() {
         Timber.i("starting task...")
-        progressBar?.visibility = View.VISIBLE
+        binding.progressbar.visibility = View.VISIBLE
         // Make UI untouchable for duration of task
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -495,7 +487,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     override fun endLongRunningTask() {
         Timber.i("stopping task...")
-        progressBar?.visibility = View.GONE
+        binding.progressbar.visibility = View.GONE
 
         // Re-enable UI touches
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
@@ -525,10 +517,5 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             // initializeCountDrawer()
             // refreshData()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        uiScope.destroy()
     }
 }

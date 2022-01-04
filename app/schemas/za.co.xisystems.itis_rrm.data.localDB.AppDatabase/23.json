@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "dfeedc1ed0caab122a73d83df94775d9",
+    "identityHash": "e692b8d7a106f85f6b6d830ef9d61013",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -2642,7 +2642,7 @@
       },
       {
         "tableName": "WORKFLOWs_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT NOT NULL, `workflows` TEXT NOT NULL, PRIMARY KEY(`activities`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT, `workflows` TEXT, PRIMARY KEY(`activities`))",
         "fields": [
           {
             "fieldPath": "activities",
@@ -2654,13 +2654,13 @@
             "fieldPath": "infoClasses",
             "columnName": "infoClasses",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflows",
             "columnName": "workflows",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2719,7 +2719,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dfeedc1ed0caab122a73d83df94775d9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e692b8d7a106f85f6b6d830ef9d61013')"
     ]
   }
 }

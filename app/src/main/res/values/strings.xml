@@ -4,7 +4,7 @@
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Typos">
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
@@ -118,8 +118,7 @@
 
     <string name="theme_title">Change Theme</string>
     <string name="attach_title">Keep on Dark Mode</string>
-    <string name="attach_summary_on">Switch off dark mode and start app in default theme
-    </string>
+    <string name="attach_summary_on">Switch off dark mode and start app in default theme</string>
     <string name="attach_summary_off">Automatically start app in dark mode</string>
 
 
@@ -231,13 +230,51 @@
     <string name="user_blocked">The account $1%s is locked out. Please call or email ITIS Support for enquiries.</string>
 
     <!-- Location Validation -->
-    <string name="not_nra_territory">Captured coordinates (lat: $1%d, lng: $2%d) are outside of Sanral\'s reserve.</string>
+    <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
     <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
-    <string name="invalid_km_marker">The closest active section to this spot ($1%s) is $2%d km away, /n at the $3%d km marker position.</string>
+    <string name="invalid_km_marker">The closest active section to this location ($1%s) is $2%s km away,\n at the $3%s km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>
     <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>
     <string name="item_number">No:..</string>
 
     <!-- Offline Mode -->
     <string name="complete_upload">Complete Upload</string>
+    <string name="row_number_mask">No:..</string>
+    <string name="default_uom">each</string>
+    <string name="qty_rate">Qty / Rate</string>
+    <string name="not_allowed">Work Process Not Permitted</string>
+    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>
+    <string name="action_not_permitted">Work can only be initiated at the JI\'s location</string>
+    <string name="goto_work_location">Drive To Work Site</string>
+    <string name="work">Drive to Work</string>
+    <string name="user_location_permission_explanation">This app needs location permission to direct you tools the job sites, and verify the work you perform</string>
+    <string name="user_location_permission_not_granted">Allow location permission</string>
+    <string name="drive_button">Drive Button</string>
+    <string name="navigating_to_work_location">Navigating To Location</string>
+    <string name="no_routes">No Routes Found</string>
+    <string name="distance_misiing">Missing Data</string>
+    <string name="start_work">Start Work</string>
+    <string name="start_the_work_process">START THE WORK PROCESS</string>
+    <string name="jino_or_desc_search_hint">Search by JI no or description</string>
+    <string name="add_a_photo">Add a photo</string>
+    <string name="pin_entry">pin entry</string>
+    <string name="take_a_new_live_photo">Take a new live photo</string>
+    <string name="choose_an_rrm_gallery_photo">Choose an RRM gallery photo</string>
+    <string name="select_image">Select Image</string>
+    <string name="cancel_selection">Cancel Selection</string>
+    <string name="retake_image">Retake Image</string>
+    <string name="delete_image">Delete Image</string>
+    <string name="capture_photos">Capture Photos</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="select_job_type">Select Job Type</string>
+    <string name="capture_photo">Capture Photo</string>
+    <string name="capture_start">Start Photo</string>
+    <string name="end_photo">End Photo</string>
+    <string name="line">Line</string>
+    <string name="point">Point</string>
+    <string name="captured_photo_of_hazard_or_defect">Captured photo of road hazard or defect</string>
+    <string name="job_no">Job No:</string>
+    <string name="measurement_photograph">Measurement Photograph</string>
+
 </resources>

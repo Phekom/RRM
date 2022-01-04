@@ -29,6 +29,72 @@
                 android:textSize="@dimen/text_medium"
                 tools:ignore="HardcodedText" />
 
+            <LinearLayout
+                android:id="@+id/spinnerrel"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_48dp"
+                android:orientation="horizontal"
+                android:layout_margin="@dimen/xsmall"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/label1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center|left"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:text="@string/select_job_type"
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    tools:ignore="RtlHardcoded" />
+
+                <RadioGroup
+                    android:id="@+id/jobTypeRadioGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/dimen_48dp"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="@dimen/dimen_5dp"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:layout_marginEnd="@dimen/dimen_10dp">
+
+                    <RadioButton
+                        android:id="@+id/point"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/point"
+                        android:layout_marginEnd="@dimen/dimen_10dp" />
+
+                    <RadioButton
+                        android:id="@+id/line"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/dimen_5dp"
+                        android:checked="false"
+                        android:text="@string/line" />
+
+                </RadioGroup>
+
+
+            </LinearLayout>
+
+
+
+
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,7 +119,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/button_size"
                             android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
-                            android:text="@string/start" />
+                            android:text="@string/start"
+                            android:visibility="visible" />
+
 
                         <TextView
                             android:id="@+id/startSectionTextView"
@@ -68,7 +136,8 @@
                             android:layout_height="@dimen/image_xlarge"
                             android:layout_marginTop="@dimen/small"
                             android:src="@drawable/logo_new_medium"
-                            tools:ignore="ContentDescription" />
+                            tools:ignore="ContentDescription"
+                            android:visibility="visible" />
 
                         <com.airbnb.lottie.LottieAnimationView
                             android:id="@+id/startAnimationView"
@@ -87,6 +156,7 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/xsmall"
                         android:layout_weight="1"
+                        android:id="@+id/secondImage"
                         android:orientation="vertical">
 
                         <Button
@@ -95,7 +165,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/button_size"
                             android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
-                            android:text="@string/end" />
+                            android:text="@string/end_photo" />
 
                         <TextView
                             android:id="@+id/endSectionTextView"
@@ -188,6 +258,7 @@
                         android:textSize="@dimen/text_medium"
                         android:textStyle="bold"
                         tools:ignore="HardcodedText" />
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -216,6 +287,29 @@
                     tools:ignore="HardcodedText"
                     android:visibility="gone"
                     tools:visibility="visible" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_150dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/buttonshape"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="UselessLeaf">
+
+                <com.mapbox.maps.MapView
+                    android:id="@+id/estimatemapview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/xsmall"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
             </LinearLayout>
 
         </LinearLayout>

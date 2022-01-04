@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,7 +39,7 @@ import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
@@ -54,13 +55,11 @@ import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.util.Date
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -70,16 +69,15 @@ class CaptureItemMeasurePhotoFragment :
     override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private val galleryObserver = Observer<XIResult<MeasureGalleryUIState>> { handleResponse(it) }
     private lateinit var jobItemMeasurePhotoArrayList: ArrayList<JobItemMeasurePhotoDTO>
     private lateinit var selectedJobItemMeasure: JobItemMeasureDTO
     private lateinit var imageUri: Uri
     private var filenamePath = HashMap<String, String>()
     private var viewPhotosOnly = false
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentCaptureItemMeasurePhotoBinding? = null
     private val ui get() = _ui!!
-    private lateinit var photoUtil: PhotoUtil
 
     /**
      * ActivityResultContract for taking a photograph
@@ -121,9 +119,7 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        uiScope.onCreate()
         lifecycle.addObserver(uiScope)
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
     }
 
     override fun onCreateView(
@@ -138,9 +134,8 @@ class CaptureItemMeasurePhotoFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ui.estimateImageCollectionView.clearImages()
-        measureViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        measureViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[MeasureViewModel::class.java]
 
         jobItemMeasurePhotoArrayList = ArrayList()
         ui.galleryLayout.visibility = View.INVISIBLE
@@ -157,7 +152,7 @@ class CaptureItemMeasurePhotoFragment :
                         if (measureViewModel.measuredJiNo != it.jimNo) {
                             this@CaptureItemMeasurePhotoFragment.extensionToast(
                                 message = "Measuring job: ${it.jimNo}",
-                                style = INFO,
+                                style = ToastStyle.INFO,
                                 position = ToastGravity.BOTTOM
                             )
                             measureViewModel.measuredJiNo = it.jimNo!!
@@ -166,7 +161,8 @@ class CaptureItemMeasurePhotoFragment :
                         selectedJobItemMeasure = it
                         checkForPhotos(selectedJobItemMeasure)
                     }
-                })
+                }
+            )
 
             measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
@@ -237,21 +233,20 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         _ui = null
     }
 
     // TODO: Have location validated here
     // TODO: Check earlier and get user to switch Location on.
-    private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(Dispatchers.IO) {
+    private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(dispatchers.io()) {
         //  Location of picture
         val measurementLocation = getCurrentLocation()
         if (measurementLocation != null) {
             //  Save Image to Internal Storage
             filenamePath =
                 photoUtil.saveImageToInternalStorage(
-                    imageUri
-                ) as HashMap<String, String>
+                imageUri
+            ) as HashMap<String, String>
 
             Timber.d("location: ${measurementLocation.longitude}, ${measurementLocation.latitude}")
             Timber.d("accuracy: ${measurementLocation.accuracy}")
@@ -331,7 +326,8 @@ class CaptureItemMeasurePhotoFragment :
             PhotoQuality.HIGH
         ).also { bmp ->
             bmp?.run {
-                ui.estimateImageCollectionView.addImage(this,
+                ui.estimateImageCollectionView.addImage(
+                    this,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
                             showZoomedImage(
@@ -339,7 +335,8 @@ class CaptureItemMeasurePhotoFragment :
                                 this@CaptureItemMeasurePhotoFragment.requireActivity()
                             )
                         }
-                    })
+                    }
+                )
             }
             this@CaptureItemMeasurePhotoFragment.photosDone()
         }
@@ -410,7 +407,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    fun retryGallery() {
+    private fun retryGallery() {
         IndefiniteSnackbar.hide()
         measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner, {
             it?.let { measureViewModel.generateGalleryUI(it) }

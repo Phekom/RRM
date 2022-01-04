@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+
 
     <RelativeLayout
         android:id="@+id/welcome_screen"
@@ -33,7 +34,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
 
-        <androidx.recyclerview.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -57,7 +58,8 @@
                 android:layout_width="match_parent"
                 android:layout_marginBottom="10dp"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                tools:ignore="UseCompoundDrawables">
 
                 <ImageView
                     android:id="@+id/userImg"
@@ -83,7 +85,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_marginBottom="10dp"
-                android:background="#fff"
                 android:orientation="vertical"
                 android:layout_weight="1">
 
@@ -91,11 +92,13 @@
                     android:id="@+id/iv_connection"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_margin="10dp"
-                    android:background="#F5F5F5"
                     android:gravity="start"
                     android:src="@drawable/ic_baseline_signal_cellular_waiting"
-                    android:contentDescription="@string/cellular_data_indicator" />
+                    android:contentDescription="@string/cellular_data_indicator"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:id="@+id/dataEnabled"
@@ -112,7 +115,6 @@
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
-                android:background="#fff"
                 android:orientation="vertical"
                 android:layout_weight="1"
                 android:layout_marginBottom="@dimen/dimen_10dp">
@@ -147,11 +149,13 @@
                     android:id="@+id/iv_location"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:background="#F5F5F5"
                     android:contentDescription="@string/location_service_indicator"
                     android:gravity="start"
                     android:src="@drawable/ic_baseline_location_off_24"
-                    android:layout_margin="10dp" />
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp" />
 
                 <TextView
                     android:id="@+id/locationEnabled"
@@ -170,8 +174,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:visibility="invisible"
-                tools:visibility="visible">
+                android:visibility="gone"
+                tools:visibility="gone">
 
                 <com.skydoves.progressview.ProgressView
                     android:id="@+id/pv_sections"
@@ -250,18 +254,20 @@
 
         </TableLayout>
 
-
         <TextView
             android:id="@+id/serverTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/small"
             android:alpha="0.5"
             android:padding="@dimen/medium"
             android:text="@string/server"
-            android:textColor="@android:color/black" />
+            android:textColor="#757575"
+            android:layout_marginTop="@dimen/small"
+            android:layout_marginStart="@dimen/small"
+            android:layout_marginEnd="@dimen/small"
+            android:layout_marginBottom="@dimen/small" />
 
         <ImageView
             android:id="@+id/imageView7"
@@ -277,8 +283,26 @@
             android:layout_marginStart="207dp"
             android:layout_marginEnd="@dimen/small"
             android:layout_marginBottom="@dimen/small"
-            android:contentDescription="@string/sanral_logo"/>
+            android:contentDescription="@string/sanral_logo" />
 
+        <ImageButton
+            android:id="@+id/unallocatedPhotoAdd"
+            android:layout_width="58dp"
+            android:layout_height="49dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="160dp"
+            android:layout_marginEnd="160dp"
+            android:layout_marginBottom="90dp"
+            android:background="@drawable/buttonshape"
+            android:contentDescription="@string/add_a_photo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/ic_add_a_photo"
+            android:visibility="gone" />
 
     </RelativeLayout>
 
@@ -321,6 +345,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/data2_loading"
         app:layout_constraintVertical_bias="0.0" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

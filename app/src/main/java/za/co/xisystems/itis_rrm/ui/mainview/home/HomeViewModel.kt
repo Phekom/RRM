@@ -12,7 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
@@ -31,14 +31,14 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class HomeViewModel(
     private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository,
-    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
+    dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     application: Application
 ) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
     private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
-    private var ioContext = Dispatchers.IO + Job(superJob)
-    private var mainContext = Dispatchers.Main + Job(superJob)
+    private var ioContext = dispatchers.io() + Job(superJob)
+    private var mainContext = dispatchers.main() + Job(superJob)
     var healthState: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
@@ -53,8 +53,6 @@ class HomeViewModel(
     init {
         viewModelScope.launch(mainContext) {
 
-            bigSyncDone = offlineDataRepository.bigSyncDone
-
             databaseStatus = offlineDataRepository.databaseStatus
 
             databaseState = Transformations.map(databaseStatus) {
@@ -63,20 +61,23 @@ class HomeViewModel(
         }
     }
 
-    fun bigSyncCheck() = viewModelScope.launch(mainContext) {
-        offlineDataRepository.bigSyncCheck()
+    fun bigSyncCheck() = viewModelScope.launch(ioContext) {
+        val result = offlineDataRepository.bigSyncCheck()
+        withContext(mainContext) {
+            bigSyncDone.value = result
+        }
     }
 
-    fun fetchAllData(userId: String) = viewModelScope.launch(mainContext) {
+    fun fetchAllData(userId: String) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
 
         try {
-            withContext(dispatchers.default()) {
-                offlineDataRepository.loadActivitySections(userId)
-                offlineDataRepository.loadLookups(userId)
-                offlineDataRepository.loadContracts(userId)
-                offlineDataRepository.loadTaskList(userId)
-                offlineDataRepository.loadWorkflows(userId)
-            }
+            offlineDataRepository.loadActivitySections(userId)
+            offlineDataRepository.loadContracts(userId)
+
+            offlineDataRepository.loadLookups(userId)
+            offlineDataRepository.loadTaskList(userId)
+            offlineDataRepository.loadWorkflows(userId)
+
             withContext(mainContext) {
                 databaseState.postValue(XIResult.Success(true))
             }
@@ -88,7 +89,8 @@ class HomeViewModel(
                 )
                 val fetchFail =
                     XIResult.Error(
-                        exception, "Failed to fetch contracts:" +
+                        exception,
+                        "Failed to fetch contracts:" +
                             " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                     )
                 databaseState.postValue(fetchFail)

@@ -17,7 +17,7 @@ import za.co.xisystems.itis_rrm.domain.SectionBorder
 interface ProjectSectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSections(section: ProjectSectionDTO)
+    fun insertSections(section: ProjectSectionDTO)
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId = :sectionId")
     fun checkSectionExists(sectionId: String): Boolean
@@ -45,7 +45,7 @@ interface ProjectSectionDao {
             ":kmMarker - (endKm + 0.0001) as pointLocation FROM PROJECT_SECTION_TABLE " +
             "WHERE route = :route AND pointLocation > 0 ORDER BY pointLocation LIMIT 1"
     )
-    suspend fun findRealSectionStartKm(
+    fun findRealSectionStartKm(
         route: String,
         kmMarker: Double
     ): SectionMarker?
@@ -55,7 +55,7 @@ interface ProjectSectionDao {
             "FROM PROJECT_SECTION_TABLE WHERE route = :route AND endKm - :kmMarker > 0 " +
             "ORDER BY (endkm - :kmMarker) LIMIT 1"
     )
-    suspend fun findRealSectionEndKm(
+    fun findRealSectionEndKm(
         route: String,
         kmMarker: Double
     ): SectionMarker
@@ -103,8 +103,8 @@ interface ProjectSectionDao {
 
     @Query(
         "SELECT section, startKm as kmMarker FROM PROJECT_SECTION_TABLE " +
-                "WHERE route = :linearId AND direction = :direction AND " +
-                ":pointLocation < startKm ORDER BY (startKm - :pointLocation) LIMIT 1"
+            "WHERE route = :linearId AND direction = :direction AND " +
+            ":pointLocation < startKm ORDER BY (startKm - :pointLocation) LIMIT 1"
     )
     fun findClosestStartKm(linearId: String, pointLocation: Double, direction: String): SectionBorder?
 

@@ -19,7 +19,7 @@ interface ContractDao {
     fun saveAllContracts(contracts: List<ContractDTO>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertContract(contract: ContractDTO)
+    fun insertContract(contract: ContractDTO)
 
     @Query("SELECT * FROM CONTRACTS_TABLE ORDER BY contractNo")
     fun getAllContracts(): LiveData<List<ContractDTO>>

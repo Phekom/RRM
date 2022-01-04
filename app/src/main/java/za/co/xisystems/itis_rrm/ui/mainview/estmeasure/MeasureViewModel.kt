@@ -8,12 +8,29 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.app.Application
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.*
-import kotlinx.coroutines.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.*
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
@@ -35,7 +52,6 @@ class MeasureViewModel(
     private var job: Job = SupervisorJob()
     private var viewModelContext = job + Dispatchers.Main + uncaughtExceptionHandler
     val galleryBackup: MutableLiveData<String> = MutableLiveData()
-
     val offlineUserTaskList: Deferred<LiveData<List<ToDoListEntityDTO>>> by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
@@ -55,6 +71,10 @@ class MeasureViewModel(
     private val photoUtil = PhotoUtil.getInstance(getApplication())
 
     init {
+        initWorkflowChannels()
+    }
+
+    private fun initWorkflowChannels() {
         viewModelScope.launch(viewModelContext) {
             workflowStatus = measureCreationDataRepository.workflowStatus
             launch(mainContext) {
@@ -68,6 +88,10 @@ class MeasureViewModel(
                 } as MutableLiveData<XIResult<String>?>
             }
         }
+    }
+
+    companion object {
+        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
     }
 
     private fun setGalleryMeasure(value: JobItemMeasureDTO) {
@@ -152,14 +176,12 @@ class MeasureViewModel(
         activityId: Int,
         activityId2: Int,
         activityId3: Int
-    ): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO + uncaughtExceptionHandler) {
-            measureCreationDataRepository.getJobMeasureForActivityId(
-                activityId,
-                activityId2,
-                activityId3
-            ).distinctUntilChanged()
-        }
+    ): LiveData<List<JobItemEstimateDTO>> = withContext(Dispatchers.IO + uncaughtExceptionHandler) {
+        return@withContext measureCreationDataRepository.getJobMeasureForActivityId(
+            activityId,
+            activityId2,
+            activityId3
+        ).distinctUntilChanged()
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
@@ -212,6 +234,11 @@ class MeasureViewModel(
         itemMeasureJob: JobDTO
     ): Job = viewModelScope.launch(ioContext) {
 
+        // Flush any previous results
+        withContext(mainContext) {
+            resetWorkState()
+        }
+
         try {
             measureCreationDataRepository.saveMeasurementItems(
                 userId,
@@ -221,6 +248,11 @@ class MeasureViewModel(
                 mSures,
                 activity,
                 itemMeasureJob
+            )
+
+            measureCreationDataRepository.updateMeasureCreatedInfo(
+                userId,
+                jobId
             )
         } catch (e: Exception) {
             workflowState.postValue(XIResult.Error(e, e.message!!))
@@ -306,12 +338,15 @@ class MeasureViewModel(
      * prevent a leak of this ViewModel.
      */
     override fun onCleared() {
+        workflowState = MutableLiveData()
         workflowStatus = MutableLiveData()
         superJob.cancelChildren()
         super.onCleared()
     }
 
-    companion object {
-        const val galleryError = "Failed to retrieve itemMeasure for Gallery"
+    private fun resetWorkState() {
+        workflowState = MutableLiveData()
+        workflowStatus = MutableLiveData()
+        initWorkflowChannels()
     }
 }

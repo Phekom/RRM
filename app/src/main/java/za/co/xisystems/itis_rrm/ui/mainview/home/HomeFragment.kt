@@ -28,26 +28,23 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
+import androidx.navigation.Navigation
 import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -55,14 +52,12 @@ import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import kotlin.coroutines.cancellation.CancellationException
 
-class HomeFragment : BaseFragment(), DIAware {
+class HomeFragment : BaseFragment() {
 
     override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
@@ -70,7 +65,6 @@ class HomeFragment : BaseFragment(), DIAware {
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private var userDTO: UserDTO? = null
-    private var uiScope = UiLifecycleScope()
     private lateinit var synchJob: Job
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
@@ -88,17 +82,10 @@ class HomeFragment : BaseFragment(), DIAware {
         }
     }
 
+    private val pvComplete = HashMap<String, Runnable>()
+
     companion object {
         val TAG: String = HomeFragment::class.java.simpleName
-        private const val progressComplete = -100.0f
-    }
-
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                lifecycle.addObserver(uiScope)
-            }
-        }
     }
 
     private fun homeDiagnostic() {
@@ -113,7 +100,8 @@ class HomeFragment : BaseFragment(), DIAware {
                     val xiErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     crashGuard(
                         throwable = xiErr,
-                        refreshAction = { this@HomeFragment.retrySections() })
+                        refreshAction = { this@HomeFragment.retrySections() }
+                    )
                 } finally {
                     ui.group2Loading.visibility = View.GONE
                 }
@@ -126,7 +114,7 @@ class HomeFragment : BaseFragment(), DIAware {
 
     private fun retrySections() {
         IndefiniteSnackbar.hide()
-        uiScope.launch(uiScope.coroutineContext) {
+        uiScope.launch {
             acquireUser()
             getOfflineSectionItems()
         }
@@ -165,7 +153,8 @@ class HomeFragment : BaseFragment(), DIAware {
             val connectErr = XIResult.Error(t, errorMessage)
             crashGuard(
                 throwable = connectErr,
-                refreshAction = { this.retryAcquireUser() })
+                refreshAction = { this.retryAcquireUser() }
+            )
         }
     }
 
@@ -181,8 +170,8 @@ class HomeFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        uiScope.onCreate()
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
+        homeViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[HomeViewModel::class.java]
         setHasOptionsMenu(true)
     }
 
@@ -229,17 +218,12 @@ class HomeFragment : BaseFragment(), DIAware {
         ui.imageView7.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        homeViewModel = ViewModelProvider(this.requireActivity(), factory).get(HomeViewModel::class.java)
-        homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
-            Timber.d("Synced: $it")
-            if (!it) {
-                promptUserToSync()
-            }
-        })
+        ui.unallocatedPhotoAdd.setOnClickListener {
+            val directions = HomeFragmentDirections.actionNavHomeToNavUnallocated()
+            Navigation.findNavController(this@HomeFragment.requireView())
+                .navigate(directions)
+        }
     }
 
     /**
@@ -255,51 +239,47 @@ class HomeFragment : BaseFragment(), DIAware {
         super.onDestroyView()
         // prevent viewBinding from leaking
         _ui = null
-        uiScope.destroy()
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
     private fun initProgressViews() {
-
         ui.pvContracts.setOnProgressChangeListener {
-            when {
-                it > 0f -> ui.pvContracts.labelText = "projects ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvContracts, "projects synched")
-                }
-            }
-            ui.pvSections.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
+            progressListener(it, ui.pvContracts, "projects")
         }
         ui.pvTasks.setOnProgressChangeListener {
-            when {
-                it > 0f -> ui.pvTasks.labelText = "tasks ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvTasks, "tasks synched")
-                }
-            }
-            ui.pvContracts.visibility = View.GONE
-            ui.pvSections.visibility = View.GONE
+            progressListener(it, ui.pvTasks, "tasks")
         }
         ui.pvSections.setOnProgressChangeListener {
-            when {
-                it > 0 -> ui.pvSections.labelText = "sections ${it.toInt()}%"
-                it == progressComplete -> {
-                    maxOutPv(ui.pvSections, "goods synched")
-                }
-            }
-            ui.pvContracts.visibility = View.GONE
-            ui.pvTasks.visibility = View.GONE
+            progressListener(it, ui.pvSections, "sections")
         }
     }
 
-    private fun maxOutPv(progressView: ProgressView, completionMessage: String) {
-        if (progressView.progress >= 0) {
-            progressView.progress = progressView.max
-            progressView.labelText = completionMessage
-            Handler(Looper.getMainLooper()).postDelayed({
-                progressView.visibility = View.GONE
-            }, TWO_SECONDS)
+    private fun progressListener(it: Float, progressView: ProgressView, label: String) {
+        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synched") }
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(
+            {
+                pvComplete[label]?.run()
+            },
+            THIRTY_SECONDS
+        )
+        when {
+            it > 0f && it <= progressView.max -> {
+                progressView.labelText = "$label ${it.toInt()}%"
+                handler.removeCallbacks(pvComplete[label]!!)
+            }
+        }
+    }
+
+    private fun maxOutPv(progressView: ProgressView, completionMessage: String): Job {
+        return uiScope.launch(uiScope.coroutineContext) {
+            if (progressView.progress >= 0) {
+                progressView.progress = progressView.max
+                progressView.labelText = completionMessage
+                Handler(Looper.getMainLooper()).postDelayed({
+                    progressView.visibility = View.GONE
+                }, TWO_SECONDS)
+            }
         }
     }
 
@@ -311,7 +291,7 @@ class HomeFragment : BaseFragment(), DIAware {
 
     private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
-            homeViewModel.bigSyncDone.observeOnce(viewLifecycleOwner, {
+            homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
                 Timber.d("Synced: $it")
                 if (!it) {
                     promptUserToSync()
@@ -424,13 +404,13 @@ class HomeFragment : BaseFragment(), DIAware {
                     showProgress()
                     extensionToast(
                         message = "Sync Complete",
-                        style = SUCCESS,
+                        style = ToastStyle.SUCCESS,
                         position = BOTTOM,
                         duration = LONG
                     )
                 }
                 is XIResult.Status -> {
-                    extensionToast(message = result.message, style = INFO, position = BOTTOM)
+                    extensionToast(message = result.message, style = ToastStyle.INFO, position = BOTTOM)
                 }
                 is XIResult.Error -> {
                     synchJob.cancel(CancellationException(result.message))
@@ -439,7 +419,7 @@ class HomeFragment : BaseFragment(), DIAware {
                     extensionToast(
                         title = "Sync Failed",
                         message = result.message,
-                        style = ERROR
+                        style = ToastStyle.ERROR
                     )
 
                     crashGuard(
@@ -499,7 +479,7 @@ class HomeFragment : BaseFragment(), DIAware {
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         if (networkEnabled) {
             try {
-
+                ui.unallocatedPhotoAdd.visibility = View.GONE
                 toast("Data Loading")
                 resetProgressViews()
                 showProgress(true)
@@ -516,6 +496,8 @@ class HomeFragment : BaseFragment(), DIAware {
                 )
             } finally {
                 homeViewModel.resetSyncStatus()
+                // Gallery is deferred until the new year
+                ui.unallocatedPhotoAdd.visibility = View.GONE
             }
         } else {
             noInternetWarning()

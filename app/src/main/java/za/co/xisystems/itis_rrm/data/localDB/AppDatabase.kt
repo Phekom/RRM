@@ -16,7 +16,6 @@ import androidx.room.TypeConverters
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
-import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.data.localDB.dao.ActivityDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ContractDao
@@ -31,6 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemEstimatePhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasureDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobItemMeasurePhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobSectionDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.JobTypeDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.LookupDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.LookupOptionDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.PrimaryKeyValueDao
@@ -40,6 +40,7 @@ import za.co.xisystems.itis_rrm.data.localDB.dao.ProjectSectionDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.SectionItemDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.SectionPointDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.ToDoGroupsDao
+import za.co.xisystems.itis_rrm.data.localDB.dao.UnallocatedPhotoDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.UserDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.UserRoleDao
 import za.co.xisystems.itis_rrm.data.localDB.dao.VoItemDao
@@ -62,6 +63,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
@@ -72,6 +74,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
@@ -89,9 +92,10 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
  */
 
 @Database(
-    entities = [JobDTO::class, UserDTO::class, UserRoleDTO::class,
+    entities = [
+        JobDTO::class, UserDTO::class, UserRoleDTO::class,
         ProjectItemDTO::class, ItemDTOTemp::class, JobDTOTemp::class,
-        ContractDTO::class, VoItemDTO::class, ProjectDTO::class,
+        ContractDTO::class, VoItemDTO::class, ProjectDTO::class, JobTypeEntityDTO::class,
         ProjectSectionDTO::class, PrimaryKeyValueDTO::class, LookupOptionDTO::class,
         LookupDTO::class, ItemSectionDTO::class, WorkFlowDTO::class,
         SectionPointDTO::class, WorkFlowRouteDTO::class, JobSectionDTO::class,
@@ -99,11 +103,11 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         JobItemEstimatesPhotoDTO::class, JobItemMeasurePhotoDTO::class, JobItemEstimateDTO::class,
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
-        WorkFlowsDTO::class, WfWorkStepDTO::class
+        WorkFlowsDTO::class, WfWorkStepDTO::class, UnallocatedPhotoDTO::class
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 23
+    version = 28
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -115,17 +119,19 @@ abstract class AppDatabase : RoomDatabase() {
         private const val MAX_DB_VERSIONS = 999_999_999
 
         @Volatile
-        private var instance: AppDatabase? = null
+        internal var instance: AppDatabase? = null
         private val LOCK = Any()
         private var secretphrase: String? = null
+
+        @JvmStatic
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
             secretphrase = armoury.readPassphrase()
-            Timber.e("Passphrase: $secretphrase")
-            instance ?: buildDatabase(context.applicationContext).also {
+            instance ?: buildDatabase(context).also {
                 instance = it
             }
         }
 
+        @JvmStatic
         private fun buildDatabase(context: Context) =
             when (BuildConfig.DEBUG) {
                 true -> {
@@ -154,11 +160,12 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
+        @JvmStatic
         fun closeDown() {
-            if (instance != null && instance!!.isOpen) {
-                instance!!.close()
-                instance = null
+            if (instance?.isOpen == true) {
+                instance?.close()
             }
+            instance = null
         }
     }
 
@@ -189,7 +196,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getEstimateWorkPhotoDao(): EstimateWorkPhotoDao
     abstract fun getSectionItemDao(): SectionItemDao
     abstract fun getItemDaoTemp(): ItemDaoTemp
+    abstract fun getJobTypeDao(): JobTypeDao
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
+    abstract fun getUnallocatedPhotoDao(): UnallocatedPhotoDao
 }
-

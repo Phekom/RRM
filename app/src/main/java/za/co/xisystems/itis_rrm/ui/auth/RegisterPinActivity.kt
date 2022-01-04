@@ -6,11 +6,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -51,8 +49,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
+    private lateinit var binding: ActivityRegisterPinBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterPinBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -61,13 +65,17 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterPinBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register_pin)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
         viewModel.authListener = this
 
         Coroutines.main {
+            binding.registerPinbutton.setOnClickListener {
+                val enterPin = binding.enterPinEditText
+                val confirmPin = binding.confirmPinEditText
+
+                viewModel.onRegPinButtonClick(it, enterPin, confirmPin)
+            }
+
             val loggedInUser = viewModel.user.await()
             loggedInUser.observe(this, { user ->
                 // Register the user
@@ -79,11 +87,11 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
                     }
                 }
             })
-            serverTextView.setOnClickListener {
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(appContext)
             }
         }
@@ -142,14 +150,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
         } catch (t: Throwable) {
             val xiErr = Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
-                  XIErrorHandler.handleError(
+                XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),
                     throwable = xiErr,
                     shouldShowSnackBar = true,
                     refreshAction = { this.retryGotoMain() }
                 )
             } else {
-                  XIErrorHandler.handleError(
+                XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),
                     throwable = xiErr,
                     shouldToast = true
@@ -164,12 +172,12 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         toast("You are Logged in as ${userDTO.userName}")
         gotoMainActivity()
     }
@@ -179,9 +187,9 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

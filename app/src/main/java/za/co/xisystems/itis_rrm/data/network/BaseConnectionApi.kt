@@ -7,6 +7,7 @@
 package za.co.xisystems.itis_rrm.data.network
 
 import com.google.gson.JsonObject
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.logging.HttpLoggingInterceptor
@@ -34,7 +35,7 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
 import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
-import java.util.concurrent.TimeUnit
+import za.co.xisystems.itis_rrm.data.network.responses.WorkflowUpdateResponse
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -44,7 +45,6 @@ const val BASE_URL = BuildConfig.API_HOST
 interface BaseConnectionApi {
 
     @FormUrlEncoded
-
     @POST("Register")
     suspend fun userRegister(
         @Field("device") device: String,
@@ -55,7 +55,6 @@ interface BaseConnectionApi {
     ): Response<AuthResponse>
 
     @FormUrlEncoded
-
     @POST("HealthCheck")
     suspend fun healthCheck(
         @Field("UserLogon") userLogon: String
@@ -107,14 +106,12 @@ interface BaseConnectionApi {
     ): Response<ToDoListGroupsResponse>
 
     @FormUrlEncoded
-
     @POST("GetRRMJob")
     suspend fun getJobsForApproval(
         @Field("JobId") jobId: String
     ): Response<JobResponse>
 
     @FormUrlEncoded
-
     @POST("GetRrmJobPhotoEstimate")
     suspend fun getPhotoEstimate(
         @Field("FileName") fileName: String
@@ -155,6 +152,36 @@ interface BaseConnectionApi {
         @Field("UserId") userId: String
     ): Response<RouteSectionPointResponse>
 
+    @POST("UpdateApprovalInfo")
+    suspend fun updateApprovalInfo(
+        @Body updateApprovalRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkStartInfo")
+    suspend fun updateWorkStartInfo(
+        @Body updateWorkStartRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkEndInfo")
+    suspend fun updateWorkEndInfo(
+        @Body updateWorkEndRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateWorkStateInfo")
+    suspend fun updateWorkStateInfo(
+        @Body updateWorkStateRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateMeasureCreatedInfo")
+    suspend fun updateMeasureCreatedInfo(
+        @Body updateMeasureCreatedRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
+    @POST("UpdateMeasureApprovalInfo")
+    suspend fun updateMeasureApprovalInfo(
+        @Body updateMeasureApprovalRequest: JsonObject
+    ): Response<WorkflowUpdateResponse>
+
     @POST("SaveRrmJob")
     suspend fun sendJobsForApproval(
         @Body job: JsonObject
@@ -171,10 +198,12 @@ interface BaseConnectionApi {
         ): BaseConnectionApi {
             val okkHttpclient = OkHttpClient
                 .Builder().apply {
+                    callTimeout(10, TimeUnit.MINUTES)
                     readTimeout(5, TimeUnit.MINUTES)
                     writeTimeout(5, TimeUnit.MINUTES)
                     connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
+                        .pingInterval(10000, TimeUnit.MILLISECONDS)
 
                     addInterceptor(networkConnectionInterceptor)
                     addInterceptor { chain ->
@@ -196,12 +225,14 @@ interface BaseConnectionApi {
             }
 
             return Retrofit.Builder()
-                // .addCallAdapterFactory(NetworkResponseAdapterFactory())
+                //.addCallAdapterFactory(NetworkResponseAdapterFactory())
                 .client(okkHttpclient.build())
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(BaseConnectionApi::class.java)
         }
+
+
     }
 }

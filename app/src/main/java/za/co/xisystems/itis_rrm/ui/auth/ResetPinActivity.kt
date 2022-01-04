@@ -13,24 +13,26 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import www.sanju.motiontoast.MotionToast
-import za.co.xisystems.itis_rrm.R
+import www.sanju.motiontoast.MotionToastStyle
 import za.co.xisystems.itis_rrm.R.font
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.hide
+import za.co.xisystems.itis_rrm.utils.hideKeyboard
+import za.co.xisystems.itis_rrm.utils.show
+import za.co.xisystems.itis_rrm.utils.toast
 
 class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     companion object {
@@ -48,9 +50,11 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.ACCESS_FINE_LOCATION
     )
+    private val binding: ActivityResetPinBinding by viewBinding(ActivityResetPinBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -59,10 +63,7 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityResetPinBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_reset_pin)
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
+        viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
         viewModel.setupAuthListener(this)
 
         Coroutines.main {
@@ -70,34 +71,44 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
             loggedInUser.observe(this, { user ->
                 // Register the user
                 if (user != null) {
-                    scanForPinUpdate()
-                    serverTextView.setOnClickListener {
+                    binding.resetPinbutton.setOnClickListener { view ->
+                        viewModel.onResetPinButtonClick(
+                            view = view,
+                            oldPin = binding.enterPinEditText.text?.toString(),
+                            newPin = binding.enterNewPinEditText.text?.toString(),
+                            confirmNewPin = binding.confirmPinEditText.text?.toString()
+                        )
+                    }
+                    binding.serverTextView.setOnClickListener {
                         ToastUtils().toastServerAddress(appContext)
                     }
 
-                    buildFlavorTextView.setOnClickListener {
+                    binding.buildFlavorTextView.setOnClickListener {
                         ToastUtils().toastVersion(appContext)
                     }
+                    scanForPinUpdate()
                 }
             })
         }
     }
 
     private fun scanForPinUpdate() {
-        viewModel.validPin.observeOnce(this) {
+        viewModel.validPin.observe(this) {
             it?.let {
                 when (it) {
                     true -> {
-                        MotionToast.createColorToast(
-                            context = this@ResetPinActivity,
-                            message = "PIN updated successfully",
-                            style = MotionToast.TOAST_SUCCESS,
-                            position = MotionToast.GRAVITY_BOTTOM,
-                            duration = MotionToast.LONG_DURATION,
-                            font = ResourcesCompat.getFont(this@ResetPinActivity, font.helvetica_regular)
-                        )
-                        viewModel.validPin.value = false
-                        getToLogin()
+                        Coroutines.ui {
+                            MotionToast.createColorToast(
+                                context = this@ResetPinActivity,
+                                message = "PIN updated successfully",
+                                style = MotionToastStyle.SUCCESS,
+                                position = MotionToast.GRAVITY_BOTTOM,
+                                duration = MotionToast.LONG_DURATION,
+                                font = ResourcesCompat.getFont(this@ResetPinActivity, font.helvetica_regular)
+                            )
+                            viewModel.validPin.value = false
+                            getToLogin()
+                        }
                     }
                     else -> {
                         getToLogin()
@@ -167,14 +178,14 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        toast("You are logged in as ${userDTO.userName}")
+        toast("You have registered a new pin for ${userDTO.userName}")
     }
 
     override fun onWarn(message: String) {
@@ -182,16 +193,18 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
-        hideKeyboard()
-        MotionToast.createColorToast(
-            this,
-            message = message,
-            style = MotionToast.TOAST_ERROR,
-            position = MotionToast.GRAVITY_BOTTOM,
-            duration = MotionToast.LONG_DURATION,
-            font = ResourcesCompat.getFont(this, font.helvetica_regular)
-        )
+        Coroutines.ui {
+            binding.loading.hide()
+            hideKeyboard()
+            MotionToast.createColorToast(
+                this,
+                message = message,
+                style = MotionToastStyle.ERROR,
+                position = MotionToast.GRAVITY_BOTTOM,
+                duration = MotionToast.LONG_DURATION,
+                font = ResourcesCompat.getFont(this, font.helvetica_regular)
+            )
+        }
     }
 
     override fun onSignOut(userDTO: UserDTO) {

@@ -2,13 +2,14 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.Dialog
 import android.net.Uri
+import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.Navigation
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.measure_estimate_list_item.*
+import com.xwray.groupie.viewbinding.BindableItem
+import java.io.File
 import kotlinx.coroutines.launch
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.databinding.MeasureEstimateListItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET
 import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
@@ -16,7 +17,6 @@ import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
 
 open class CardMeasureItem(
     val activity: FragmentActivity?,
@@ -26,7 +26,7 @@ open class CardMeasureItem(
     val text: String,
     val measureViewModel: MeasureViewModel,
     var uiScope: UiLifecycleScope
-) : Item() {
+) : BindableItem<MeasureEstimateListItemBinding>() {
 
     init {
         extras[INSET_TYPE_KEY] = INSET
@@ -34,13 +34,13 @@ open class CardMeasureItem(
 
     override fun getLayout() = R.layout.measure_estimate_list_item
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    override fun bind(viewBinding: MeasureEstimateListItemBinding, position: Int) {
+        viewBinding.apply {
             jobNo.text = text
-            measure_estimation_qty_textView.text = qty
-            measure_estimation_line_amount.text = activity?.getString(R.string.pair, "R", rate)
+            measureEstimationQtyTextView.text = qty
+            measureEstimationLineAmount.text = activity?.getString(R.string.pair, "R", rate)
 
-            measurements_photo_image.setOnClickListener {
+            measurementsPhotoImage.setOnClickListener {
                 Coroutines.main {
                     val measurePhoto =
                         measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
@@ -51,7 +51,7 @@ open class CardMeasureItem(
             updateMeasureImage()
         }
 
-        viewHolder.itemView.setOnLongClickListener {
+        viewBinding.root.setOnLongClickListener {
             Coroutines.main {
                 measureViewModel.deleteItemMeasureFromList(itemMeasureId)
                 measureViewModel.deleteItemMeasurePhotoFromList(itemMeasureId)
@@ -60,7 +60,7 @@ open class CardMeasureItem(
         }
     }
 
-    private fun GroupieViewHolder.updateMeasureImage() {
+    private fun MeasureEstimateListItemBinding.updateMeasureImage() {
         Coroutines.main {
 
             val photoPaths = measureViewModel.getJobMeasureItemsPhotoPath(itemMeasureId)
@@ -68,13 +68,13 @@ open class CardMeasureItem(
             if (!photoPaths.isNullOrEmpty()) {
                 val measurePhoto = photoPaths[0]
 
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root.context)
                     .load(Uri.fromFile(File(measurePhoto)))
                     .placeholder(R.drawable.logo_new_medium)
                     .error(R.drawable.no_image)
-                    .into(measurements_photo_image)
+                    .into(measurementsPhotoImage)
 
-                measurements_photo_image.setOnClickListener { view ->
+                measurementsPhotoImage.setOnClickListener { view ->
                     uiScope.launch(uiScope.coroutineContext) {
                         measureViewModel.generateGalleryUI(itemMeasureId)
                     }
@@ -86,10 +86,10 @@ open class CardMeasureItem(
                         .navigate(directions)
                 }
             } else {
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root.rootView.context)
                     .load(R.drawable.logo_new_medium)
                     .error(R.drawable.no_image)
-                    .into(measurements_photo_image)
+                    .into(measurementsPhotoImage)
             }
         }
     }
@@ -105,5 +105,9 @@ open class CardMeasureItem(
                 .into(zoomageView)
             dialog.show()
         }
+    }
+
+    override fun initializeViewBinding(view: View): MeasureEstimateListItemBinding {
+        return MeasureEstimateListItemBinding.bind(view)
     }
 }

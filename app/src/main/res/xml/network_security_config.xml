@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config>
+        <domain includeSubdomains="true">nra.co.za</domain>
+        <pin-set expiration="2022-12-31">
+            <pin digest="SHA-256">4Zb0CcBIcA/7amJC8oiprgG+1I3RZV8nVqqGkuoD8Gk=</pin>
+            <!-- backup pin -->
+            <pin digest="SHA-256">S0mHTmqv2QhJEfy5vyPVERSnyMEliJzdC8RXduOjhAs=</pin>
+        </pin-set>
+    </domain-config>
+</network-security-config>

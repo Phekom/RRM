@@ -13,20 +13,21 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.Date
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
-import za.co.xisystems.itis_rrm.R.drawable
-import za.co.xisystems.itis_rrm.R.layout
-import za.co.xisystems.itis_rrm.R.string
+import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -42,6 +43,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.databinding.FragmentJobInfoBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.ShimmerUtils
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
@@ -54,6 +56,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFact
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
+import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
@@ -97,7 +100,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     popViewOnJobSubmit(flowDirection.value, jiNo)
                 }
                 else -> {
-                    handleOthers(result, retryAction = { retryWork() })
+                    handleOthers(result, retryAction = { this@JobInfoFragment.retryWork() })
                 }
             }
         }
@@ -145,7 +148,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(string.jobinfo_item_title)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val directions =
@@ -165,7 +168,11 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (activity as MainActivity).supportActionBar?.title = getString(string.jobinfo_item_title)
+        (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
+
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)
+                .get(ApproveJobsViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -177,12 +184,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onStart() {
+        super.onStart()
         Coroutines.main {
 
             initVeiledRecyclerView()
@@ -201,26 +204,26 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 Builder(
                     activity // , android.R.style.Theme_DeviceDefault_Dialog
                 )
-            declineBuilder.setTitle(string.confirm)
-            declineBuilder.setIcon(drawable.ic_warning)
-            declineBuilder.setMessage(string.are_you_sure_you_want_to_decline)
+            declineBuilder.setTitle(R.string.confirm)
+            declineBuilder.setIcon(R.drawable.ic_warning)
+            declineBuilder.setMessage(R.string.are_you_sure_you_want_to_decline)
             // Yes button
             declineBuilder.setPositiveButton(
-                string.yes
+                R.string.yes
             ) { _, _ ->
-                if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
+                if (this.requireActivity().isConnected) {
                     progressButton = ui.declineJobButton
                     moveJobToNextWorkflow(FAIL)
                 } else {
                     extensionToast(
-                        message = getString(string.no_connection_detected),
+                        message = getString(R.string.no_connection_detected),
                         style = NO_INTERNET
                     )
                 }
             }
             // No button
             declineBuilder.setNegativeButton(
-                string.no
+                R.string.no
             ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
@@ -235,13 +238,13 @@ class JobInfoFragment : BaseFragment(), DIAware {
             val approvalBuilder = Builder(
                 activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
-            approvalBuilder.setTitle(string.confirm)
-            approvalBuilder.setIcon(drawable.ic_approve)
-            approvalBuilder.setMessage(string.are_you_sure_you_want_to_approve)
+            approvalBuilder.setTitle(R.string.confirm)
+            approvalBuilder.setIcon(R.drawable.ic_approve)
+            approvalBuilder.setMessage(R.string.are_you_sure_you_want_to_approve)
 
             // Yes button
             approvalBuilder.setPositiveButton(
-                string.yes
+                R.string.yes
             ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
                     progressButton = ui.approveJobButton
@@ -249,7 +252,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     moveJobToNextWorkflow(NEXT)
                 } else {
                     extensionToast(
-                        message = getString(string.no_connection_detected),
+                        message = getString(R.string.no_connection_detected),
                         style = NO_INTERNET
                     )
                 }
@@ -257,7 +260,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
             // No button
             approvalBuilder.setNegativeButton(
-                string.no
+                R.string.no
             ) { dialog, _ ->
                 // Do nothing but close dialog
                 dialog.dismiss()
@@ -268,7 +271,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun initApprovalHeader() {
-        approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { job ->
+        approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner, { job ->
             Coroutines.main {
                 getEstimateItems(job.jobDTO.jobId)
                 val description = approveViewModel.getDescForProjectId(job.jobDTO.projectId!!)
@@ -286,7 +289,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     private fun initVeiledRecyclerView() {
         ui.viewEstimationItemsListView.run {
-            setVeilLayout(layout.estimates_item) {
+            setVeilLayout(R.layout.estimates_item) {
                 Toast.makeText(
                     this@JobInfoFragment.requireContext(),
                     "Loading ...",
@@ -311,11 +314,11 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
             when (progressButton == ui.approveJobButton) {
                 true -> {
-                    progressButton.text = getString(string.approve_job_in_progress)
+                    progressButton.text = getString(R.string.approve_job_in_progress)
                     ui.declineJobButton.visibility = View.GONE
                 }
                 else -> {
-                    progressButton.text = getString(string.decline_job_in_progress)
+                    progressButton.text = getString(R.string.decline_job_in_progress)
                     ui.approveJobButton.visibility = View.GONE
                 }
             }
@@ -323,7 +326,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             progressButton.startProgress()
             val user = approveViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
-                approveViewModel.jobApprovalItem.observe(viewLifecycleOwner, { approveJobItem ->
+                approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner, { approveJobItem ->
 
                     when {
                         approveJobItem == null -> {
@@ -353,9 +356,12 @@ class JobInfoFragment : BaseFragment(), DIAware {
                                 position = CENTER
                             )
                             resetButtons()
-                            progressButton.failProgress(getString(string.decline_job))
+                            progressButton.failProgress(getString(R.string.decline_job))
                         }
                         else -> {
+                            approveJobItem.jobDTO.remarks = ui.workflowCommentsEditText.text.trim().toString()
+                            approveJobItem.jobDTO.approvalDate = DateUtil.dateToString(Date())
+                            approveViewModel.backupJobInProgress(approveJobItem.jobDTO)
                             initJobWorkflow(approveJobItem, workflowDirection, userDTO)
                         }
                     }
@@ -369,6 +375,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         workflowDirection: WorkflowDirection,
         userDTO: UserDTO
     ) {
+        val jobId: String =
+            DataConversion.toLittleEndian(job.jobDTO.jobId)!!
         val trackRouteId: String =
             DataConversion.toLittleEndian(job.jobDTO.trackRouteId)!!
         val direction: Int = workflowDirection.value
@@ -381,7 +389,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             try {
                 approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
                 val task = approveViewModel.processWorkflowMove(
-                    userDTO.userId, trackRouteId, description, direction, job.jobDTO.jobId
+                    userDTO.userId, trackRouteId, description, direction, jobId
                 )
                 task.join()
             } catch (t: Throwable) {
@@ -395,18 +403,18 @@ class JobInfoFragment : BaseFragment(), DIAware {
     private fun popViewOnJobSubmit(direction: Int, jiNo: String?) {
         when (direction) {
             NEXT.value -> {
-                progressButton.text = getString(string.approve_job)
+                progressButton.text = getString(R.string.approve_job)
                 extensionToast(
                     title = "Workflow Update",
-                    message = getString(string.job_no_approved, jiNo!!),
+                    message = getString(R.string.job_no_approved, jiNo!!),
                     style = SUCCESS
                 )
             }
             FAIL.value -> {
-                progressButton.text = getString(string.decline_job)
+                progressButton.text = getString(R.string.decline_job)
                 extensionToast(
                     title = "Workflow Update",
-                    message = getString(string.job_declined),
+                    message = getString(R.string.job_declined),
                     style = ToastStyle.DELETE
                 )
             }
@@ -419,7 +427,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     startActivity(home)
                 }
             },
-            Constants.ONE_SECOND
+            Constants.TWO_SECONDS
         )
     }
 
@@ -441,20 +449,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         ui.viewEstimationItemsListView.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(groupAdapter)
+            doOnNextLayout { unVeil() }
         }
-
-        delayedUnveil()
-    }
-
-    private fun delayedUnveil() {
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                if (!activity?.isFinishing!!) {
-                    ui.viewEstimationItemsListView.unVeil()
-                }
-            },
-            Constants.ONE_SECOND
-        )
     }
 
     private fun List<JobItemEstimateDTO>.toEstimatesListItem(): List<EstimatesItem> {

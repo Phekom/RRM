@@ -25,8 +25,12 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
+        // Point and line components add to Total
+        // S McDonald - 22/12/2021
         val estimateCost = job?.jobItemEstimates?.filter { estimate ->
-            estimate.size() == 2 && estimate.qty > 0.0 && estimate.lineRate > 0.0
+            (estimate.jobItemEstimateSize == "Point" && estimate.size() >= 1) or
+                (estimate.jobItemEstimateSize == "Line" && estimate.size() >= 2) and
+                (estimate.qty > 0.0 && estimate.lineRate > 0.0)
         }?.map { it.qty * it.lineRate }?.fold(0.0, { total, item -> total + item }) ?: 0.0
 
         return formatTotalCost(estimateCost)
@@ -47,15 +51,18 @@ object JobUtils {
     fun sort(photos: ArrayList<JobItemEstimatesPhotoDTO>?): ArrayList<JobItemEstimatesPhotoDTO>? {
         // startPhoto = [0] & endPhoto = [1]
         if (photos != null) {
-            Collections.sort(photos, Comparator { o1, o2 ->
-                if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
-                if (o1.isStartPhoto()) return@Comparator -1
-                if (!o2.isStartPhoto()) {
-                    0
-                } else {
-                    1
+            Collections.sort(
+                photos,
+                Comparator { o1, o2 ->
+                    if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
+                    if (o1.isStartPhoto()) return@Comparator -1
+                    if (!o2.isStartPhoto()) {
+                        0
+                    } else {
+                        1
+                    }
                 }
-            })
+            )
         }
         return photos
     }

@@ -19,22 +19,23 @@
         android:label="@string/menu_home">
         <action
             android:id="@+id/action_nav_home_to_nav_approveJobs"
+            app:popUpTo="@id/nav_home"
             app:destination="@id/nav_approveJobs"
             app:enterAnim="@anim/animate_slide_left_enter"
             app:exitAnim="@anim/animate_slide_out_right"
-            app:popUpTo="@id/nav_home"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
         <action
             android:id="@+id/action_nav_home_to_nav_create"
+            app:popUpTo ="@id/nav_home"
             app:destination="@id/nav_create"
             app:enterAnim="@anim/animate_slide_left_enter"
             app:exitAnim="@anim/animate_slide_left_exit"
-            app:popUpTo="@id/nav_home"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
         <action
             android:id="@+id/action_nav_home_to_nav_work"
+            app:popUpTo="@id/nav_home"
             app:destination="@id/nav_work"
             app:enterAnim="@anim/animate_split_enter"
             app:exitAnim="@anim/animate_split_exit"
@@ -42,6 +43,7 @@
             app:popExitAnim="@anim/animate_fade_exit" />
         <action
             android:id="@+id/action_nav_home_to_nav_approveMeasure"
+            app:popUpTo="@id/nav_home"
             app:destination="@id/nav_approveMeasure"
             app:enterAnim="@anim/animate_slide_in_left"
             app:exitAnim="@anim/animate_slide_out_right"
@@ -49,6 +51,7 @@
             app:popExitAnim="@anim/animate_fade_exit" />
         <action
             android:id="@+id/action_nav_home_to_nav_unSubmitted"
+            app:popUpTo="@id/nav_home"
             app:destination="@id/nav_unSubmitted"
             app:enterAnim="@anim/animate_diagonal_right_enter"
             app:exitAnim="@anim/animate_diagonal_right_exit"
@@ -56,9 +59,17 @@
             app:popExitAnim="@anim/animate_fade_exit" />
         <action
             android:id="@+id/action_nav_home_to_nav_estMeasure"
+            app:popUpTo="@id/nav_home"
             app:destination="@id/nav_estMeasure"
             app:enterAnim="@anim/animate_slide_in_left"
             app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_unallocated"
+            app:destination="@id/nav_capture"
+            app:enterAnim="@anim/animate_card_enter"
+            app:exitAnim="@anim/animate_card_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
@@ -74,7 +85,6 @@
             app:enterAnim="@anim/animate_swipe_right_enter"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popUpTo="@id/nav_create"
-            app:popUpToInclusive="true"
             app:exitAnim="@anim/animate_swipe_right_exit"
             app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
@@ -87,10 +97,10 @@
         <action
             android:id="@+id/action_nav_unSubmitted_to_addProjectFragment"
             app:destination="@id/addProjectFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_enter"
             app:popUpTo="@id/nav_unSubmitted" />
     </fragment>
 
@@ -108,16 +118,22 @@
         <action
             android:id="@+id/action_nav_work_to_captureWorkFragment"
             app:destination="@id/captureWorkFragment"
-            app:popUpTo="@id/nav_work"
             app:enterAnim="@anim/animate_in_out_enter"
             app:exitAnim="@anim/animate_in_out_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpToInclusive="false" />
+            app:popExitAnim="@anim/animate_fade_exit" />
         <argument
             android:name="jobId"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_nav_work_to_work_location"
+            app:destination="@id/work_location"
+            app:enterAnim="@anim/animate_slide_down_enter"
+            app:exitAnim="@anim/animate_slide_up_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
+
     </fragment>
 
     <fragment
@@ -207,7 +223,17 @@
             app:enterAnim="@anim/animate_slide_in_left"
             app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/addProjectFragment"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_estimatePhotoFragment_to_nav_capture"
+            app:destination="@id/nav_capture"
+            app:enterAnim="@anim/animate_slide_down_enter"
+            app:exitAnim="@anim/animate_slide_up_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
+
     </fragment>
     <fragment
         android:id="@+id/addProjectFragment"
@@ -236,7 +262,9 @@
             app:enterAnim="@anim/animate_in_out_enter"
             app:exitAnim="@anim/animate_in_out_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/addProjectFragment"/>
+
         <action
             android:id="@+id/action_addProjectFragment_self"
             app:destination="@id/addProjectFragment"
@@ -286,8 +314,8 @@
         <action
             android:id="@+id/action_submitMeasureFragment_to_captureItemMeasurePhotoFragment"
             app:destination="@id/captureItemMeasurePhotoFragment"
-            app:enterAnim="@anim/animate_swipe_right_enter"
-            app:exitAnim="@anim/animate_swipe_right_exit"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
             tools:layout="@layout/fragment_capture_item_measure_photo"
@@ -312,12 +340,23 @@
             app:argType="string"
             app:nullable="true" />
         <action
+            android:id="@+id/action_captureWorkFragment_pop"
+            app:popUpTo="@id/captureWorkFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_captureWorkFragment_self"
+            app:destination="@id/captureWorkFragment"
+            app:popUpTo="@id/captureWorkFragment"
+            app:popUpToInclusive="true" />
+        <action
             android:id="@+id/action_captureWorkFragment_to_nav_work"
             app:destination="@id/nav_work"
-            app:enterAnim="@anim/animate_slide_up_enter"
-            app:exitAnim="@anim/animate_slide_down_exit"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/nav_work"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
@@ -331,10 +370,10 @@
         <action
             android:id="@+id/action_captureItemMeasurePhotoFragment_to_submitMeasureFragment"
             app:destination="@id/submitMeasureFragment"
-            app:enterAnim="@anim/animate_card_enter"
-            app:exitAnim="@anim/animate_card_exit"
-            app:popEnterAnim="@anim/animate_swipe_right_enter"
-            app:popExitAnim="@anim/animate_swipe_right_exit"
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
             app:popUpTo="@id/nav_estMeasure"
             app:popUpToInclusive="false" />
     </fragment>
@@ -351,13 +390,39 @@
         <action
             android:id="@+id/action_measureGalleryFragment_to_measureApprovalFragment"
             app:destination="@id/measureApprovalFragment"
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
+            app:enterAnim="@anim/animate_slide_in_left"
+            app:exitAnim="@anim/animate_slide_out_right"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/measureApprovalFragment"
+            app:popUpToInclusive="true" />
     </fragment>
+
+    <fragment
+        android:id="@+id/work_location"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToFragment"
+        android:label="@string/goto_work_location"
+        tools:layout="@layout/fragment_goto" >
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_work_location_to_captureWorkFragment"
+            app:destination="@id/captureWorkFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_capture"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureGalleryFragment"
+        tools:layout="@layout/fragment_capture_gallery"
+
+        />
+
     <action
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
-        app:popUpTo="@id/nav_home" />
+        app:popUpTo="@id/nav_home"
+        app:launchSingleTop="true" />
+
 </navigation>

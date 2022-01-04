@@ -2,11 +2,9 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest.permission
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -32,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -41,16 +38,9 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.DELETE
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -76,7 +66,6 @@ import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -87,11 +76,12 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import java.util.Date
 import java.util.HashMap
 
-class CaptureWorkFragment : LocationFragment(), DIAware {
+class CaptureWorkFragment : LocationFragment() {
 
     override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private var imageUri: Uri? = null
     private lateinit var workFlowMenuTitles: ArrayList<String>
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<ListSelectorBinding>>
@@ -113,40 +103,31 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
-    private var selectedJobId: String = ""
-    private lateinit var photoUtil: PhotoUtil
-    private var uiScope = UiLifecycleScope()
 
     /**
      * ActivityResultContract for taking a photograph
      */
+
     private val takePicture = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { isSaved ->
         if (isSaved) {
             if (this@CaptureWorkFragment::activeWorks.isInitialized) {
                 imageUri?.let { realUri ->
-                    processAndSetImage(activeWorks, realUri)
+                    processAndSetImage(activeWorks, realUri).also {
+                        this@CaptureWorkFragment.photosDone()
+                    }
                 }
             } else {
                 showWorkIncomplete()
             }
         } else {
             Coroutines.io {
-                photoUtil.deleteImageFile(filenamePath.toString())
+                photoUtil.deleteImageFile(filenamePath.toString()).also {
+                    this@CaptureWorkFragment.photosDone()
+                }
             }
         }
-        this.photosDone()
-    }
-
-    private fun showWorkIncomplete() = Coroutines.main {
-        this@CaptureWorkFragment.extensionToast(
-            title = "Work data is incomplete",
-            message = "Please contact support about this job, and have them restore or remove it",
-            style = DELETE,
-            duration = LONG,
-            position = CENTER
-        )
     }
 
     var stateRestored: Boolean = false
@@ -158,6 +139,16 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         const val ESTIMATE_KEY = "estimateId"
     }
 
+    private fun showWorkIncomplete() = Coroutines.main {
+        this@CaptureWorkFragment.extensionToast(
+            title = "Work data is incomplete",
+            message = "Please contact support about this job, and have them restore or remove it",
+            style = ToastStyle.DELETE,
+            duration = ToastDuration.LONG,
+            position = ToastGravity.CENTER
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         workFlowMenuTitles = ArrayList()
@@ -166,9 +157,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
         groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
-        uiScope.onCreate()
-        photoUtil = PhotoUtil.getInstance(this.requireContext().applicationContext)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
+        workViewModel = ViewModelProvider(this.requireActivity(), factory)[WorkViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -183,7 +173,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.workActionsListView.adapter = null
@@ -193,11 +182,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        workViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(WorkViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
         stateRestored = false
 
         val args: CaptureWorkFragmentArgs by navArgs()
@@ -225,53 +209,47 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     override fun onStart() {
         super.onStart()
-        uiScope.onCreate()
-        viewLifecycleOwner.lifecycle.addObserver(uiScope)
         bindUI()
         pullData()
         this.checkLocationProviders()
     }
 
-    private fun pullData() {
-        uiScope.launch(uiScope.coroutineContext) {
+    private fun pullData() = uiScope.launch(dispatchers.main()) {
 
-                val user = workViewModel.user.await()
-                user.observe(viewLifecycleOwner, { userDTO ->
-                    useR = userDTO
-                })
+        val user = workViewModel.user.await()
+        user.observe(viewLifecycleOwner, { userDTO ->
+            useR = userDTO
+        })
 
-                workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-                    estimateJob?.let {
-                        itemEstimateJob = it
-                    }
-                })
-
-                workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-                    estimate?.let {
-                        itemEstimate = it
-                        if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
-                            getWorkItems(itemEstimate, itemEstimateJob)
-                        }
-                    }
-                })
-
-                workViewModel.historicalWorks.observe(viewLifecycleOwner, {
-                    it?.let { populateHistoricalWorkEstimate(it) }
-                })
+        workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
+            estimateJob?.let {
+                itemEstimateJob = it
             }
-        }
+        })
+
+        workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
+            estimate?.let {
+                itemEstimate = it
+                if (this@CaptureWorkFragment::itemEstimateJob.isInitialized) {
+                    getWorkItems(itemEstimate, itemEstimateJob)
+                }
+            }
+        })
+
+        workViewModel.historicalWorks.observe(viewLifecycleOwner, {
+            it?.let { populateHistoricalWorkEstimate(it) }
+        })
+    }
 
     private fun onRestoreInstanceState(inState: Bundle) {
         inState.run {
             val jobId = getString(JOB_KEY, "")
             val estimateId = getString(ESTIMATE_KEY, "")
             if (jobId.isNotBlank() && estimateId.isNotBlank()) {
-                Coroutines.main {
-                    workViewModel.setWorkItemJob(jobId)
-                    workViewModel.setWorkItem(estimateId)
-                }
-                stateRestored = true
+                workViewModel.setWorkItemJob(jobId)
+                workViewModel.setWorkItem(estimateId)
             }
+            stateRestored = true
         }
     }
 
@@ -281,7 +259,12 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 handleLoadingSuccess(result)
             }
             is XIResult.Error -> {
-                extensionToast(message = result.message, style = ERROR, position = BOTTOM, duration = LONG)
+                extensionToast(
+                    message = result.message,
+                    style = ToastStyle.ERROR,
+                    position = ToastGravity.BOTTOM,
+                    duration = ToastDuration.LONG
+                )
             }
             is XIResult.Status -> {
                 ui.moveWorkflowButton.text = result.message
@@ -365,20 +348,20 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     ) {
         if (requireActivity().isConnected) {
             //  Lets Send to Service
-            estimatePhotos.filter { photo ->
-                photo.photoActivityId == activeWorks.actId
-            }.also {
-                activeWorks.jobEstimateWorksPhotos = arrayListOf(*it.toTypedArray())
-            }
+
+            activeWorks.jobEstimateWorksPhotos = estimatePhotos
+
             activeWorks.estimateId = estimateItem?.estimateId
 
-            sendWorkToService(activeWorks)
+            val comments = ui.commentsEditText.text.toString().trim()
+
+            sendWorkToService(activeWorks, comments)
         } else {
             extensionToast(
                 message = getString(R.string.no_connection_detected),
-                style = NO_INTERNET,
-                position = CENTER,
-                duration = LONG
+                style = ToastStyle.NO_INTERNET,
+                position = ToastGravity.CENTER,
+                duration = ToastDuration.LONG
             )
             ui.moveWorkflowButton.failProgress("Network down ...")
         }
@@ -387,9 +370,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun validationNotice(stringId: Int) {
         extensionToast(
             message = getString(stringId),
-            style = WARNING,
-            position = CENTER,
-            duration = LONG
+            style = ToastStyle.WARNING,
+            position = ToastGravity.CENTER,
+            duration = ToastDuration.LONG
         )
     }
 
@@ -414,17 +397,17 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     }
 
     private fun sendWorkToService(
-        estimateWorksItem: JobEstimateWorksDTO
-    ) = Coroutines.main {
+        estimateWorksItem: JobEstimateWorksDTO,
+        comments: String
+    ) {
         this.toggleLongRunning(true)
         workViewModel.workflowState.removeObserver(jobObserver)
         workViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
         workViewModel.backupWorkSubmission.value = estimateWorksItem
-        val newItemEstimateWorks = setJobWorksLittleEndianGuids(estimateWorksItem)
-        if (newItemEstimateWorks.jobEstimateWorksPhotos.isNullOrEmpty()) {
+        if (estimateWorksItem.jobEstimateWorksPhotos.isNullOrEmpty()) {
             validationNotice(R.string.please_ensure_estimation_items_contain_photos)
         } else {
-            workViewModel.submitWorks(newItemEstimateWorks, requireActivity(), itemEstimateJob)
+            workViewModel.submitWorks(estimateWorksItem, comments, requireActivity(), itemEstimateJob)
         }
     }
 
@@ -446,14 +429,15 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                     workViewModel.resetWorkState()
                     crashGuard(
                         throwable = result,
-                        refreshAction = { this.retryJobSubmission() })
+                        refreshAction = { this.retryJobSubmission() }
+                    )
                 }
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = INFO,
-                        position = BOTTOM,
-                        duration = SHORT
+                        style = ToastStyle.INFO,
+                        position = ToastGravity.BOTTOM,
+                        duration = ToastDuration.SHORT
                     )
                 }
                 is XIResult.Progress -> {
@@ -498,9 +482,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 is XIResult.Status -> {
                     extensionToast(
                         message = result.message,
-                        style = INFO,
-                        position = CENTER,
-                        duration = SHORT
+                        style = ToastStyle.INFO,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.SHORT
                     )
                 }
                 is XIResult.Progress -> {
@@ -512,30 +496,35 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         }
     }
 
-    private fun handleWorkSuccess(result: XIResult.Success<String>) {
+    private fun handleWorkSuccess(result: XIResult.Success<String>) = uiScope.launch(dispatchers.ui()) {
         when (result.data != "JOB_COMPLETE") {
             true -> {
                 ui.imageCollectionView.clearImages()
                 this@CaptureWorkFragment.extensionToast(
                     message = "Work captured",
-                    style = SUCCESS,
-                    position = CENTER,
-                    duration = SHORT
+                    style = ToastStyle.SUCCESS,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.SHORT
                 )
                 ui.moveWorkflowButton.doneProgress("Workflow complete")
                 toggleLongRunning(false)
                 refreshUI()
             }
+            else -> {
+                Timber.d("Unexpected Response: $result")
+            }
         }
     }
 
     private fun refreshUI() {
-        activeWorks.estimateId?.let { estimateId ->
-            Coroutines.main {
-                workViewModel.setWorkItem(estimateId)
-                refreshView()
-            }
-        }
+        Timber.d("RefreshUI -> JobID ${itemEstimateJob.jobId}")
+        Timber.d("RefreshUI -> EstimateID ${itemEstimate.estimateId}")
+        val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentSelf(
+            jobId = itemEstimateJob.jobId,
+            estimateId = itemEstimate.estimateId
+        )
+
+        Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
     }
 
     private fun retryWorkSubmission() {
@@ -544,69 +533,17 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 activeWorks = it
-                sendWorkToService(activeWorks)
+                val comments = ui.commentsEditText.text.toString().trim()
+                sendWorkToService(activeWorks, comments)
             }
         })
     }
 
-    /**
-     * Prepare EstimateWorks entry for transport to the backend
-     * @param works JobEstimateWorksDTO
-     * @return JobEstimateWorksDTO
-     */
-    private suspend fun setJobWorksLittleEndianGuids(
-        works: JobEstimateWorksDTO
-    ): JobEstimateWorksDTO = withContext(Dispatchers.IO) {
-
-        works.setWorksId(DataConversion.toLittleEndian(works.worksId))
-        works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
-        works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
-        if (!works.jobEstimateWorksPhotos.isNullOrEmpty()) {
-            works.jobEstimateWorksPhotos.forEach { ewp ->
-                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
-                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
-            }
-        }
-        return@withContext works
-    }
-
-    private fun refreshView() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-
-            parentFragmentManager.beginTransaction().detach(this).commitNow()
-            parentFragmentManager.beginTransaction().attach(this).commitNow()
-        } else {
-            parentFragmentManager.beginTransaction().detach(this).attach(this).commit()
-        }
-
-        // Await the updated works record
-        Coroutines.main {
-            if (!this@CaptureWorkFragment.isDetached) {
-                workViewModel.workItem.observeOnce(viewLifecycleOwner, {
-                    Timber.d("$it")
-                    val id = STANDARD_WORKFLOW_STEPS
-                    // This part must be Deleted when the Dynamic workflow is complete.
-                    Coroutines.main {
-                        val workCodeData = workViewModel.getWorkFlowCodes(id)
-                        workCodeData.observeOnce(viewLifecycleOwner, {
-                            groupAdapter.notifyItemChanged(2)
-
-                            ui.commentsEditText.setText("")
-                            Timber.d("IsRefresh -> Yes")
-                        })
-                    }
-                })
-            }
-        }
-    }
-
     private fun launchCamera() {
         this@CaptureWorkFragment.takingPhotos()
-        Coroutines.io {
+        uiScope.launch(dispatchers.ui()) {
             imageUri = photoUtil.getUri()!!
-            withContext(Dispatchers.Main.immediate) {
-                takePicture.launch(imageUri)
-            }
+            takePicture.launch(imageUri)
         }
     }
 
@@ -622,7 +559,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 else -> {
                     extensionToast(
                         message = getString(R.string.please_enable_location_services),
-                        style = ERROR, position = CENTER, duration = LONG
+                        style = ToastStyle.ERROR, position = ToastGravity.CENTER, duration = ToastDuration.LONG
                     )
                     this.checkLocationProviders()
                 }
@@ -630,9 +567,9 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         } catch (e: Exception) {
             extensionToast(
                 message = getString(R.string.error_getting_image),
-                style = ERROR,
-                position = CENTER,
-                duration = LONG
+                style = ToastStyle.ERROR,
+                position = ToastGravity.CENTER,
+                duration = ToastDuration.LONG
             )
             Timber.e(e, getString(R.string.error_getting_image))
         } finally {
@@ -658,13 +595,12 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
             withContext(Dispatchers.Main.immediate) {
                 estimateWorksPhotoArrayList.add(photo)
-                withContext(Dispatchers.IO) {
+                withContext(dispatchers.io()) {
                     savePhotoMetadata(
                         estimateWorksPhotoArrayList,
                         itemEstiWorks
                     )
                 }
-
                 groupAdapter.notifyItemChanged(0)
             }
         }
@@ -721,6 +657,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     ) {
         Coroutines.main {
 
+            // Has work been completed on the current job?
             val workDone: Int = getEstimatesCompleted(estimateJob.jobId)
 
             if (workDone == estimateJob.jobItemEstimates.size) {
@@ -740,6 +677,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         estimateWorksData.observe(viewLifecycleOwner, { estimateWorks ->
 
             estimateWorks?.let { workItem ->
+                // Is work completed on this estimate?
                 if (workItem.actId == ActivityIdConstants.EST_WORKS_COMPLETE) {
                     Coroutines.main {
                         val estWorkDone: Int =
@@ -763,17 +701,18 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         })
     }
 
-    private suspend fun submitEstimatesOrPop(
+    private fun submitEstimatesOrPop(
         estWorkDone: Int,
         estimateJobId: String
     ) {
         workViewModel.setWorkItemJob(estimateJobId)
+
         val estimateJobData = workViewModel.workItemJob
 
         estimateJobData.observeOnce(viewLifecycleOwner, { estimateJob ->
             estimateJob?.let { workItemJob ->
                 if (estWorkDone == workItemJob.jobItemEstimates.size) {
-                    collectCompletedEstimates(estimateJob.jobId)
+                    collectCompletedEstimates(workItemJob.jobId)
                 } else {
                     popViewOnWorkSubmit()
                 }
@@ -781,7 +720,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         })
     }
 
-    private fun collectCompletedEstimates(estimateJobId: String) = Coroutines.main {
+    private fun collectCompletedEstimates(estimateJobId: String) = uiScope.launch(dispatchers.main()) {
         this@CaptureWorkFragment.toggleLongRunning(true)
         val iItems = workViewModel.getJobEstimationItemsForJobId(
             estimateJobId,
@@ -798,7 +737,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private fun generateWorkflowSteps(estimateWorksList: List<JobEstimateWorksDTO>) {
         // Remove for Dynamic Workflow
         val id = ActivityIdConstants.JOB_APPROVED
-        Coroutines.main {
+        uiScope.launch(dispatchers.main()) {
             val workflowStepData = workViewModel.getWorkFlowCodes(id)
             workflowStepData.observe(
                 viewLifecycleOwner,
@@ -809,7 +748,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                         estimateWorksList.toWorkStateItems(),
                         workflowSteps
                     )
-                })
+                }
+            )
         }
     }
 
@@ -826,9 +766,10 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         Navigation.findNavController(this.requireView()).navigate(directions)
     }
 
-    private suspend fun submitAllOutStandingEstimates(
+    @Synchronized
+    private fun submitAllOutStandingEstimates(
         estimates: List<JobItemEstimateDTO>?
-    ) = withContext(Dispatchers.Main) {
+    ) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
 
         if (!estimates.isNullOrEmpty()) {
@@ -840,7 +781,7 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
             dialogBuilder.setPositiveButton(
                 R.string.yes
             ) { _, _ ->
-                Coroutines.main {
+                uiScope.launch {
                     pushCompletedEstimates(estimates)
                 }
             }
@@ -863,23 +804,23 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
 
     private suspend fun pushCompletedEstimates(
         estimates: List<JobItemEstimateDTO>
-    ) = withContext(Dispatchers.Main) {
+    ) = withContext(dispatchers.main()) {
         estimateSize = estimates.size
         estimateCount = 0
         errorState = false
 
         workViewModel.backupCompletedEstimates.postValue(estimates)
-        jobSubmission = Coroutines.main {
+        jobSubmission = uiScope.launch {
             workViewModel.workflowState.removeObserver(workObserver)
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIResult.Progress(true))
-            withContext(Dispatchers.Main) {
+            withContext(dispatchers.main()) {
                 for (jobEstimate in estimates) {
 
                     Coroutines.main {
                         val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
                         if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
-                            withContext(Dispatchers.Main) {
+                            withContext(dispatchers.main()) {
                                 moveJobItemEstimateToNextWorkflow(
                                     WorkflowDirection.NEXT,
                                     jobEstimate
@@ -890,7 +831,6 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 }
             }
         }
-
         jobSubmission.join()
         handleJobSubmission(XIResult.Success("JOB_COMPLETE"))
     }
@@ -898,27 +838,27 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
     private suspend fun moveJobItemEstimateToNextWorkflow(
         workflowDirection: WorkflowDirection,
         jobItEstimate: JobItemEstimateDTO?
-    ) {
+    ) = withContext(dispatchers.ui()) {
 
         val user = workViewModel.user.await()
         user.observe(viewLifecycleOwner, { userDTO ->
 
             when {
                 userDTO.userId.isBlank() -> {
-                    extensionToast(
+                    this@CaptureWorkFragment.extensionToast(
                         message = "Error: current user lacks permissions",
-                        style = ERROR,
-                        position = CENTER,
-                        duration = LONG
+                        style = ToastStyle.ERROR,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.LONG
                     )
                     ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
-                    extensionToast(
+                    this@CaptureWorkFragment.extensionToast(
                         message = "Error: selected job is invalid",
-                        style = ERROR,
-                        position = CENTER,
-                        duration = LONG
+                        style = ToastStyle.ERROR,
+                        position = ToastGravity.CENTER,
+                        duration = ToastDuration.LONG
                     )
                     ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
@@ -939,14 +879,13 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         val direction: Int = workflowDirection.value
 
         Coroutines.main {
-            withContext(Dispatchers.IO) {
-                workViewModel.processWorkflowMove(
-                    userDTO.userId,
-                    trackRouteId,
-                    "Work complete.",
-                    direction
-                )
-            }
+            workViewModel.processWorkflowMove(
+                userDTO.userId,
+                jobItEstimate.jobId!!,
+                trackRouteId,
+                "Work complete.",
+                direction
+            )
         }
     }
 
@@ -956,27 +895,26 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
                 extensionToast(
                     title = "Workflow update",
                     message = getString(R.string.work_complete),
-                    style = SUCCESS,
-                    position = CENTER,
-                    duration = LONG
+                    style = ToastStyle.SUCCESS,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
                 )
             }
             WorkflowDirection.FAIL.value -> {
                 extensionToast(
                     title = "Workflow Update",
                     message = getString(R.string.work_declined),
-                    style = DELETE,
-                    position = CENTER,
-                    duration = LONG
+                    style = ToastStyle.DELETE,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
                 )
             }
         }
 
         Handler(Looper.getMainLooper()).postDelayed(
             {
-                Intent(activity, MainActivity::class.java).also { home ->
-                    startActivity(home)
-                }
+                val directions = CaptureWorkFragmentDirections.actionGlobalNavHome()
+                Navigation.findNavController(this.requireView()).navigate(directions)
             },
             Constants.TWO_SECONDS
         )
@@ -1022,7 +960,8 @@ class CaptureWorkFragment : LocationFragment(), DIAware {
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
 
             override fun handleOnBackPressed() {
-                popViewOnWorkSubmit()
+                val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
+                Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
             }
         }
         requireActivity().onBackPressedDispatcher

@@ -2,12 +2,11 @@ package za.co.xisystems.itis_rrm.custom.notifications
 
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
 
 data class ColorToast(
     val title: String? = null,
     val message: String,
-    val style: ToastStyle = INFO,
+    val style: ToastStyle = ToastStyle.INFO,
     val gravity: ToastGravity = CENTER,
     val duration: ToastDuration = SHORT
 )

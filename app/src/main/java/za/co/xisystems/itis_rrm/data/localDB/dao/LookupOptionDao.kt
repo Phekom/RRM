@@ -12,7 +12,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
 @Dao
 interface LookupOptionDao {
 //    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertLookupOptions( lookupOptions : List<LookupOptionDTO>)
+//    fun insertLookupOptions( lookupOptions : List<LookupOptionDTO>)
 
     @Query("SELECT * FROM LOOKUP_OPTION_TABLE WHERE valueMember = :valueMember AND lookupName =:lookupName")
     fun checkLookupOptionExists(valueMember: String?, lookupName: String): Boolean

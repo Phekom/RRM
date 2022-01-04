@@ -29,11 +29,11 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -84,9 +84,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
     internal var selectedProject: ProjectSelector? = null
 
-    internal var selectedProjectItem: ProjectItemDTO? = null
-
-    var newJob: JobDTO? = null
+    private var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
@@ -102,6 +100,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
         newJobItemEstimatesWorksList = ArrayList()
+        createViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
 
         setHasOptionsMenu(true)
     }
@@ -137,13 +137,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
@@ -151,19 +146,19 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
             })
         }
 
-        val myClickListener = View.OnClickListener { view ->
-            when (view?.id) {
-                R.id.selectContractProjectContinueButton -> {
+        val myClickListener = View.OnClickListener { clickedView ->
+            when (clickedView) {
+                ui.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        extensionToast(message = "Please Enter Description", style = WARNING)
+                        extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
                         ui.descriptionEditText.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
                         createNewJob()
                         descri = description
                         createViewModel.setDescription(descri!!)
-                        setContractAndProjectSelection(view)
+                        setContractAndProjectSelection(clickedView)
                     }
                 }
             }
@@ -262,7 +257,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
             isSynced = null
 
         )
-        extensionToast(message = "New job created", style = SUCCESS)
+        extensionToast(message = "New job created", style = ToastStyle.SUCCESS)
         return createdJob
     }
 
@@ -328,7 +323,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                                         createViewModel.setContractId(item.contractId)
                                     }
                                 }
-                            })
+                            }
+                        )
                     }
                     ui.dataLoading.hide()
                 })
@@ -344,7 +340,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         }
     }
 
-    fun retryContracts() {
+    private fun retryContracts() {
         IndefiniteSnackbar.hide()
         setContract()
     }
@@ -374,7 +370,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                                     createViewModel.setProjectId(item.projectId)
                                 }
                             }
-                        })
+                        }
+                    )
 
                     ui.dataLoading.hide()
                 }
@@ -421,7 +418,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                this@CreateFragment.findNavController().popBackStack(R.id.nav_home, false)
+                this@CreateFragment.findNavController().navigate(MobileNavigationDirections.actionGlobalNavHome())
             }
         }
         requireActivity().onBackPressedDispatcher
