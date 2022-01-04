@@ -19,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +26,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -39,6 +39,7 @@ import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -80,7 +81,7 @@ class ApproveMeasureViewModel(
 
             workflowState = Transformations.map(workflowStatus) {
                 it.getContentIfNotHandled()
-            } as MutableLiveData<XIResult<String>?>
+            }.distinctUntilChanged() as MutableLiveData<XIResult<String>?>
 
             galleryMeasure.observeForever {
                 generateGallery(it)
@@ -161,12 +162,13 @@ class ApproveMeasureViewModel(
         withContext(contextIO) {
             try {
                 val jobGuid = DataConversion.toLittleEndian(jobId)!!
-                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
-                measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
-            } catch (t: Throwable) {
+                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value).also {
+                    measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
+                }
+            } catch (t: TransmissionException) {
                 withContext(contextMain) {
-                    workflowState.postValue(XIResult.Error(t, t.message ?: UNKNOWN_ERROR))
-                    measureApprovalDataRepository.resetWorkState()
+                    Timber.e(t.cause ?: t)
+                    workflowState.postValue(XIResult.Error(t.cause ?: t, t.message ?: UNKNOWN_ERROR))
                 }
             }
         }
