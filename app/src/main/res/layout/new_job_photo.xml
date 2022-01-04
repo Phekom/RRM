@@ -1,28 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:id="@+id/layout"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@android:color/transparent"
-    android:orientation="vertical"
-    android:padding="@dimen/small"
-    android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
+    android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+    android:visibility="visible"
+    android:background="@color/transparent">
 
     <za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-            android:id="@+id/zoomedImage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/camera_round"
-            app:zoomage_restrictBounds="false"
-            app:zoomage_animateOnReset="true"
-            app:zoomage_autoResetMode="UNDER"
-            app:zoomage_autoCenter="true"
-            app:zoomage_zoomable="true"
-            app:zoomage_translatable="true"
-            app:zoomage_minScale="0.6"
-            app:zoomage_maxScale="8"
-            />
+        android:id="@+id/zoomedImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/camera_round"
+        app:zoomage_restrictBounds="true"
+        app:zoomage_animateOnReset="true"
+        app:zoomage_autoResetMode="UNDER"
+        app:zoomage_autoCenter="true"
+        app:zoomage_zoomable="true"
+        app:zoomage_translatable="true"
+        app:zoomage_minScale="0.6"
+        app:zoomage_maxScale="8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/zoom_controls"
+        app:layout_constraintHorizontal_bias="0.0" />
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/zoom_controls"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/zoomedImage"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageButton
+            android:id="@+id/confirm_image"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_check_48"
+            android:contentDescription="@string/select_image"
+            android:background="@android:color/transparent"
+            app:tint="@color/colorAccent"
+            android:backgroundTint="@color/secondaryTextColor"
+            android:backgroundTintMode="multiply" />
+
+        <ImageButton
+            android:id="@+id/cancel_image"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_close_24"
+            android:contentDescription="@string/cancel_selection"
+            android:background="@android:color/transparent"
+            app:tint="@color/colorAccent"
+            android:backgroundTint="@color/secondaryTextColor"
+            android:backgroundTintMode="multiply" />
+
+
+        <ImageButton
+            android:id="@+id/retake_image"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_add_a_photo_24"
+            android:contentDescription="@string/retake_image"
+            android:background="@android:color/transparent"
+            app:tint="@color/colorAccent"
+            android:backgroundTint="@color/secondaryTextColor"
+            android:backgroundTintMode="multiply" />
+
+        <ImageButton
+            android:id="@+id/delete_image"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_size"
+            android:layout_weight="1"
+            app:srcCompat="@drawable/ic_baseline_delete_24"
+            android:contentDescription="@string/delete_image"
+            android:background="@android:color/transparent"
+            app:tint="@color/colorAccent"
+            android:backgroundTint="@color/secondaryTextColor"
+            android:backgroundTintMode="multiply" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -33,14 +34,13 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
-import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -60,15 +60,13 @@ import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
-import java.lang.ref.WeakReference
 
-class MeasureApprovalFragment : BaseFragment(), DIAware {
+class MeasureApprovalFragment : BaseFragment() {
     override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
@@ -79,29 +77,24 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
     private var selectedJobId: String? = null
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
     private var groupAdapter = GroupAdapter<GroupieViewHolder<MeasurementsItemBinding>>()
 
-    private fun handleMeasureProcessing(outcome: XIResult<String>?) {
+    private fun handleMeasureProcessing(outcome: XIResult<String>?) = uiScope.launch(dispatchers.ui()) {
         outcome?.let { result ->
             when (result) {
                 is XIResult.Success -> {
-                    if (result.data == "WORK_COMPLETE") {
-                        measurementsToApprove.clear()
-                        this@MeasureApprovalFragment.toggleLongRunning(false)
-                        initRecyclerView(measurementsToApprove.toMeasureItems())
-                        progressButton.doneProgress(progressButton.text.toString())
-                        popViewOnJobSubmit(flowDirection)
-                    }
+                    progressButton.doneProgress(progressButton.text.toString())
+                    this@MeasureApprovalFragment.toggleLongRunning(false)
+                    popViewOnJobSubmit(flowDirection)
                 }
                 is XIResult.Error -> {
                     progressButton.failProgress("Failed")
                     this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
                         throwable = result,
-                        refreshAction = { this.retryMeasurements() }
+                        refreshAction = { this@MeasureApprovalFragment.retryMeasurements() }
                     )
                 }
                 is XIResult.Status -> {
@@ -158,6 +151,12 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             .addCallback(this, callback)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // no options menu
         return false
@@ -173,12 +172,8 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
 
             initVeiledRecycler()
@@ -275,12 +270,14 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     }
 
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
-        extensionToast(
-            message = errMessage,
-            style = ToastStyle.ERROR,
-            position = ToastGravity.CENTER
-        )
-        progressButton.failProgress(progFailCaption)
+        uiScope.launch(dispatchers.ui()) {
+            extensionToast(
+                message = errMessage,
+                style = ToastStyle.ERROR,
+                position = ToastGravity.CENTER
+            )
+            progressButton.failProgress(progFailCaption)
+        }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
@@ -301,9 +298,12 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
             }
         }
         Handler(Looper.getMainLooper()).postDelayed({
-            val directions = MobileNavigationDirections.actionGlobalNavHome()
-            Navigation.findNavController(this@MeasureApprovalFragment.requireView())
-                .navigate(directions)
+            Intent(this.requireActivity(), MainActivity::class.java).also { mainAct ->
+                mainAct.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                startActivity(mainAct)
+            }
         }, Constants.TWO_SECONDS)
     }
 
@@ -331,7 +331,9 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
         }
         ui.viewMeasuredItems.getRecyclerView().run {
             adapter = groupAdapter
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(
+                this@MeasureApprovalFragment.requireContext()
+            )
             doOnNextLayout { ui.viewMeasuredItems.unVeil() }
         }
     }
@@ -339,7 +341,6 @@ class MeasureApprovalFragment : BaseFragment(), DIAware {
     override fun onDestroyView() {
         super.onDestroyView()
         // clear out all the leakers
-        uiScope.destroy()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.viewMeasuredItems.setAdapter(null)
         _ui = null

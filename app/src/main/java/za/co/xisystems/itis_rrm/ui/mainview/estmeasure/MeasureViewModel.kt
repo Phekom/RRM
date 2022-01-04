@@ -254,7 +254,6 @@ class MeasureViewModel(
                 userId,
                 jobId
             )
-
         } catch (e: Exception) {
             workflowState.postValue(XIResult.Error(e, e.message!!))
         }

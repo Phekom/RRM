@@ -21,11 +21,11 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Update
-import java.util.ArrayList
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
+import java.util.ArrayList
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -42,7 +42,7 @@ interface JobDao {
     fun updateJob(job: JobDTO)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobs(jobs: List<JobDTO>)
+    fun insertJobs(jobs: List<JobDTO>)
 
     @Delete
     fun deleteJob(job: JobDTO)
@@ -75,7 +75,7 @@ interface JobDao {
     fun getItemDescription(jobId: String): String
 
     @Query("SELECT jiNo FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
-    suspend fun getItemJobNo(jobId: String): String
+    fun getItemJobNo(jobId: String): String
 
     @Query("SELECT startKm FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getItemStartKm(jobId: String): Double
@@ -157,7 +157,7 @@ interface JobDao {
             "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
     )
 
-    suspend fun findWork(
+    fun findWork(
         criteria: String,
         jobActId: Int = ActivityIdConstants.JOB_APPROVED,
         estimateActId: Int = ActivityIdConstants.ESTIMATE_INCOMPLETE
@@ -190,5 +190,5 @@ interface JobDao {
             estimateActId = ActivityIdConstants.ESTIMATE_INCOMPLETE
         )
 
-    suspend fun searchJobs(criteria: String) = findWork(criteria)
+    fun searchJobs(criteria: String) = findWork(criteria)
 }

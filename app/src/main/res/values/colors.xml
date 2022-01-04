@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   * Updated by Shaun McDonald on 2021/22/20
   * Last modified on 2021/01/20 12:46 PM
   * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -49,11 +50,13 @@
     <!--Color on secondary (light), color on background (light),-->
     <!--color on surface (light)-->
 
-    <color name="primaryColor">#de4f32</color>
-    <color name="primaryDarkColor">#a51707</color>
-    <color name="secondaryLightColor">#4db8a9</color>
+    <color name="primaryColor">#d84315</color>
+    <color name="primaryLightColor">#ff7543</color>
+    <color name="primaryDarkColor">#9f0000</color>
+    <color name="secondaryColor">#4caf50</color>
+    <color name="secondaryLightColor">#80e27e</color>
+    <color name="secondaryDarkColor">#087f23</color>
     <color name="primaryTextColor">#000000</color>
     <color name="secondaryTextColor">#000000</color>
-
 
 </resources>

@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,13 +55,11 @@ import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
 import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
-import java.util.Date
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -77,7 +76,6 @@ class CaptureItemMeasurePhotoFragment :
     private lateinit var imageUri: Uri
     private var filenamePath = HashMap<String, String>()
     private var viewPhotosOnly = false
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentCaptureItemMeasurePhotoBinding? = null
     private val ui get() = _ui!!
 
@@ -121,7 +119,6 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        uiScope.onCreate()
         lifecycle.addObserver(uiScope)
     }
 
@@ -137,9 +134,8 @@ class CaptureItemMeasurePhotoFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ui.estimateImageCollectionView.clearImages()
-        measureViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(MeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        measureViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[MeasureViewModel::class.java]
 
         jobItemMeasurePhotoArrayList = ArrayList()
         ui.galleryLayout.visibility = View.INVISIBLE
@@ -237,13 +233,12 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         _ui = null
     }
 
     // TODO: Have location validated here
     // TODO: Check earlier and get user to switch Location on.
-    private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(Dispatchers.IO) {
+    private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(dispatchers.io()) {
         //  Location of picture
         val measurementLocation = getCurrentLocation()
         if (measurementLocation != null) {
@@ -412,7 +407,7 @@ class CaptureItemMeasurePhotoFragment :
         }
     }
 
-    fun retryGallery() {
+    private fun retryGallery() {
         IndefiniteSnackbar.hide()
         measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner, {
             it?.let { measureViewModel.generateGalleryUI(it) }

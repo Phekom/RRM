@@ -140,7 +140,7 @@ class MainActivity :
             RaygunClient.enableCrashReporting()
         }
 
-        this.mainActivityViewModel = ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+        this.mainActivityViewModel = ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
 
         initializeCountDrawer()
 
@@ -517,10 +517,5 @@ class MainActivity :
             // initializeCountDrawer()
             // refreshData()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        uiScope.destroy()
     }
 }

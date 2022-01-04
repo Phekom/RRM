@@ -30,6 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.NetworkConnectionInterceptor
 import za.co.xisystems.itis_rrm.data.preferences.PreferenceProvider
+import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
@@ -58,6 +59,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
+import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
@@ -85,6 +87,7 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureCreationDataRepository(instance(), instance(), instance()) } }
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
+        bind { singleton { CapturedPictureRepository(instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
 
@@ -139,6 +142,7 @@ open class MainApp : Application(), DIAware {
         bind { provider { MainActivityViewModelFactory(instance()) } }
         bind { provider { LocationViewModelFactory(this@MainApp) } }
         bind { provider { SharedViewModelFactory(instance()) } }
+        bind { provider { CarouselViewModelFactory(instance(), instance(), this@MainApp) } }
     }
 
     override fun onCreate() {

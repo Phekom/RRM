@@ -177,12 +177,12 @@ class DeferredLocationRepository(
             result = when {
                 distanceBack < distanceForward -> {
                     "The closest section (${closestEndKm.section}) is " +
-                        "$distanceBack km away at marker " +
+                        "${"%.3f".format(distanceBack)} km away at marker " +
                         "${closestEndKm.kmMarker.round(3)}."
                 }
                 else -> {
                     "The closest section (${closestStartKm.section}) is " +
-                        "$distanceForward km away at marker " +
+                        "${"%.3f".format(distanceForward)}  km away at marker " +
                         "${closestStartKm.kmMarker.round(3)}."
                 }
             }

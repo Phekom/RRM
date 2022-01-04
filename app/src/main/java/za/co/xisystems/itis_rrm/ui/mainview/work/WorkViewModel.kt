@@ -26,11 +26,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Status
-import za.co.xisystems.itis_rrm.custom.results.XIResult.Success
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
@@ -57,8 +56,9 @@ class WorkViewModel(
     val offlineUserTaskList by lazyDeferred {
         offlineDataRepository.getUserTaskList()
     }
-    var workItem = MutableLiveData<JobItemEstimateDTO>()
-    var workItemJob = MutableLiveData<JobDTO>()
+
+    var workItem: MutableLiveData<JobItemEstimateDTO> = MutableLiveData()
+    var workItemJob: MutableLiveData<JobDTO> = MutableLiveData()
     val backupWorkSubmission: MutableLiveData<JobEstimateWorksDTO> = MutableLiveData()
 
     private var workflowStatus: LiveData<XIEvent<XIResult<String>>> = MutableLiveData()
@@ -70,6 +70,7 @@ class WorkViewModel(
     val historicalWorks: MutableLiveData<XIResult<JobEstimateWorksDTO>> = MutableLiveData()
     private val allWork: LiveData<List<JobDTO>>?
     private val searchResults: MutableLiveData<List<JobDTO>>
+
     init {
         viewModelScope.launch(mainContext) {
             // Set up the feed from the repository
@@ -98,14 +99,14 @@ class WorkViewModel(
         return allWork
     }
 
-    suspend fun setWorkItem(estimateId: String) = viewModelScope.launch(ioContext) {
+    fun setWorkItem(estimateId: String) = viewModelScope.launch {
         val data = workDataRepository.getJobItemEstimateForEstimateId(estimateId)
         withContext(mainContext) {
             workItem.value = data
         }
     }
 
-    suspend fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
+    fun setWorkItemJob(jobId: String) = viewModelScope.launch(ioContext) {
         val data = offlineDataRepository.getUpdatedJob(jobId)
         withContext(mainContext) {
             workItemJob.value = data
@@ -119,13 +120,11 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int):
-        List<JobItemEstimateDTO> = withContext(ioContext) {
-
-        val data = workDataRepository
-            .getJobEstimationItemsForJobId(jobID, actID)
-
-        return@withContext data
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> {
+        return withContext(ioContext) {
+            return@withContext workDataRepository
+                .getJobEstimationItemsForJobId(jobID, actID)
+        }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
@@ -211,6 +210,9 @@ class WorkViewModel(
 
     ) = viewModelScope.launch(ioContext) {
         try {
+            workDataRepository.clearErrors()
+            val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
+
             val systemJobId = DataConversion.toLittleEndian(itemEstiJob.jobId)!!
             val currentUser = user.await().value
             // If the job has no work start - now is the time!
@@ -219,9 +221,9 @@ class WorkViewModel(
                 backupJobInProgress(itemEstiJob)
                 // Let the backend know
                 workDataRepository.updateWorkTimes(
-                    currentUser!!.userId,
-                    systemJobId,
-                    true
+                    userId = currentUser!!.userId,
+                    jobId = systemJobId,
+                    isStart = true
                 )
             }
 
@@ -234,8 +236,12 @@ class WorkViewModel(
             )
 
             // Upload the work
-            workDataRepository.submitWorks(itemEstiWorks, activity, itemEstiJob)
-        } catch (t: Throwable) {
+            workDataRepository.submitWorks(newItemEstimateWorks, activity, itemEstiJob).also {
+                viewModelScope.launch(mainContext) {
+                    workflowState.postValue(XIResult.Success(newItemEstimateWorks.worksId))
+                }
+            }
+        } catch (t: TransmissionException) {
             val message = "Work upload failed - "
             val workFailReason = XIResult.Error(
                 t.cause ?: t,
@@ -263,6 +269,7 @@ class WorkViewModel(
     ) = viewModelScope.launch(ioContext) {
 
         try {
+            workDataRepository.clearErrors()
             val updatedJob = offlineDataRepository.getUpdatedJob(jobId)
             val systemJobId = DataConversion.toLittleEndian(updatedJob.jobId)!!
 
@@ -303,19 +310,19 @@ class WorkViewModel(
         )
     }
 
-    suspend fun populateWorkTab(estimateId: String, actId: Int) {
+    fun populateWorkTab(estimateId: String, actId: Int) {
         val newEstimateId = DataConversion.toBigEndian(estimateId)
         val worksDTO: JobEstimateWorksDTO = workDataRepository.getWorkItemsForEstimateIDAndActID(newEstimateId!!, actId)
         if (worksDTO.estimateId.isNullOrBlank()) {
             val worksPhotos = workDataRepository.getEstimateWorksPhotosForWorksId(worksDTO.worksId)
             if (!worksPhotos.isNullOrEmpty()) {
                 worksDTO.jobEstimateWorksPhotos = worksPhotos as java.util.ArrayList<JobEstimateWorksPhotoDTO>
-                historicalWorks.postValue(Success(worksDTO))
+                historicalWorks.postValue(XIResult.Success(worksDTO))
             } else {
-                historicalWorks.postValue(Status("Photos failed to load"))
+                historicalWorks.postValue(XIResult.Status("Photos failed to load"))
             }
         } else {
-            historicalWorks.postValue(Status("Works failed to load"))
+            historicalWorks.postValue(XIResult.Status("Works failed to load"))
         }
     }
 
@@ -358,5 +365,41 @@ class WorkViewModel(
     val myWorkItem = MutableLiveData<Point>()
     fun goToWorkLocation(selectedLocationPoint: Point) {
         myWorkItem.postValue(selectedLocationPoint)
+    }
+
+    private suspend fun setJobWorksLittleEndianGuids(
+        works: JobEstimateWorksDTO
+    ): JobEstimateWorksDTO = withContext(ioContext) {
+        works.setWorksId(DataConversion.toLittleEndian(works.worksId))
+        works.setEstimateId(DataConversion.toLittleEndian(works.estimateId))
+
+        works.setTrackRouteId(DataConversion.toLittleEndian(works.trackRouteId))
+        if (!works.jobEstimateWorksPhotos.isNullOrEmpty()) {
+            works.jobEstimateWorksPhotos.forEach { ewp ->
+                ewp.setWorksId(DataConversion.toLittleEndian(ewp.worksId))
+                ewp.setPhotoId(DataConversion.toLittleEndian(ewp.photoId))
+            }
+        }
+        return@withContext works
+    }
+
+    private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
+        this.worksId = toLittleEndian!!
+    }
+
+    private fun JobEstimateWorksPhotoDTO.setPhotoId(toLittleEndian: String?) {
+        this.photoId = toLittleEndian!!
+    }
+
+    private fun JobEstimateWorksDTO.setWorksId(toLittleEndian: String?) {
+        this.worksId = toLittleEndian!!
+    }
+
+    private fun JobEstimateWorksDTO.setEstimateId(toLittleEndian: String?) {
+        this.estimateId = toLittleEndian
+    }
+
+    private fun JobEstimateWorksDTO.setTrackRouteId(toLittleEndian: String?) {
+        this.trackRouteId = toLittleEndian!!
     }
 }

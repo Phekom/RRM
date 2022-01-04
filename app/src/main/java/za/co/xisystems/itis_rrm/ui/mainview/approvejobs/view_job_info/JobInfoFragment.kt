@@ -21,6 +21,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.util.Date
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -60,7 +61,6 @@ import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
-import java.util.Date
 
 class JobInfoFragment : BaseFragment(), DIAware {
     override val di by closestDI()
@@ -173,7 +173,6 @@ class JobInfoFragment : BaseFragment(), DIAware {
         approveViewModel =
             ViewModelProvider(this.requireActivity(), factory)
                 .get(ApproveJobsViewModel::class.java)
-
     }
 
     override fun onCreateView(

@@ -17,10 +17,10 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 interface JobItemEstimatePhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
+    fun insertJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
 
     @Update
-    suspend fun updateJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
+    fun updateJobItemEstimatePhoto(jobItemEstimatePhoto: JobItemEstimatesPhotoDTO)
 
     @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId)")
     fun checkIfJobItemEstimatePhotoExistsByPhotoId(photoId: String): Boolean
@@ -41,10 +41,13 @@ interface JobItemEstimatePhotoDao {
     fun deleteAll()
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId")
-    suspend fun deletePhotoById(photoId: String)
+    fun deletePhotoById(photoId: String)
+
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
+    fun deleteJobItemEstimatePhotosByEstimateId(estimateId: String): Int
 
     @Transaction
-    suspend fun replaceEstimatePhoto(photoId: String, estimatePhoto: JobItemEstimatesPhotoDTO) {
+    fun replaceEstimatePhoto(photoId: String, estimatePhoto: JobItemEstimatesPhotoDTO) {
         deletePhotoById(photoId)
         insertJobItemEstimatePhoto(estimatePhoto)
     }

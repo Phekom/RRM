@@ -12,7 +12,7 @@ import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 class GoToViewModelFactory(
     private val dataRepository: WorkDataRepository
 ) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return GoToViewModel(dataRepository) as T
     }
 }

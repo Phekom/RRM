@@ -130,10 +130,6 @@ class UnSubmittedJobItem(
         deleteAlert.show()
     }
 
-    private fun sendForReview(jobDTO: JobDTO, view: View?) {
-        fragment.extensionToast(message = "Not yet implemented")
-    }
-
     private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
 
         Coroutines.main {

@@ -11,7 +11,6 @@ package za.co.xisystems.itis_rrm.utils
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.Collections
 import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
@@ -32,6 +31,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import java.util.Collections
 
 @Suppress("UNCHECKED_CAST")
 class Converters {

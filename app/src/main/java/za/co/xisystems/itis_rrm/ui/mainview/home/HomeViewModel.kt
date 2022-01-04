@@ -33,7 +33,7 @@ class HomeViewModel(
     private val offlineDataRepository: OfflineDataRepository,
     dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     application: Application
-): AndroidViewModel(application) {
+) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
     private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()

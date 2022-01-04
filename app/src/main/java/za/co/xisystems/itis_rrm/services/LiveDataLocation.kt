@@ -48,9 +48,8 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
     }
 
     private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult?) {
-            locationResult ?: return
-            for (location in locationResult.locations) {
+        override fun onLocationResult(p0: LocationResult) {
+            for (location in p0.locations) {
                 setLocationData(location)
             }
         }
@@ -60,7 +59,8 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
         value = LocationModel(
             longitude = location.longitude,
             latitude = location.latitude,
-            accuracy = location.accuracy
+            accuracy = location.accuracy,
+            bearing = location.bearing
         )
     }
 
@@ -76,7 +76,8 @@ class LocationLiveData(context: Context) : LiveData<LocationModel>() {
 data class LocationModel(
     val longitude: Double,
     val latitude: Double,
-    val accuracy: Float
+    val accuracy: Float,
+    val bearing: Float
 ) {
 
     override fun toString(): String = "(lat: ${this.latitude.round(6)} ,lng: ${this.longitude.round(6)})"

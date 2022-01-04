@@ -23,9 +23,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.android.synthetic.main.fragment_work.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
@@ -56,6 +53,8 @@ class MeasureFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        measureViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[MeasureViewModel::class.java]
         setHasOptionsMenu(true)
     }
 
@@ -95,13 +94,8 @@ class MeasureFragment : BaseFragment(), DIAware {
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        measureViewModel = activity?.run {
-            ViewModelProvider(this, factory)[MeasureViewModel::class.java]
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onStart() {
+        super.onStart()
         Coroutines.main {
             initVeiledRecycler()
             fetchEstimateMeasures()
@@ -151,33 +145,31 @@ class MeasureFragment : BaseFragment(), DIAware {
         }
     }
 
-    private suspend fun fetchRemoteJobs() {
-        Coroutines.main {
-            try {
-                withContext(Dispatchers.Main) {
-                    val jobs = measureViewModel.offlineUserTaskList.await()
-                    jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
-                        if (works.isNullOrEmpty()) {
-                            ui.noData.visibility = View.VISIBLE
-                            ui.estimationsToBeMeasuredListView.visibility = View.GONE
-                        } else {
-                            ui.noData.visibility = View.GONE
-                            ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
-                            Coroutines.main {
-                                fetchEstimateMeasures()
-                            }
-                        }
-                    })
+    private suspend fun fetchRemoteJobs() = Coroutines.io {
+        try {
+            val jobs = measureViewModel.offlineUserTaskList.await()
+            jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
+                if (works.isNullOrEmpty()) {
+                    Coroutines.ui {
+                        ui.noData.visibility = View.VISIBLE
+                        ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                    }
+                } else {
+                    Coroutines.ui {
+                        ui.noData.visibility = View.GONE
+                        ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                        fetchEstimateMeasures()
+                    }
                 }
-            } catch (t: Throwable) {
-                val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
-                crashGuard(
-                    throwable = fetchError,
-                    refreshAction = { this@MeasureFragment.retryFetchingJobs() }
-                )
-            } finally {
-                ui.estimationsSwipeToRefresh.isRefreshing = false
-            }
+            })
+        } catch (t: Throwable) {
+            val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            crashGuard(
+                throwable = fetchError,
+                refreshAction = { this@MeasureFragment.retryFetchingJobs() }
+            )
+        } finally {
+            ui.estimationsSwipeToRefresh.isRefreshing = false
         }
     }
 

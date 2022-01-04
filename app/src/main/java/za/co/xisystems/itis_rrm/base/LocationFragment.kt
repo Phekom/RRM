@@ -7,10 +7,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.ViewModelProvider
 import org.kodein.di.DI
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -21,26 +21,26 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Created by Shaun McDonald on 2020/06/06.
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
-abstract class LocationFragment : BaseFragment(), DIAware {
+abstract class LocationFragment : BaseFragment() {
 
     override val di: DI by closestDI()
     private lateinit var locationViewModel: LocationViewModel
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled = false
-//    internal var currentLocation: LocationModel? = null
-    private var networkEnabled: Boolean = false
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // fragment has no options
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        locationViewModel =
+            ViewModelProvider(this.requireActivity(), locationFactory)[LocationViewModel::class.java]
+    }
 
-        locationViewModel = activity?.run {
-            ViewModelProvider(this, locationFactory).get(LocationViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         GPSUtils(this.requireContext()).activateGPS(object : GPSUtils.OnGpsListener {
 
             override fun gpsStatus(isGPSEnable: Boolean) {

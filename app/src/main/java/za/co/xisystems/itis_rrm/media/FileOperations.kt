@@ -20,16 +20,17 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
+import java.io.File
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
-import java.io.File
 
 private const val QUALITY = 100
 
 object FileOperations {
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+
     @SuppressLint("Range")
     suspend fun queryImagesOnDevice(context: Context, selection: String? = null): List<Media> {
         val images = mutableListOf<Media>()
@@ -116,6 +117,10 @@ object FileOperations {
                 MediaStore.Video.Media.HEIGHT,
                 MediaStore.Video.Media.DATE_MODIFIED
             )
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                projection += arrayOf(MediaStore.Images.Media.RELATIVE_PATH)
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 projection += arrayOf(MediaStore.Images.Media.RELATIVE_PATH)

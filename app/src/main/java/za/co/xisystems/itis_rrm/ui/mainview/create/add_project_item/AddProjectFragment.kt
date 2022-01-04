@@ -8,7 +8,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -31,16 +30,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Section
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_add_project_items.*
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
@@ -72,19 +71,16 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import java.util.Calendar
-import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class AddProjectFragment : BaseFragment(), DIAware {
+class AddProjectFragment : BaseFragment() {
 
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -106,7 +102,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
     private lateinit var dueDate: Date
     private var _ui: FragmentAddProjectItemsBinding? = null
     private val ui get() = _ui!!
-    private var uiScope = UiLifecycleScope()
     private lateinit var job: JobDTO
     private var items: List<ItemDTOTemp> = ArrayList()
     private var stateRestored: Boolean = false
@@ -137,8 +132,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
     init {
         lifecycleScope.launch {
             whenCreated {
-                uiScope.onCreate()
-                lifecycle.addObserver(uiScope)
                 initViewModels()
             }
             whenStarted {
@@ -160,11 +153,14 @@ class AddProjectFragment : BaseFragment(), DIAware {
 
     @Suppress("TooGenericExceptionThrown", "ThrowsCount")
     private fun initViewModels() {
-        createViewModel = ViewModelProvider(this.requireActivity(), createFactory)[CreateViewModel::class.java]
+        createViewModel =
+            ViewModelProvider(this.requireActivity(), createFactory)[CreateViewModel::class.java]
 
-        unsubmittedViewModel = ViewModelProvider(this.requireActivity(), unsubFactory)[UnSubmittedViewModel::class.java]
+        unsubmittedViewModel =
+            ViewModelProvider(this.requireActivity(), unsubFactory)[UnSubmittedViewModel::class.java]
 
-        deferredLocationViewModel = ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
+        deferredLocationViewModel =
+            ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -203,8 +199,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         }
     }
 
-
-
     private fun initCurrentUserObserver() {
         createViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
             userId?.let {
@@ -229,7 +223,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner, { result ->
                 result.getContentIfNotHandled()?.let { outcome ->
-                    uiScope.launch(uiScope.coroutineContext) {
+                    uiScope.launch {
                         processLocationResult(outcome)
                     }
                 }
@@ -240,11 +234,11 @@ class AddProjectFragment : BaseFragment(), DIAware {
             viewLifecycleOwner, { job ->
                 job.getContentIfNotHandled()?.let { realJob ->
                     if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
-                        uiScope.launch(uiScope.coroutineContext) {
+                        uiScope.launch {
                             validateEstimates(realJob)
                         }
                     } else {
-                        uiScope.launch(uiScope.coroutineContext) {
+                        uiScope.launch {
                             geoLocationFailed()
                         }
                     }
@@ -255,7 +249,7 @@ class AddProjectFragment : BaseFragment(), DIAware {
         createViewModel.jobForSubmission.observeOnce(
             viewLifecycleOwner, { unsubmittedEvent ->
                 unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
-                    uiScope.launch(uiScope.coroutineContext) {
+                    uiScope.launch {
                         createViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
                         submitJob(submissionJob)
                     }
@@ -705,7 +699,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         startDateDialog!!.show()
     }
 
-    @Synchronized
     private suspend fun submitJob(
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
@@ -716,7 +709,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         saveRrmJob(job.userId, jobTemp)
     }
 
-    @Synchronized
     private suspend fun saveRrmJob(
         userId: Int,
         job: JobDTO
@@ -802,9 +794,9 @@ class AddProjectFragment : BaseFragment(), DIAware {
         // createViewModel.setJobToEdit("null")
         // Conduct user back to home fragment
         HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
-            Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                startActivity(home)
-            }
+            val direction = MobileNavigationDirections.actionGlobalNavHome()
+            Navigation.findNavController(this@AddProjectFragment.requireView())
+                .navigate(direction)
         }, null, TWO_SECONDS)
     }
 
@@ -869,7 +861,6 @@ class AddProjectFragment : BaseFragment(), DIAware {
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
         createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         createViewModel.jobForReUpload.removeObservers(viewLifecycleOwner)
-        uiScope.destroy()
         ui.projectRecyclerView.adapter = null
         _ui = null
     }

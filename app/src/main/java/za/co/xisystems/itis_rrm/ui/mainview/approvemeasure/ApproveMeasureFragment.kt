@@ -75,9 +75,8 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
     }
 
     override fun onStart() {
@@ -242,8 +241,9 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
+                val direction = ApproveMeasureFragmentDirections.actionGlobalNavHome()
                 Navigation.findNavController(this@ApproveMeasureFragment.requireView())
-                    .popBackStack(R.id.nav_home, false)
+                    .navigate(direction)
             }
         }
         requireActivity().onBackPressedDispatcher

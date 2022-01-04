@@ -16,6 +16,7 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.withContext
@@ -57,6 +58,7 @@ class PhotoUtil private constructor(
         val instance get() = mInstance!!
         private const val BMP_LOAD_FAILED = "Failed to load bitmap"
 
+        @JvmStatic
         private fun initInstance(
             context: Context,
             dispatchers: DispatcherProvider = DefaultDispatcherProvider()
@@ -71,6 +73,7 @@ class PhotoUtil private constructor(
             }.also { return instance }
         }
 
+        @JvmStatic
         fun getInstance(appContext: Context): PhotoUtil {
             return if (mInstance == null) {
                 Timber.d("Initializing PhotoUtil")
@@ -168,10 +171,7 @@ class PhotoUtil private constructor(
             val options = BitmapFactory.Options()
             options.inSampleSize = photoQuality.value
             val fileDescriptor: AssetFileDescriptor =
-                selectedImage?.let {
-                    appContext.contentResolver
-                        .openAssetFileDescriptor(it, "r")
-                } ?: throw IllegalArgumentException(BMP_LOAD_FAILED)
+                getImageFileDescriptor(selectedImage)
             val bm = BitmapFactory.decodeFileDescriptor(
                 fileDescriptor.fileDescriptor,
                 null,
@@ -190,6 +190,12 @@ class PhotoUtil private constructor(
             null
         }
     }
+
+    @WorkerThread
+    private fun getImageFileDescriptor(selectedImage: Uri?) = selectedImage?.let {
+        appContext.contentResolver
+            .openAssetFileDescriptor(it, "r")
+    } ?: throw IllegalArgumentException(BMP_LOAD_FAILED)
 
     suspend fun getCompressedPhotoWithExifInfo(
         bitmap: Bitmap,
@@ -520,7 +526,7 @@ class PhotoUtil private constructor(
         }
     }
 
-    private suspend fun getUriFromPath(filePath: String): Uri? = withContext(dispatchers.io()) {
+    suspend fun getUriFromPath(filePath: String): Uri? = withContext(dispatchers.io()) {
         return@withContext try {
             val file = File(filePath)
             val uri = Uri.fromFile(file)

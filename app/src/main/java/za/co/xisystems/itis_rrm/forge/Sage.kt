@@ -39,7 +39,7 @@ class Sage(
     }
 
     init {
-        this.masterKeyAlias = this.generateMasterKey(context)
+        this.masterKeyAlias = this.generateMasterKey(context.applicationContext)
     }
 
     suspend fun generateFutureMasterKey(context: Context): MasterKey {

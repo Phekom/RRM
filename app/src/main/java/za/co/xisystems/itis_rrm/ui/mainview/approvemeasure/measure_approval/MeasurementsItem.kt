@@ -33,7 +33,7 @@ class MeasurementsItem(
     private val approveViewModel: ApproveMeasureViewModel,
     private val fragmentReference: WeakReference<MeasureApprovalFragment>,
     private val viewLifecycleOwner: LifecycleOwner
-) : BindableItem<MeasurementsItemBinding>() {
+): BindableItem<MeasurementsItemBinding>() {
 
     val activity = fragmentReference.get()?.requireActivity()
     private fun sendItemType(
@@ -84,10 +84,12 @@ class MeasurementsItem(
         editQuantity: String,
         itemMeasureId: String
     ) {
+
         if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
+                val dblQuantity = editQuantity.toDoubleOrNull() ?: 0.0
                 when {
-                    editQuantity == "" || nanCheck(editQuantity) -> {
+                    dblQuantity <= 0.0 || dblQuantity.isNaN() -> {
                         activity.extensionToast(
                             message = "Please Enter a valid Quantity",
                             style = ToastStyle.WARNING
@@ -134,15 +136,6 @@ class MeasurementsItem(
             )
         }
         fragmentReference.get()?.toggleLongRunning(false)
-    }
-
-    private fun nanCheck(toString: String): Boolean {
-        return try {
-            val dbl = toString.toDouble()
-            dbl.isNaN()
-        } catch (e: Exception) {
-            true
-        }
     }
 
     override fun getLayout() = R.layout.measurements_item

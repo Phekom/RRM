@@ -8,7 +8,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import java.io.IOException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -18,13 +18,12 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
@@ -44,6 +43,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.io.IOException
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -113,22 +113,6 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getSectionItems(): LiveData<List<SectionItemDTO>> {
-        return withContext(dispatchers.io()) { appDb.getSectionItemDao().getSectionItems() }
-    }
-
-    suspend fun getContracts(): LiveData<List<ContractDTO>> {
-        return withContext(dispatchers.io()) {
-            appDb.getContractDao().getAllContracts()
-        }
-    }
-
-    suspend fun getContractProjects(contractId: String): LiveData<List<ProjectDTO>> {
-        return withContext(dispatchers.io()) {
-            appDb.getProjectDao().getAllProjectsByContract(contractId)
-        }
-    }
-
     suspend fun getAllSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getSectionItemDao().getFilteredSectionItems(projectId)
@@ -144,7 +128,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun saveNewItem(newJobItem: ItemDTOTemp?) {
+    fun saveNewItem(newJobItem: ItemDTOTemp?) {
         Coroutines.io {
             if (newJobItem != null && !appDb.getItemDaoTemp()
                 .checkItemExistsItemId(newJobItem.itemId)
@@ -261,7 +245,13 @@ class JobCreationDataRepository(
                     appDb.getJobItemEstimateDao()
                         .deleteJobItemEstimateByEstimateId(it)
                 } ?: 0
-            itemsDeleted + estimatesDeleted
+
+            val estimatesPhotosDeleted =
+                estimateId?.let {
+                    appDb.getJobItemEstimatePhotoDao()
+                        .deleteJobItemEstimatePhotosByEstimateId(it)
+                } ?: 0
+            itemsDeleted + estimatesDeleted + estimatesPhotosDeleted
         }
     }
 
@@ -534,7 +524,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun findRealSectionStartKm(
+    fun findRealSectionStartKm(
         projectSectionDTO: ProjectSectionDTO,
         pointLocation: Double
     ): SectionMarker {
@@ -576,7 +566,7 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
+    fun checkIfJobSectionExistForJobAndProjectSection(jobId: String?, projectSectionId: String?): Boolean {
         return appDb.getJobSectionDao().checkIfJobSectionExistForJob(jobId, projectSectionId)
     }
 
@@ -592,7 +582,7 @@ class JobCreationDataRepository(
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
     }
 
-    suspend fun getProjectItemById(itemId: String?): ItemDTOTemp {
+    fun getProjectItemById(itemId: String?): ItemDTOTemp {
         return appDb.getItemDaoTemp().getProjectItemById(itemId!!)
     }
 
@@ -645,5 +635,12 @@ class JobCreationDataRepository(
 
     suspend fun eraseExistingPhoto(photoId: String) = withContext(dispatchers.io()) {
         appDb.getJobItemEstimatePhotoDao().deletePhotoById(photoId)
+    }
+
+
+    suspend fun getStructureTypes(): LiveData<List<JobTypeEntityDTO>> {
+        return withContext(Dispatchers.IO) {
+            appDb.getJobTypeDao().getAll()
+        }
     }
 }

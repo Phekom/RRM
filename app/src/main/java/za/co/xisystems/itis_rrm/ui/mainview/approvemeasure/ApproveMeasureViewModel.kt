@@ -26,6 +26,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -80,7 +81,7 @@ class ApproveMeasureViewModel(
 
             workflowState = Transformations.map(workflowStatus) {
                 it.getContentIfNotHandled()
-            } as MutableLiveData<XIResult<String>?>
+            }.distinctUntilChanged() as MutableLiveData<XIResult<String>?>
 
             galleryMeasure.observeForever {
                 generateGallery(it)
@@ -155,16 +156,19 @@ class ApproveMeasureViewModel(
         workflowDirection: WorkflowDirection,
         measurements: List<JobItemMeasureDTO>
     ) = viewModelScope.launch {
+
         workflowState.postValue(XIResult.Progress(true))
 
         withContext(contextIO) {
             try {
                 val jobGuid = DataConversion.toLittleEndian(jobId)!!
-                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
-                measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
-            } catch (t: Throwable) {
+                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value).also {
+                    measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
+                }
+            } catch (t: TransmissionException) {
                 withContext(contextMain) {
-                    workflowState.postValue(XIResult.Error(t, t.message ?: UNKNOWN_ERROR))
+                    Timber.e(t.cause ?: t)
+                    workflowState.postValue(XIResult.Error(t.cause ?: t, t.message ?: UNKNOWN_ERROR))
                 }
             }
         }

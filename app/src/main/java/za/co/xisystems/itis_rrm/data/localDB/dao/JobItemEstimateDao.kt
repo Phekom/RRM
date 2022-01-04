@@ -28,7 +28,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 interface JobItemEstimateDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobItemEstimate(jobItemEstimate: JobItemEstimateDTO)
+    fun insertJobItemEstimate(jobItemEstimate: JobItemEstimateDTO)
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun checkIfJobItemEstimateExist(estimateId: String): Boolean
@@ -94,16 +94,16 @@ interface JobItemEstimateDao {
     ): Int
 
     @Query("UPDATE JOB_ITEM_ESTIMATE set actId = :actId WHERE estimateId = :estimateId")
-    suspend fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
+    fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
-    suspend fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
+    fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
 
     @Update
-    suspend fun updateJobItemEstimate(jobItemEstimate: JobItemEstimateDTO): Int
+    fun updateJobItemEstimate(jobItemEstimate: JobItemEstimateDTO): Int
 
     @Update
-    suspend fun updateJobItemEstimates(jobItemEstimates: List<JobItemEstimateDTO>): Int
+    fun updateJobItemEstimates(jobItemEstimates: List<JobItemEstimateDTO>): Int
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE projectItemId = :itemId AND jobId = :jobId LIMIT 1")
     fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO?

@@ -21,6 +21,7 @@ import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfConversion
 import com.mapbox.turf.TurfMeasurement
 import com.xwray.groupie.viewbinding.BindableItem
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
@@ -40,7 +41,6 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import java.util.Locale
 
 open class CardItem(
     val activity: FragmentActivity?,
@@ -83,7 +83,6 @@ open class CardItem(
 
     private fun alertdialog(
         activity: FragmentActivity?,
-        position: Int,
         drive: String,
         selectedLocationPoint: Point,
         view: View,
@@ -91,7 +90,6 @@ open class CardItem(
         estimate: JobItemEstimateDTO,
         job: JobDTO
     ) {
-        // val drive = activity.getString(R.string.action_not_premitted )+ "\n Please Drive $distance KM to the location First"
         val alert = AlertDialog.Builder(activity!!)
         alert.run {
 
@@ -161,15 +159,14 @@ open class CardItem(
                         )
                     }
 
-                    else -> navigateOrWork(myLocation, position)
+                    else -> navigateOrWork(myLocation)
                 }
             }
         }
     }
 
     private fun WorkListItemBinding.navigateOrWork(
-        myLocation: LocationModel,
-        position: Int
+        myLocation: LocationModel
     ) {
         val myCurrentLocation = Point.fromLngLat(
             myLocation.longitude,
@@ -194,7 +191,7 @@ open class CardItem(
                 )
             )
 
-        startWorkBtn.setOnClickListener { view ->
+        startWorkBtn.setOnClickListener { _ ->
             if (straightDistanceBetweenDeviceAndTarget.isEmpty()) {
                 ToastUtils().toastLong(activity, activity?.getString(R.string.distance_misiing))
             } else {
@@ -211,7 +208,6 @@ open class CardItem(
                 } else {
                     alertdialog(
                         activity = activity,
-                        position = position,
                         drive = drive,
                         selectedLocationPoint =
                         selectedLocationPoint!!,

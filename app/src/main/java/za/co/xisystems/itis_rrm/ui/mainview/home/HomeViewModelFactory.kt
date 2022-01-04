@@ -19,7 +19,7 @@ class HomeViewModelFactory(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider(),
     private val application: Application
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return HomeViewModel(repository, offlineDataRepository, dispatchers, application) as T
     }
 }

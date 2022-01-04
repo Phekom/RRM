@@ -12,7 +12,7 @@ import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 class SharedViewModelFactory(
     private val userRepository: UserRepository
 ) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T: ViewModel> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return SharedViewModel(
             userRepository
         ) as T

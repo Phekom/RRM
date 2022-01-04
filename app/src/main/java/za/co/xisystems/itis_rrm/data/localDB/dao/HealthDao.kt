@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.HealthDTO
 interface HealthDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(health: HealthDTO): Long
+    fun insert(health: HealthDTO): Long
 
     @Query("SELECT * FROM HealthDTO")
     fun getLife(): LiveData<HealthDTO>

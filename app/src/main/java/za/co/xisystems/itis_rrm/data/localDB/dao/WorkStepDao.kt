@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 interface WorkStepDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlowStep(workSteps: WfWorkStepDTO)
+    fun insertWorkFlowStep(workSteps: WfWorkStepDTO)
 
     @Query("SELECT * FROM WorkStep_TABLE WHERE stepCode = :workCode")
     fun checkWorkFlowStepExistsWorkCode(workCode: String): Boolean

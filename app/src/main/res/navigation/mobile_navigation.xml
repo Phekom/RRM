@@ -65,6 +65,13 @@
             app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_unallocated"
+            app:destination="@id/nav_capture"
+            app:enterAnim="@anim/animate_card_enter"
+            app:exitAnim="@anim/animate_card_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
     </fragment>
 
     <fragment
@@ -219,6 +226,13 @@
             app:popExitAnim="@anim/animate_fade_exit"
             app:popUpTo="@id/addProjectFragment"
             app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_estimatePhotoFragment_to_nav_capture"
+            app:destination="@id/nav_capture"
+            app:enterAnim="@anim/animate_slide_down_enter"
+            app:exitAnim="@anim/animate_slide_up_exit"
+            app:popEnterAnim="@anim/animate_fade_enter"
+            app:popExitAnim="@anim/animate_fade_exit" />
 
     </fragment>
     <fragment
@@ -339,9 +353,9 @@
             app:destination="@id/nav_work"
             app:enterAnim="@anim/animate_slide_in_left"
             app:exitAnim="@anim/animate_slide_out_right"
-            app:popUpTo="@id/nav_work"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/nav_work"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment
@@ -398,11 +412,17 @@
             app:destination="@id/captureWorkFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/nav_capture"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureGalleryFragment"
+        tools:layout="@layout/fragment_capture_gallery"
 
+        />
 
     <action
         android:id="@+id/action_global_nav_home"
         app:destination="@id/nav_home"
-        app:popUpTo="@id/mobile_navigation"
+        app:popUpTo="@id/nav_home"
         app:launchSingleTop="true" />
+
 </navigation>

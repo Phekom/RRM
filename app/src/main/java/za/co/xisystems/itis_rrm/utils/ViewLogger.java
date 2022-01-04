@@ -1,7 +1,6 @@
 package za.co.xisystems.itis_rrm.utils;
 
 import android.app.Activity;
-import android.util.Log;
 
 import timber.log.Timber;
 import za.co.xisystems.itis_rrm.base.BaseFragment;

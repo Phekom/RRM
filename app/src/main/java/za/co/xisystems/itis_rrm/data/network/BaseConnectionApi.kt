@@ -45,7 +45,6 @@ const val BASE_URL = BuildConfig.API_HOST
 interface BaseConnectionApi {
 
     @FormUrlEncoded
-
     @POST("Register")
     suspend fun userRegister(
         @Field("device") device: String,
@@ -56,7 +55,6 @@ interface BaseConnectionApi {
     ): Response<AuthResponse>
 
     @FormUrlEncoded
-
     @POST("HealthCheck")
     suspend fun healthCheck(
         @Field("UserLogon") userLogon: String
@@ -108,14 +106,12 @@ interface BaseConnectionApi {
     ): Response<ToDoListGroupsResponse>
 
     @FormUrlEncoded
-
     @POST("GetRRMJob")
     suspend fun getJobsForApproval(
         @Field("JobId") jobId: String
     ): Response<JobResponse>
 
     @FormUrlEncoded
-
     @POST("GetRrmJobPhotoEstimate")
     suspend fun getPhotoEstimate(
         @Field("FileName") fileName: String
@@ -202,10 +198,12 @@ interface BaseConnectionApi {
         ): BaseConnectionApi {
             val okkHttpclient = OkHttpClient
                 .Builder().apply {
+                    callTimeout(10, TimeUnit.MINUTES)
                     readTimeout(5, TimeUnit.MINUTES)
                     writeTimeout(5, TimeUnit.MINUTES)
                     connectTimeout(5, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
+                        .pingInterval(10000, TimeUnit.MILLISECONDS)
 
                     addInterceptor(networkConnectionInterceptor)
                     addInterceptor { chain ->
@@ -227,12 +225,14 @@ interface BaseConnectionApi {
             }
 
             return Retrofit.Builder()
-                // .addCallAdapterFactory(NetworkResponseAdapterFactory())
+                //.addCallAdapterFactory(NetworkResponseAdapterFactory())
                 .client(okkHttpclient.build())
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(BaseConnectionApi::class.java)
         }
+
+
     }
 }

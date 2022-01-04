@@ -41,9 +41,9 @@ class ServiceUriUtil {
 
         private val serverUriFriendlyString: String
             get() {
-                var url = BuildConfig.API_HOST
-                url = url.replace("https://", "")
-                val x = url.indexOf("/")
+                val url = BuildConfig.API_HOST
+                // url = url.replace("https://", "")
+                val x = url.indexOf("/api")
                 return if (x > -1) url.substring(0, x) else url
             }
     }

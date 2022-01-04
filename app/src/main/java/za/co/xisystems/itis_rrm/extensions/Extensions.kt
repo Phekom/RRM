@@ -133,6 +133,7 @@ fun Context.uomForUI(uom: String): String {
 
 val Context.isConnected: Boolean get() = ServiceUtil.isNetworkConnected(this.applicationContext)
 
+@Suppress("TooGenericExceptionCaught")
 fun Fragment.checkLocationProviders() {
     val lm = this.requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
     try {

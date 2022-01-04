@@ -6,6 +6,7 @@
 
 package za.co.xisystems.itis_rrm.utils
 
+import timber.log.Timber
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -14,7 +15,6 @@ import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import timber.log.Timber
 
 /**
  * Created by Mauritz Mollentze on 2014/12/19.
@@ -24,7 +24,7 @@ object DateUtil {
     private const val parsingIso8601DateTimeFailed = "Parsing ISO8601 datetime failed"
 
     private val iso8601Format: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT)
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ROOT)
 
     private val localDateTimeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
     private val readableDateForm: DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
@@ -44,7 +44,7 @@ object DateUtil {
     }
 
     fun dateToLocalString(date: Date?): String? {
-        return if (null == date) null else date.toInstant().toEpochMilli().toString()
+        return date?.toInstant()?.toEpochMilli()?.toString()
     }
 
     fun dateToString(date: Date?): String? {

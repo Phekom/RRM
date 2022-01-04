@@ -425,7 +425,9 @@ class MeasureCreationDataRepository(
         }
     }
 
-    suspend fun getItemJobNo(jobId: String): String = appDb.getJobDao().getItemJobNo(jobId)
+    suspend fun getItemJobNo(jobId: String): String = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobDao().getItemJobNo(jobId)
+    }
 
     private fun insertOrUpdateWorkflowJobInSQLite(job: WorkflowJobDTO?, estimatesPush: Boolean = false) {
         job?.let {

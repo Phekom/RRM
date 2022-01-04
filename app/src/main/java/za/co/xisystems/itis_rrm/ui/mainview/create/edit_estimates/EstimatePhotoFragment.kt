@@ -25,6 +25,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RadioButton
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -36,7 +37,6 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
-import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.airbnb.lottie.LottieAnimationView
@@ -53,11 +53,12 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
-import kotlinx.android.synthetic.main.fragment_goto.*
+import java.io.File
+import java.text.DecimalFormat
+import kotlin.collections.set
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
 import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
@@ -83,21 +84,20 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
-import java.io.File
-import java.text.DecimalFormat
-import kotlin.collections.set
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
+ * Updated by Francis Mahlava on 2021/11/23
  */
 
-class EstimatePhotoFragment: LocationFragment(), DIAware {
+class EstimatePhotoFragment : LocationFragment() {
 
+    private var selectedJobType: String? = null
     private var sectionId: String? = null
     override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
@@ -126,16 +126,16 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
     private var startImageUri: Uri? = null
     private var endImageUri: Uri? = null
     private var imageUri: Uri? = null
-    private val uiScope = UiLifecycleScope()
     private val photoUtil: PhotoUtil by instance()
     private var changesToPreserve: Boolean = false
     private var tenderRate: Double? = null
     private val navigationLocationProvider = NavigationLocationProvider()
 
-    private val locationObserver = object: LocationObserver {
+    private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
             // You're going to need this when you
             // aren't driving.
+            navigationLocationProvider.changePosition(rawLocation)
         }
 
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
@@ -179,7 +179,6 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
                 }
             }
         }
-        this@EstimatePhotoFragment.photosDone()
     }
 
     init {
@@ -187,14 +186,11 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         lifecycleScope.launch {
 
             whenCreated {
-                uiScope.onCreate()
-                createViewModel = activity?.run {
-                    ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-                } ?: throw Exception("Invalid Activity")
-            }
-
-            whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+                createViewModel =
+                    ViewModelProvider(
+                        this@EstimatePhotoFragment.requireActivity(),
+                        factory
+                    )[CreateViewModel::class.java]
             }
 
             whenResumed {
@@ -205,6 +201,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     companion object {
         private const val REQUEST_STORAGE_PERMISSION = 505
+        private const val IMAGE_REQ_CODE = 101
         private const val GEOJSON_SOURCE_ID = "GEOJSON_SOURCE_ID"
         private const val ICON_LAYER_ID = "ICON_LAYER_ID"
         private const val ICON_SOURCE_ID = "ICON_SOURCE_ID"
@@ -216,13 +213,46 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
-        mapboxMap = binding.estimatemapview.getMapboxMap()
-        binding.estimatemapview.location.apply {
-            setLocationProvider(navigationLocationProvider)
-            enabled = true
-        }
-        init()
+
         return binding.root
+    }
+
+    private fun setJobType(jobType: String) {
+        binding.apply {
+            when (jobType) {
+                "Point" -> {
+                    point.isChecked = true
+                }
+                "Line" -> {
+                    line.isChecked = true
+                }
+                else -> {
+                    line.isChecked = false
+                    point.isChecked = false
+                }
+            }
+
+            jobTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+                val radio: RadioButton = root.findViewById(checkedId)
+                selectedJobType = "${radio.text}"
+                when {
+                    selectedJobType!!.contains("Point") -> {
+                        binding.secondImage.visibility = View.GONE
+                        binding.startPhotoButton.visibility = View.VISIBLE
+                        binding.startPhotoButton.text = getString(R.string.capture_photo)
+                    }
+                    selectedJobType!!.contains("Line") -> {
+                        binding.secondImage.visibility = View.VISIBLE
+                        binding.startPhotoButton.visibility = View.VISIBLE
+                        binding.startPhotoButton.text = getString(R.string.capture_start)
+                    }
+                    else -> {
+                        binding.secondImage.visibility = View.GONE
+                        binding.startPhotoButton.visibility = View.GONE
+                    }
+                }
+            }
+        }
     }
 
     private fun init() {
@@ -234,6 +264,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
     }
 
+    @SuppressLint("MissingPermission")
     private fun initNavigation() {
         mapboxNavigation = MapboxNavigation(
             NavigationOptions.Builder(requireContext())
@@ -244,17 +275,16 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
+                        requireContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
             ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
+                this@EstimatePhotoFragment.extensionToast(
+                    message = "Please enable location services in order to proceed",
+                    style = ToastStyle.WARNING,
+                    position = ToastGravity.CENTER,
+                    duration = ToastDuration.LONG
+                )
             }
             startTripSession()
             registerLocationObserver(locationObserver)
@@ -266,7 +296,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         (activity as MainActivity).supportActionBar?.title = getString(R.string.edit_estimate)
         locationWarning = false
 
-        val callback: OnBackPressedCallback = object: OnBackPressedCallback(true) {
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
             }
@@ -293,9 +323,22 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
             readNavArgs()
             stateRestored = true
         }
+
         if (savedInstanceState != null && !stateRestored) {
             onRestoreInstanceState(savedInstanceState)
+        } else {
+            setJobType("")
         }
+
+        mapboxMap = binding.estimatemapview.getMapboxMap()
+        binding.estimatemapview.location.apply {
+            setLocationProvider(navigationLocationProvider)
+            enabled = true
+        }
+        binding.secondImage.visibility = View.GONE
+        binding.startPhotoButton.visibility = View.GONE
+
+        init()
 
         pullData()
     }
@@ -303,7 +346,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
     @Suppress("MagicNumber")
     private fun updateCamera(location: Location) {
         val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
-        _binding?.estimatemapview?.camera?.easeTo(
+        binding.estimatemapview.camera.easeTo(
             CameraOptions.Builder()
                 // Centers the camera to the lng/lat specified.
                 .center(Point.fromLngLat(location.longitude, location.latitude))
@@ -488,32 +531,92 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     private fun setEstimateQty(text: CharSequence?) {
         try {
-            val quantity = text.toString().toDouble()
-            newJobItemEstimate?.qty = quantity
+            val quantity = text.toString().toIntOrNull() ?: 0.0
+            newJobItemEstimate?.qty = quantity.toDouble()
+        } catch (ex: java.lang.NumberFormatException) {
+            Timber.e(" ")
+            quantity = 0.0
+        } finally {
             createViewModel.setEstimateQuantity(quantity)
             changesToPreserve = true
             setCost()
-        } catch (ex: java.lang.NumberFormatException) {
-            Timber.e(" ")
         }
     }
 
+    @SuppressLint("TimberArgCount")
     private fun setButtonClicks() {
 
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
 
+//                 R.id.startPhotoButton -> {
+//                     photoType = PhotoType.START
+//                      if (item != null) {
+//                          itemIdPhotoType["itemId"] = item!!.itemId
+//                          itemIdPhotoType["type"] = photoType.name
+//                      }
+//
+//                     ImagePicker.with(this)
+//                         .saveDir(photoUtil.pictureFolder)
+// //                        .cropSquare()
+//                         .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
+//                             Timber.d("ImagePicker", "Selected ImageProvider: + ${ imageProvider.name} ")
+//                         }
+//                         .setDismissListener {
+//                             Timber.d("Dialog Dismiss")
+//                         }
+//                         // Image resolution will be less than 512 x 512
+//                         .maxResultSize(200, 200)
+//                         .start(IMAGE_REQ_CODE)
+//
+//                     // binding.startPhotoButton.visibility = View.GONE
+//                     // binding.originStart.visibility = View.VISIBLE
+//                 }
+//
+//                 R.id.endPhotoButton -> {
+//                     photoType = PhotoType.END
+//                     if (item != null) {
+//                         itemIdPhotoType["itemId"] = item!!.itemId
+//                         itemIdPhotoType["type"] = photoType.name
+//                     }
+//
+//                     ImagePicker.with(this)
+//                         .saveDir(photoUtil.pictureFolder)
+// //                        .cropSquare()
+//                         .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
+//                             Timber.d("ImagePicker", "Selected ImageProvider: + ${ imageProvider.name} ")
+//                         }
+//                         .setDismissListener {
+//                             Timber.d("Dialog Dismiss")
+//                         }
+//                         // Image resolution will be less than 512 x 512
+//                         .maxResultSize(200, 200)
+//                         .start(IMAGE_REQ_CODE)
+//
+//                     // binding.endPhotoButton.visibility = View.GONE
+//                     //  binding.originEnd.visibility = View.VISIBLE
+//                 }
+
                 R.id.startPhotoButton -> {
                     locationWarning = false
                     binding.startImageView.visibility = View.GONE
                     binding.startAnimationView.visibility = View.VISIBLE
+                    if (item != null) {
+                        itemIdPhotoType["itemId"] = item!!.itemId
+                        itemIdPhotoType["type"] = photoType.name
+                    }
                     takePhoto(PhotoType.START)
                     this@EstimatePhotoFragment.takingPhotos()
                 }
+
                 R.id.endPhotoButton -> {
                     locationWarning = false
                     binding.endImageView.visibility = View.GONE
                     binding.endAnimationView.visibility = View.VISIBLE
+                    if (item != null) {
+                        itemIdPhotoType["itemId"] = item!!.itemId
+                        itemIdPhotoType["type"] = photoType.name
+                    }
                     takePhoto(PhotoType.END)
                     this@EstimatePhotoFragment.takingPhotos()
                 }
@@ -548,18 +651,60 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         }
     }
 
+    // override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    //     super.onActivityResult(requestCode, resultCode, data)
+    //     when (resultCode) {
+    //         Activity.RESULT_OK -> {
+    //
+    //             // Uri object will not be null for RESULT_OK
+    //             val uri: Uri = data?.data!!
+    //             when (requestCode) {
+    //                 IMAGE_REQ_CODE -> {
+    //                     uiScope.launch(dispatchers.io()) {
+    //                         processAndSetImage(uri)
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //         ImagePicker.RESULT_ERROR -> {
+    //             ToastUtils().toastShort(requireContext(), ImagePicker.getError(data))
+    //         }
+    //         else -> {
+    //             ToastUtils().toastShort(requireContext(), "Task Cancelled")
+    //         }
+    //     }
+    // }
+
     private fun validateAndUpdateEstimate(view: View) {
-        if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() != 2) {
-            toast("Please Make Sure you have Captured Both Images")
+
+        if (selectedJobType == JobItemEstimateSize.POINT.getValue()) {
+            validateEstimateBySize(view, JobItemEstimateSize.POINT.getValue(), 1)
+        } else if (selectedJobType == JobItemEstimateSize.LINE.getValue()) {
+            validateEstimateBySize(view, JobItemEstimateSize.LINE.getValue(), 2)
+        }
+    }
+
+    private fun validateEstimateBySize(view: View, jobSize: String, minimumPhotoCount: Int) {
+        newJobItemEstimate?.jobItemEstimateSize = jobSize
+        if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < minimumPhotoCount) {
+            extensionToast(
+                message = "Please capture at least $minimumPhotoCount photograph(s)...",
+                style = ToastStyle.INFO,
+                position = ToastGravity.BOTTOM
+            )
             binding.labelTextView.startAnimation(animations!!.shake_long)
         } else {
-            Coroutines.main {
-                createViewModel.isEstimateComplete(newJobItemEstimate!!).also { result ->
-                    if (result) {
-                        calculateCost()
-                        this@EstimatePhotoFragment.toggleLongRunning(true)
-                        saveValidEstimate(view)
-                    }
+            saveCheckedEstimate(view)
+        }
+    }
+
+    private fun saveCheckedEstimate(view: View) {
+        Coroutines.main {
+            createViewModel.estimateComplete(newJobItemEstimate!!).also { result ->
+                if (result) {
+                    calculateCost()
+                    this@EstimatePhotoFragment.toggleLongRunning(true)
+                    saveValidEstimate(view)
                 }
             }
         }
@@ -575,6 +720,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
         setEstimateQty(binding.valueEditText.text as CharSequence)
+
         if (newJobItemEstimate!!.qty > 0 && newJobItemEstimate!!.lineRate > 0.0 && changesToPreserve) {
 
             val saveValidEstimate = newJobItemEstimate!!.copy(
@@ -601,14 +747,12 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
 
     private fun updateData(view: View) {
         this.toggleLongRunning(false)
-        // createViewModel.unbindEstimateView()
         newJob?.let {
             navToAddProject(view)
         }
     }
 
     private fun takePhoto(picType: PhotoType) {
-
         photoType = picType
         initLaunchCamera()
     }
@@ -663,7 +807,6 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         }
     }
 
-    @Synchronized
     private suspend fun restoreEstimatePhoto(
         // jobItemEstimate: JobItemEstimateDTO,
         photo: JobItemEstimatesPhotoDTO,
@@ -717,11 +860,9 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
     @SuppressLint("RestrictedApi")
     private suspend fun processAndSetImage(
         imageUri: Uri
-        // item: ItemDTOTemp?,
-        // newJobDTO: JobDTO?,
-        // estimate: JobItemEstimateDTO?
-    ) = withContext(uiScope.coroutineContext) {
-        try { //  Location of picture
+    ) = uiScope.launch(uiScope.coroutineContext) {
+        try {
+            // Location of picture
             val estimateLocation: LocationModel? = this@EstimatePhotoFragment.getCurrentLocation()
             Timber.d("x -> $estimateLocation")
             if (estimateLocation != null) {
@@ -730,7 +871,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
                 withContext(dispatchers.io()) {
                     filenamePath = photoUtil.saveImageToInternalStorage(
                         imageUri
-                    ) as HashMap<String, String>
+                    )!! // as HashMap<String, String>
                 }
 
                 processPhotoEstimate(
@@ -765,7 +906,8 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
             newJobItemEstimate = createViewModel.createItemEstimate(
                 itemId = itemId,
                 newJob = newJob,
-                item = item
+                item = item,
+                estimateSize = selectedJobType
             )
 
             item = item!!.copy(estimateId = newJobItemEstimate!!.estimateId)
@@ -917,18 +1059,12 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         uiScope.launch(dispatchers.io()) {
             this@EstimatePhotoFragment.isEstimateDone =
                 createViewModel.estimateComplete(newJobItemEstimate)
-
             withContext(dispatchers.ui()) {
                 if (isEstimateDone) {
                     binding.costCard.visibility = View.VISIBLE
                     binding.updateButton.visibility = View.VISIBLE
                     setCost()
                 } else {
-                    extensionToast(
-                        message = "Please take both photographs ...",
-                        style = ToastStyle.INFO,
-                        position = ToastGravity.BOTTOM
-                    )
                     hideCostCard()
                 }
             }
@@ -948,19 +1084,37 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setCost() {
-        if (newJobItemEstimate?.size() == 2) {
-            binding.valueEditText.visibility = View.VISIBLE
-            binding.costTextView.visibility = View.VISIBLE
-            binding.costTextView.startAnimation(animations!!.bounce_soft)
-            binding.labelTextView.text = "Quantity"
-            calculateCost()
+        if (selectedJobType.equals("Point")) {
+            if (newJobItemEstimate?.size() ?: 0 >= 1) {
+                showCostCard()
+                calculateCost()
+            } else {
+                incompleteEstimateNotice()
+            }
         } else {
-            binding.labelTextView.text = getString(R.string.warning_estimate_incomplete)
-            binding.labelTextView.startAnimation(animations!!.shake_long)
-            binding.valueEditText.visibility = View.GONE
-            binding.costTextView.visibility = View.GONE
+            if (newJobItemEstimate?.size() ?: 0 >= 2) {
+                showCostCard()
+                calculateCost()
+            } else {
+                incompleteEstimateNotice()
+            }
         }
+    }
+
+    private fun incompleteEstimateNotice() {
+        binding.labelTextView.text = getString(R.string.warning_estimate_incomplete)
+        binding.labelTextView.startAnimation(animations!!.shake_long)
+        binding.valueEditText.visibility = View.GONE
+        binding.costTextView.visibility = View.GONE
+    }
+
+    private fun showCostCard() {
+        binding.valueEditText.visibility = View.VISIBLE
+        binding.costTextView.visibility = View.VISIBLE
+        binding.costTextView.startAnimation(animations!!.bounce_soft)
+        binding.labelTextView.text = getString(R.string.quantity)
     }
 
     private fun haltAnimation() {
@@ -981,15 +1135,9 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         //  valueEditText.clearFocus()
 
         var lineAmount: Double?
-        val tenderRate = newJobItemEstimate?.lineRate ?: item?.tenderRate ?: 0.0
+        val tenderRate = item?.tenderRate ?: newJobItemEstimate?.lineRate
 
-        var qty = item?.quantity ?: value.toDouble()
-
-        try {
-            qty = value.toDouble()
-        } catch (e: NumberFormatException) {
-            Timber.d(e)
-        }
+        val qty = value.toDoubleOrNull() ?: 0.0
 
         when (item?.uom) {
             "NO", "QTY", null -> {
@@ -1010,7 +1158,7 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
             else -> {
                 binding.labelTextView.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
-                    lineAmount = qty * tenderRate
+                    lineAmount = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
                     lineAmount = null
                     requireActivity().hideKeyboard()
@@ -1020,18 +1168,21 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
             }
         }
 
-        val displayAmount = lineAmount ?: tenderRate * qty
+        val displayAmount = lineAmount ?: tenderRate!! * qty
 
-        when (displayAmount > 0.0) {
+        when (displayAmount >= 0.0) {
             true -> {
                 // Display pricing information
                 binding.costTextView.text =
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
-                newJobItemEstimate?.lineRate = tenderRate
+                newJobItemEstimate?.lineRate = tenderRate!!
                 createViewModel.setEstimateQuantity(qty)
                 createViewModel.setEstimateLineRate(tenderRate)
                 changesToPreserve = true
+            }
+            else -> {
+                incompleteEstimateNotice()
             }
         }
     }
@@ -1183,14 +1334,17 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
         if (newJobItemEstimate != null) {
             uiScope.launch(uiScope.coroutineContext) {
                 try {
+                    setJobType(newJobItemEstimate?.jobItemEstimateSize!!)
+
                     quantity = newJobItemEstimate!!.qty
                     createViewModel.setEstimateQuantity(quantity)
-                    isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
                     newJobItemEstimate?.jobItemEstimatePhotos?.forEach { photo ->
                         restoreEstimatePhoto(
                             photo
                         )
                     }
+
+                    isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
 
                     if (isEstimateDone) {
                         binding.costCard.visibility = View.VISIBLE
@@ -1226,7 +1380,6 @@ class EstimatePhotoFragment: LocationFragment(), DIAware {
      */
     override fun onDestroyView() {
         super.onDestroyView()
-        uiScope.destroy()
         createViewModel.itemJob.removeObservers(viewLifecycleOwner)
         createViewModel.tempProjectItem.removeObservers(viewLifecycleOwner)
         createViewModel.currentEstimate.removeObservers(viewLifecycleOwner)

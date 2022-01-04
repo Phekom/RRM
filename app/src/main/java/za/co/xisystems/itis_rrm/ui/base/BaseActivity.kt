@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
-import timber.log.Timber
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
@@ -90,8 +89,9 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
     }
 
     override fun onUserInteraction() {
-        Timber.d("User interaction!!")
+        if (armoury.timeStampDue()) {
+            armoury.writeFutureTimestamp()
+        }
         super.onUserInteraction()
-        armoury.writeFutureTimestamp()
     }
 }

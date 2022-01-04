@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
 interface WorkFlowDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkFlow(workFlow: WorkFlowDTO)
+    fun insertWorkFlow(workFlow: WorkFlowDTO)
 
     @Query("SELECT * FROM WORKFLOW_TABLE WHERE workflowId = :workflowId")
     fun checkWorkFlowExistsWorkflowID(workflowId: Long): Boolean
