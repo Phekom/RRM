@@ -9,6 +9,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.approvejobs
 
 import android.app.Dialog
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,32 +17,34 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorAction
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovejobBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -49,37 +52,28 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveJobsFragment : BaseFragment(), KodeinAware {
+class ApproveJobsFragment : BaseFragment() {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
-    private val factory: ApproveJobsViewModelFactory by instance<ApproveJobsViewModelFactory>()
+    private val factory: ApproveJobsViewModelFactory by instance()
     lateinit var dialog: Dialog
-    private var uiScope = UiLifecycleScope()
     private var _ui: FragmentApprovejobBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
     private var queryObserver = Observer<XIResult<String>?> { handleQueryErrors(it) }
 
     companion object {
         val TAG: String = ApproveJobsFragment::class.java.simpleName
     }
 
-    init {
-        lifecycleScope.launch {
-            whenStarted {
-                uiScope.onCreate()
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
-            }
-        }
-    }
-
     private fun handleQueryErrors(outcome: XIResult<String>?) {
         outcome?.let { result ->
             when (result) {
-                is XIError -> {
+                is XIResult.Error -> {
+                    toggleLongRunning(false)
+                    ui.approveJobVeiledRecycler.unVeil()
                     crashGuard(
-                        view = this.requireView(),
                         throwable = result,
                         refreshAction = { retryFetchRemoteJobs() }
                     )
@@ -89,6 +83,12 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
                 }
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        approveViewModel = ViewModelProvider(this.requireActivity(), factory)[ApproveJobsViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -109,19 +109,14 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         super.onViewCreated(view, savedInstanceState)
 
         initVeiledRecyclerView()
+    }
 
+    override fun onResume() {
+        super.onResume()
         Coroutines.main {
             swipeToRefreshInit()
             fetchJobsFromServices()
         }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveJobsViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
     }
 
     private fun initVeiledRecyclerView() {
@@ -146,43 +141,41 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         try {
             if (veiled) {
                 ui.approveJobVeiledRecycler.veil()
+                toggleLongRunning(true)
             }
             approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
             fetchQuery()
         } catch (t: Throwable) {
-            ui.approveJobVeiledRecycler.unVeil()
-            val xiFail = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val xiFail = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                view = this@ApproveJobsFragment.requireView(),
                 throwable = xiFail,
                 refreshAction = { uiScope.launch { retryAction() } }
             )
         } finally {
             approveViewModel.workflowState.removeObserver(queryObserver)
+            toggleLongRunning(false)
+            ui.approveJobVeiledRecycler.unVeil()
         }
     }
 
     private suspend fun fetchLocalJobs() {
 
         val jobs = approveViewModel.getJobsForActivityId(ActivityIdConstants.JOB_APPROVE)
-        jobs.observe(
-            viewLifecycleOwner,
-            { jobList ->
+        jobs.observeOnce(viewLifecycleOwner, { jobList ->
 
-                if (jobList.isNullOrEmpty()) {
-                    ui.approveJobVeiledRecycler.unVeil()
-                    ui.approveJobVeiledRecycler.visibility = View.GONE
-                    ui.noData.visibility = View.VISIBLE
-                } else {
-                    ui.noData.visibility = View.GONE
-                    ui.approveJobVeiledRecycler.visibility = View.VISIBLE
-                    val jItems = jobList.distinctBy {
-                        it.jobId
-                    }
-                    initRecyclerView(jItems.toApproveListItems())
+            if (jobList.isNullOrEmpty()) {
+                ui.approveJobVeiledRecycler.unVeil()
+                ui.approveJobVeiledRecycler.visibility = View.GONE
+                ui.noData.visibility = View.VISIBLE
+            } else {
+                ui.noData.visibility = View.GONE
+                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
+                val jItems = jobList.distinctBy {
+                    it.jobId
                 }
+                initRecyclerView(jItems.toApproveListItems())
             }
-        )
+        })
     }
 
     private fun swipeToRefreshInit() {
@@ -208,17 +201,25 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private suspend fun fetchJobsFromServices() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
-            freshJobs.observeOnce(
-                viewLifecycleOwner,
-                {
-                    ui.jobsSwipeToRefresh.isRefreshing = false
-                    protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
-                }
-            )
+            freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
+                ui.jobsSwipeToRefresh.isRefreshing = false
+                protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
+            })
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
-            throw throwable
+            val xiFail = XIResult.Error(throwable, message)
+            toggleLongRunning(false)
+            ui.approveJobVeiledRecycler.unVeil()
+            val xiAction = XIErrorAction(
+                fragmentReference = WeakReference(this),
+                view = this.requireView(),
+                throwable = xiFail,
+                shouldToast = false,
+                shouldShowSnackBar = true,
+                refreshAction = { retryFetchRemoteJobs() }
+            )
+            XIErrorHandler.handleError(xiAction)
         }
     }
 
@@ -230,14 +231,17 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
     private fun initRecyclerView(
         approveJobListItems: List<ApproveJobItem>
     ) {
-        groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             addAll(approveJobListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, approveJobListItems.size)
         }
 
         ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))
         ui.approveJobVeiledRecycler.setAdapter(groupAdapter)
-        ui.approveJobVeiledRecycler.doOnNextLayout { ui.approveJobVeiledRecycler.unVeil() }
+        ui.approveJobVeiledRecycler.doOnNextLayout {
+            ui.approveJobVeiledRecycler.unVeil()
+            toggleLongRunning(false)
+        }
 
         groupAdapter.setOnItemClickListener { item, view ->
             Coroutines.main {
@@ -256,8 +260,10 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
             approveViewModel.setJobForApproval(job)
         }
 
-        Navigation.findNavController(view)
-            .navigate(R.id.action_nav_approveJbs_to_jobInfoFragment)
+        val direction =
+            ApproveJobsFragmentDirections.actionNavApproveJbsToJobInfoFragment(job.jobDTO.jobId)
+
+        Navigation.findNavController(view).navigate(direction)
     }
 
     private fun List<JobDTO>.toApproveListItems(): List<ApproveJobItem> {
@@ -270,7 +276,19 @@ class ApproveJobsFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.approveJobVeiledRecycler.setAdapter(null)
-        uiScope.destroy()
         _ui = null
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val direction = MobileNavigationDirections.actionGlobalNavHome()
+                Navigation.findNavController(this@ApproveJobsFragment.requireView())
+                    .navigate(direction)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 }

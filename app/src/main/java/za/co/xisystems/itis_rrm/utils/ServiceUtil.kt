@@ -9,7 +9,6 @@ package za.co.xisystems.itis_rrm.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -17,36 +16,19 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 
 object ServiceUtil {
-
-    fun isNetworkConnected(context: Context): Boolean {
-        return isNetworkAvailable(context)
-    }
-
     fun isNetworkAvailable(context: Context): Boolean {
         var result = false
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            connectivityManager?.let {
-                it.getNetworkCapabilities(connectivityManager.activeNetwork)?.apply {
-                    result = when {
-                        hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-                        else -> false
-                    }
-                }
-            }
-        } else {
-            // For Android versions older than Marshmallow, this will work.
-            connectivityManager?.run {
-                @Suppress("DEPRECATION")
-                activeNetworkInfo?.run {
-                    result = when (type) {
-                        ConnectivityManager.TYPE_WIFI -> true
-                        ConnectivityManager.TYPE_MOBILE -> true
-                        else -> false
-                    }
+        connectivityManager?.let {
+            it.getNetworkCapabilities(connectivityManager.activeNetwork)?.apply {
+                result = when {
+                    hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                    hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                    hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                    hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> true
+                    else -> false
                 }
             }
         }
@@ -62,13 +44,16 @@ object ServiceUtil {
             val inetAddress: InetAddress = InetAddress.getByName(host)
             val inetSocketAddress = InetSocketAddress(inetAddress, port)
             socket.connect(inetSocketAddress, timeout.toInt())
-            socket.close()
             result = true
         } catch (e: Exception) {
-            Timber.e("Connection to $host failed: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            Timber.e("Could not connect to $host:$port: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         } finally {
-            if (!socket.isClosed) socket.close()
+            socket.close()
         }
         return result
+    }
+
+    fun isNetworkConnected(applicationContext: Context): Boolean {
+        return isNetworkAvailable(applicationContext)
     }
 }

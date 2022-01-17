@@ -10,6 +10,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
@@ -22,15 +23,15 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
 import java.util.ArrayList
 import java.util.concurrent.CancellationException
 import kotlinx.coroutines.CoroutineStart.DEFAULT
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
@@ -41,19 +42,19 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentSelectItemBinding
+import za.co.xisystems.itis_rrm.databinding.ProjectItemBinding
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
  */
 
-class SelectItemFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class SelectItemFragment : BaseFragment(), DIAware {
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
     private var items: MutableList<ItemDTOTemp> = ArrayList()
@@ -68,19 +69,18 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     internal var selectedSectionItem: SectionItemDTO? = null
 
-    internal var useR: Int? = null
+    private var useR: Int? = null
 
-    lateinit var editJob: JobDTO
-    private var uiScope = UiLifecycleScope()
+    private lateinit var editJob: JobDTO
+    var stateRestored = false
 
     init {
 
         lifecycleScope.launch {
             whenCreated {
-                uiScope.onCreate()
+                uiScope.create()
             }
             whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
                 initUI()
             }
             whenResumed {
@@ -93,22 +93,16 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private fun initUI() {
         uiScope.launch(context = uiScope.coroutineContext, start = DEFAULT) {
-            createViewModel.loggedUser.observe(
-                viewLifecycleOwner,
-                { user ->
-                    useR = user
-                }
-            )
+            createViewModel.loggedUser.observe(viewLifecycleOwner, { user ->
+                useR = user
+            })
 
-            createViewModel.currentJob.observe(
-                viewLifecycleOwner,
-                { newJ ->
-                    newJ?.let {
-                        editJob = it
-                        setItemsBySections(it.projectId!!)
-                    }
+            createViewModel.itemJob.observe(viewLifecycleOwner, { newJ ->
+                newJ.getContentIfNotHandled()?.let {
+                    editJob = it
+                    setItemsBySections(it.projectId!!)
                 }
-            )
+            })
         }
     }
 
@@ -122,6 +116,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         return false // To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        createViewModel = ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
+        itemSections = ArrayList()
+        newJobItemEstimatesList = ArrayList()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -132,15 +133,8 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        var stateRestored = false
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
-        itemSections = ArrayList()
-        newJobItemEstimatesList = ArrayList()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val args by navArgs<SelectItemFragmentArgs>()
 
@@ -172,33 +166,13 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             it.run {
                 val jobId = getString("jobId", "")
                 if (jobId.isNotBlank()) {
-                    createViewModel.setJobToEdit(jobId)
+                    createViewModel.setItemJob(jobId)
                     initUI()
                 }
             }
         }
     }
 
-    /**
-     * Called to ask the fragment to save its current dynamic state, so it
-     * can later be reconstructed in a new instance of its process is
-     * restarted.  If a new instance of the fragment later needs to be
-     * created, the data you place in the Bundle here will be available
-     * in the Bundle given to [.onCreate],
-     * [.onCreateView], and
-     * [.onActivityCreated].
-     *
-     *
-     * This corresponds to [ Activity.onSaveInstanceState(Bundle)]
-     * [Activity.onSaveInstanceState] and most of the discussion there
-     * applies here as well.  Note however: *this method may be called
-     * at any time before [.onDestroy]*.  There are many situations
-     * where a fragment may be mostly torn down (such as when placed on the
-     * back stack with no UI showing), but its state will not be saved until
-     * its owning activity actually needs to save its state.
-     *
-     * @param outState Bundle in which to place your saved state.
-     */
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             putString("jobId", editJob.jobId)
@@ -208,43 +182,46 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
     private fun setItemsBySections(projectId: String) {
         uiScope.launch(context = uiScope.coroutineContext) {
-
-            // SectionItems filtered by projectId
             val sectionItems = createViewModel.getSectionItemsForProject(projectId)
             ui.dataLoading2.visibility = View.VISIBLE
 
-            sectionItems.observe(
-                viewLifecycleOwner,
-                { sectionData ->
-                    val sectionSelections = arrayOfNulls<String?>(sectionData.size)
-                    ui.dataLoading2.visibility = View.GONE
-                    for (item in sectionData.indices) {
-                        sectionSelections[item] = sectionData[item].description
-                    }
-
-                    setSpinner(
-                        requireContext().applicationContext,
-                        ui.sectionItemSpinner,
-                        sectionData,
-                        sectionSelections,
-                        object : SpinnerHelper.SelectionListener<SectionItemDTO> {
-
-                            override fun onItemSelected(position: Int, item: SectionItemDTO) {
-                                if (animate) {
-                                    ui.sectionItemSpinner.startAnimation(bounce_750)
-                                    ui.itemRecyclerView.startAnimation(bounce_1000)
-                                }
-                                selectedSectionItem = item
-                                setRecyclerItems(projectId, item.sectionItemId)
-                            }
-                        }
-                    )
-                    ui.sectionItemSpinner.setOnTouchListener { _, _ ->
-                        animate = true
-                        false
-                    }
+            sectionItems.observe(viewLifecycleOwner, { sectionData ->
+                val sectionSelections = arrayOfNulls<String?>(sectionData.size)
+                ui.dataLoading2.visibility = View.GONE
+                for (item in sectionData.indices) {
+                    sectionSelections[item] = sectionData[item].description
                 }
-            )
+
+                setSpinner(
+                    requireContext().applicationContext,
+                    ui.sectionItemSpinner,
+                    sectionData,
+                    sectionSelections,
+                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+
+                        override fun onItemSelected(position: Int, item: SectionItemDTO) {
+                            if (animate) {
+                                ui.sectionItemSpinner.startAnimation(bounce_750)
+                                ui.itemRecyclerView.startAnimation(bounce_1000)
+                            }
+                            selectedSectionItem = item
+                            setRecyclerItems(projectId, item.sectionItemId)
+                        }
+                    }
+                )
+                ui.sectionItemSpinner.setOnTouchListener { view, motionEvent ->
+                    when (motionEvent.action) {
+                        MotionEvent.ACTION_UP -> {
+                            view.performClick()
+                        }
+                        else -> {
+                            // MotionEvent.ACTION_DOWN happened
+                        }
+                    }
+                    animate = true
+                    false
+                }
+            })
         }
     }
 
@@ -258,13 +235,10 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         uiScope.launch(context = uiScope.coroutineContext) {
             val projectsItems =
                 createViewModel.getAllItemsForSectionItemByProjectId(sectionItemId, projectId)
-            projectsItems.observe(
-                viewLifecycleOwner,
-                { projectItemList ->
-                    ui.groupLoading.visibility = View.GONE
-                    initRecyclerView(projectItemList.toProjectItems())
-                }
-            )
+            projectsItems.observe(viewLifecycleOwner, { projectItemList ->
+                ui.groupLoading.visibility = View.GONE
+                initRecyclerView(projectItemList.toProjectItems())
+            })
         }
     }
 
@@ -275,9 +249,9 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
     }
 
     private fun initRecyclerView(items: List<SectionProjectItem>) {
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ProjectItemBinding>>().apply {
             addAll(items)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, items.size)
         }
 
         ui.itemRecyclerView.apply {
@@ -291,7 +265,7 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
 
             (item as? SectionProjectItem)?.let {
 
-                val tempItem = createItemList(it.itemDTO, itemSections)
+                val tempItem = createItem(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
                 sendSelectedItem(tempItem, view)
             }
@@ -304,11 +278,11 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         }
     }
 
-    private fun createItemList(
+    private fun createItem(
         itemDTO: ProjectItemDTO,
         itemSections: ArrayList<ItemSectionDTO>
     ): ItemDTOTemp {
-        val newItem = ItemDTOTemp(
+        return ItemDTOTemp(
             id = 0,
             itemId = itemDTO.itemId,
             descr = itemDTO.descr,
@@ -323,8 +297,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
             projectId = itemDTO.projectId!!,
             jobId = editJob.jobId
         )
-        items.add(newItem)
-        return newItem
     }
 
     private fun sendSelectedItem(
@@ -348,7 +320,6 @@ class SelectItemFragment : BaseFragment(), KodeinAware {
         super.onDestroyView()
         // Prevents RecyclerView Memory leak
         ui.itemRecyclerView.adapter = null
-        uiScope.destroy()
         viewLifecycleOwner.lifecycleScope.cancel(CancellationException("onDestroyView"))
         _ui = null
     }

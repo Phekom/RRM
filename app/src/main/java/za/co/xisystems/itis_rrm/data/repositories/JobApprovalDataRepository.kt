@@ -10,17 +10,15 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.Locale
-import kotlinx.coroutines.Dispatchers
+import com.google.gson.JsonObject
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
@@ -29,8 +27,11 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
+import java.util.Locale
 
 /**
  * Created by Francis Mahlava on 2019/11/28.
@@ -38,7 +39,8 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 
 class JobApprovalDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = JobApprovalDataRepository::class.java.simpleName
@@ -48,55 +50,54 @@ class JobApprovalDataRepository(
     var updateStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getTenderRateForProjectItemId(projectItemId)
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? = withContext(dispatchers.io()) {
+        return@withContext appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId)
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectDescription(projectId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectDao().getProjectDescription(projectId)
         }
     }
 
     suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobsForActivityId(activityId)
         }
     }
 
-    suspend fun upDateEstimate(newQuantity: String, newTotal: String, estimateId: String) {
+    suspend fun upDateEstimate(newQuantity: String, newRate: String, estimateId: String) {
 
+        val topic = "Estimate Update"
         try {
             val newEstimateId = DataConversion.toLittleEndian(estimateId)
 
@@ -104,7 +105,7 @@ class JobApprovalDataRepository(
                 api.updateEstimateQty(
                     newEstimateId,
                     newQuantity.toDouble(),
-                    newTotal.toDouble()
+                    newRate.toDouble()
                 )
             }
 
@@ -113,7 +114,7 @@ class JobApprovalDataRepository(
                 postNewQty(
                     estimateId,
                     newQuantity.toDouble(),
-                    newTotal.toDouble()
+                    newRate.toDouble()
                 )
             } else {
                 throw ServiceException(messages)
@@ -121,7 +122,7 @@ class JobApprovalDataRepository(
         } catch (throwable: Throwable) {
             val message = "Failed to update quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)
-            postUpdateStatus(XIError(throwable, message))
+            postUpdateStatus(XIResult.Error(topic = topic, exception = throwable, message = message))
         }
     }
 
@@ -133,15 +134,22 @@ class JobApprovalDataRepository(
     private fun postNewQty(
         newEstimateId: String?,
         newQuantity: Double,
-        newTotal: Double
+        newRate: Double
     ) {
+        val topic = "Updating Quantity"
         try {
-            appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newTotal)
-            postUpdateStatus(XISuccess("Quantity updated"))
+            appDb.getJobItemEstimateDao().upDateLineRate(newEstimateId!!, newQuantity, newRate)
+            postUpdateStatus(XIResult.Success("Quantity updated"))
         } catch (throwable: Throwable) {
-            val message = "Failed to update local quantity: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            Timber.e(throwable, message)
-            postUpdateStatus(XIError(LocalDataException(message), message))
+            val message = throwable.message ?: XIErrorHandler.UNKNOWN_ERROR
+            Timber.e(throwable)
+            postUpdateStatus(
+                XIResult.Error(
+                    topic = topic,
+                    exception = LocalDataException(message),
+                    message = message
+                )
+            )
         }
     }
 
@@ -152,17 +160,18 @@ class JobApprovalDataRepository(
         description: String?,
         direction: Int
     ) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
+            val topic = "Job Approval Workflow"
             try {
                 val workflowMoveResponse =
                     apiRequest { api.getWorkflowMove(userId, trackRouteId, description, direction) }
 
                 val errorMessage: String = workflowMoveResponse.errorMessage ?: ""
                 when {
-                    errorMessage.lowercase(Locale.ENGLISH).contains("no job found")
-                        && direction == WorkflowDirection.FAIL.value -> {
+                    errorMessage.lowercase(Locale.ENGLISH).contains("no job found") &&
+                        direction == WorkflowDirection.FAIL.value -> {
                         appDb.getJobDao().softDeleteJobForJobId(jobId)
-                        postWorkflowStatus(XISuccess("DECLINED"))
+                        postWorkflowStatus(XIResult.Success("DECLINED"))
                     }
                     errorMessage.isBlank() && workflowMoveResponse.workflowJob != null -> {
                         saveWorkflowJob(workflowMoveResponse.workflowJob!!)
@@ -172,54 +181,54 @@ class JobApprovalDataRepository(
                     }
                 }
             } catch (t: Throwable) {
-                val message = "Failed to move workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                Timber.e(t, message)
-                postWorkflowStatus(XIError(t, message))
+                val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
+                Timber.e(t)
+                postWorkflowStatus(XIResult.Error(topic = topic, exception = t, message = message))
             }
         }
     }
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getQuantityForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getLineRateForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId2(jobID!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
     private suspend fun saveWorkflowJob(workflowJob: WorkflowJobDTO) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatchers.io()) {
             val job = setWorkflowJobBigEndianGuids(workflowJob)
             job?.let {
-                updateWorkflowJobValuesAndInsertWhenNeeded(job)
+                processWorkflowUpdates(job)
             }
         }
     }
@@ -229,8 +238,9 @@ class JobApprovalDataRepository(
         workflowStatus.postValue(newEvent)
     }
 
-    private suspend fun updateWorkflowJobValuesAndInsertWhenNeeded(job: WorkflowJobDTO) {
+    private fun processWorkflowUpdates(job: WorkflowJobDTO) {
         try {
+
             appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
             job.workflowItemEstimates.forEach { jobItemEstimate ->
@@ -298,13 +308,13 @@ class JobApprovalDataRepository(
             }
             Timber.d("Updated Workflow: $job")
             job.jiNo?.let {
-                val jobSuccess = XISuccess(data = it)
+                val jobSuccess = XIResult.Success(data = it)
                 postWorkflowStatus(jobSuccess)
             }
         } catch (t: Throwable) {
             val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            postWorkflowStatus(XIError(LocalDataException(message), message))
+            postWorkflowStatus(XIResult.Error(LocalDataException(message), message))
         }
     }
 
@@ -338,8 +348,41 @@ class JobApprovalDataRepository(
             return job
         } catch (t: Throwable) {
             val message = "Unable to set BigEndian GUIDS: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-            postWorkflowStatus(XIError(LocalDataException(message), message))
+            postWorkflowStatus(XIResult.Error(LocalDataException(message), message))
             return null
+        }
+    }
+
+    suspend fun getJobEstimationItemByEstimateId(estimateId: String) = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
+    }
+
+    suspend fun insertOrUpdateJob(job: JobDTO) = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobDao().updateJob(job)
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    // We have a really smart error-handler
+    suspend fun updateApprovalInfo(userId: String, jobId: String, remarks: String): Boolean {
+        try {
+
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            requestData.addProperty("Remarks", remarks)
+            Timber.d("Json Job: $requestData")
+
+            val approvalResponse = apiRequest {
+                api.updateApprovalInfo(requestData)
+            }
+            if (!approvalResponse.isSuccess) {
+                throw ServiceException(approvalResponse.errorMessage!!)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
         }
     }
 }

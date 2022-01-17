@@ -10,32 +10,36 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.skydoves.androidveil.VeiledItemOnClickListener
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import com.xwray.groupie.viewbinding.GroupieViewHolder
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.layout
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentApprovemeasureBinding
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
+import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.approveMeasure_Item.ApproveMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -44,23 +48,24 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class ApproveMeasureFragment : BaseFragment(), KodeinAware {
+@Suppress("KDocUnresolvedReference")
+class ApproveMeasureFragment : BaseFragment(), DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
-    private var _ui: FragmentApprovemeasureBinding? = null
-    private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var _binding: FragmentApprovemeasureBinding? = null
+    private val binding get() = _binding!!
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _ui = FragmentApprovemeasureBinding.inflate(inflater, container, false)
-        return ui.root
+        _binding = FragmentApprovemeasureBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -68,30 +73,26 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         return false
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
+    }
 
-        initVeiledRecyclerView()
-
-        fetchJobsFromService()
-
+    override fun onStart() {
+        super.onStart()
         swipeToRefreshInit()
+        initVeiledRecyclerView()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fetchJobsFromService()
     }
 
     private fun initVeiledRecyclerView() {
-        ui.approveMeasurementsList.run {
-            setVeilLayout(
-                layout.item_velied_slug,
-                object : VeiledItemOnClickListener {
-                    /** will be invoked when the item on the [VeilRecyclerFrameView] clicked. */
-                    override fun onItemClicked(pos: Int) {
-                        toast("Loading ...")
-                    }
-                }
-            )
+        binding.approveMeasurementsList.run {
+            setVeilLayout(R.layout.item_velied_slug) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(15)
@@ -100,7 +101,7 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     private fun retryFetchMeasurements() {
         IndefiniteSnackbar.hide()
-        ui.approveMeasurementsList.veil()
+        binding.approveMeasurementsList.veil()
         fetchJobsFromService()
     }
 
@@ -108,54 +109,52 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
         Coroutines.main {
             try {
-                ui.approveMeasurementsList.visibility = View.VISIBLE
-                ui.approveMeasurementsList.veil()
+                binding.approveMeasurementsList.visibility = View.VISIBLE
+                binding.approveMeasurementsList.veil()
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
-                measurementsSubscription.observe(
-                    viewLifecycleOwner,
-                    { measurementData ->
+                measurementsSubscription.distinctUntilChanged().observeOnce(viewLifecycleOwner, { measurementData ->
 
-                        if (measurementData.isNullOrEmpty()) {
-                            ui.noData.visibility = View.VISIBLE
-                            ui.approveMeasurementsList.visibility = View.GONE
-                            ui.approveMeasurementsList.unVeil()
-                        } else {
-                            ui.noData.visibility = View.GONE
-                            ui.approveMeasurementsList.visibility = View.VISIBLE
+                    if (measurementData.isNullOrEmpty()) {
+                        binding.noData.visibility = View.VISIBLE
+                        binding.approveMeasurementsList.visibility = View.GONE
+                        binding.approveMeasurementsList.unVeil()
+                    } else {
+                        binding.noData.visibility = View.GONE
+                        binding.approveMeasurementsList.visibility = View.VISIBLE
 
-                            val jobHeaders = measurementData.distinctBy {
-                                it.jobId
-                            }
-                            initRecyclerView(jobHeaders.toApproveListItems())
+                        val jobHeaders = measurementData.distinctBy {
+                            it.jobId
                         }
+                        initRecyclerView(jobHeaders.toApproveListItems())
                     }
-                )
+                })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                toggleLongRunning(false)
+                binding.approveMeasurementsList.unVeil()
                 crashGuard(
-                    view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
-                    refreshAction = { retryFetchMeasurements() }
+                    refreshAction = { this.retryFetchMeasurements() }
                 )
             }
         }
     }
 
     private fun swipeToRefreshInit() {
-        ui.approvemSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        binding.approvemSwipeToRefresh.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        ui.approvemSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        binding.approvemSwipeToRefresh.setColorSchemeColors(Color.WHITE)
 
-        ui.approvemSwipeToRefresh.setOnRefreshListener {
-            ui.approveMeasurementsList.veil()
+        binding.approvemSwipeToRefresh.setOnRefreshListener {
+            binding.approveMeasurementsList.veil()
             fetchJobsFromService()
         }
     }
@@ -164,44 +163,40 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         Coroutines.main {
             try {
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
-                freshJobs.observe(
-                    viewLifecycleOwner,
-                    {
-                        if (it.isNullOrEmpty()) {
+                freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
+                    if (it.isNullOrEmpty()) {
 
-                            ui.noData.visibility = View.VISIBLE
-                            ui.approveMeasurementsList.visibility = View.GONE
-                        } else {
-                            loadJobHeaders()
-                        }
+                        binding.noData.visibility = View.VISIBLE
+                        binding.approveMeasurementsList.visibility = View.GONE
+                    } else {
+                        loadJobHeaders()
                     }
-                )
+                })
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
-                val measureErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 crashGuard(
-                    view = this@ApproveMeasureFragment.requireView(),
                     throwable = measureErr,
-                    refreshAction = { retryFetchMeasurements() }
+                    refreshAction = { this.retryFetchMeasurements() }
                 )
             } finally {
-                ui.approvemSwipeToRefresh.isRefreshing = false
+                binding.approvemSwipeToRefresh.isRefreshing = false
             }
         }
     }
 
     private fun initRecyclerView(approveMeasureListItems: List<ApproveMeasureItem>) {
 
-        val groupAdapter = GroupAdapter<GroupieViewHolder>().apply {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ItemHeaderBinding>>().apply {
             clear()
             addAll(approveMeasureListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, approveMeasureListItems.size)
         }
 
-        ui.approveMeasurementsList.run {
+        binding.approveMeasurementsList.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(adapter = groupAdapter)
-            doOnNextLayout { ui.approveMeasurementsList.unVeil() }
+            doOnNextLayout { binding.approveMeasurementsList.unVeil() }
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -215,8 +210,8 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        ui.approveMeasurementsList.setAdapter(null)
-        _ui = null
+        binding.approveMeasurementsList.setAdapter(null)
+        _binding = null
     }
 
     private fun sendJobToApprove(
@@ -237,5 +232,21 @@ class ApproveMeasureFragment : BaseFragment(), KodeinAware {
         return this.map { approvejItems ->
             ApproveMeasureItem(approvejItems, approveViewModel)
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                val direction = ApproveMeasureFragmentDirections.actionGlobalNavHome()
+                Navigation.findNavController(this@ApproveMeasureFragment.requireView())
+                    .navigate(direction)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 }

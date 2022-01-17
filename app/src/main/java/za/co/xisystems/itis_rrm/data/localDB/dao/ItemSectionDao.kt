@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 interface ItemSectionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEntities(intities: List<ItemSectionDTO>)
+    fun insertEntities(intities: List<ItemSectionDTO>)
 
     //
 //    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")

@@ -8,25 +8,22 @@ package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
+import com.google.gson.JsonObject
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocalDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -37,51 +34,30 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 
 class MeasureApprovalDataRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName
     }
 
-    val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    var workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
 
     suspend fun getJobItemMeasureByItemMeasureId(itemMeasureId: String): LiveData<JobItemMeasureDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasureByItemMeasureId(itemMeasureId)
         }
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobApproveMeasureForActivityId(activityId)
-        }
-    }
-
-    suspend fun getJobsMeasureForActivityId(
-        estimateComplete: Int,
-        measureComplete: Int,
-        estWorksComplete: Int,
-        jobApproved: Int
-    ): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getJobDao().getJobsMeasureForActivityIds(
-                estimateComplete,
-                measureComplete,
-                estWorksComplete,
-                jobApproved
-            )
-        }
-    }
-
-    suspend fun getEntitiesListForActivityId(activityId: Int): LiveData<List<ToDoListEntityDTO>> {
-        return withContext(Dispatchers.IO) {
-            appDb.getEntitiesDao().getEntitiesListForActivityId(activityId)
         }
     }
 
@@ -89,15 +65,14 @@ class MeasureApprovalDataRepository(
         jobID: String?,
         actId: Int
     ): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getJobItemMeasuresByJobIdAndActId(jobID!!, actId)
         }
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectItemDao().getUOMForProjectItemId(projectItemId) ?: ""
-        }
+    suspend fun getUOMForProjectItemId(projectItemId: String): String = withContext(dispatchers.io()) {
+        return@withContext appDb.getProjectItemDao()
+            .getUOMForProjectItemId(projectItemId) ?: ""
     }
 
     suspend fun processWorkflowMove(
@@ -113,76 +88,84 @@ class MeasureApprovalDataRepository(
                 measurements.forEachIndexed { index, measure ->
                     val measureTrackId = DataConversion.toLittleEndian(measure.trackRouteId)
                     measureTrackId?.let {
-                        withContext(Dispatchers.IO) {
-                            postWorkflowStatus(XIStatus("Processing ${index + 1} of ${measurements.size} measurements"))
+                        withContext(dispatchers.io()) {
+                            postWorkflowStatus(
+                                XIResult.Status(
+                                    "Processing ${index + 1} of ${measurements.size} measurements"
+                                )
+                            )
                             val workflowMoveResponse =
                                 apiRequest { api.getWorkflowMove(userId, measureTrackId, description, direction) }
                             workflowMoveResponse.workflowJob?.let { job ->
-                                job.workflowItemMeasures.forEach { jobItemMeasure ->
-                                    if (jobItemMeasure.actId == ActivityIdConstants.MEASURE_APPROVED) {
-                                        val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
-                                        val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
-                                        val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
-                                        appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
-                                            itemMeasureId,
-                                            trackRouteId,
-                                            jobItemMeasure.actId,
-                                            measureGroupId
-                                        )
-                                    }
-                                }
+                                processWorkflowMeasurements(job)
                                 flowJob = job
                             }
                         }
                     }
                 }
                 saveWorkflowJob(flowJob!!)
-                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+                postWorkflowStatus(XIResult.Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 val message = "Failed to Approve Measurement: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                postWorkflowStatus(XIError(t, message))
+                throw TransmissionException(message, t)
+            }
+        }
+    }
+
+    private fun processWorkflowMeasurements(job: WorkflowJobDTO) {
+        job.workflowItemMeasures.forEach { jobItemMeasure ->
+            if (jobItemMeasure.actId == ActivityIdConstants.MEASURE_APPROVED) {
+                val itemMeasureId = DataConversion.toBigEndian(jobItemMeasure.itemMeasureId)
+                val trackRouteId = DataConversion.toBigEndian(jobItemMeasure.trackRouteId)
+                val measureGroupId = DataConversion.toBigEndian(jobItemMeasure.measureGroupId)
+                appDb.getJobItemMeasureDao().updateWorkflowJobItemMeasure(
+                    itemMeasureId,
+                    trackRouteId,
+                    jobItemMeasure.actId,
+                    measureGroupId
+                )
             }
         }
     }
 
     private suspend fun postWorkflowStatus(status: XIResult<String>) {
-        withContext(Dispatchers.Main) {
+        withContext(dispatchers.main()) {
             workflowStatus.postValue(XIEvent(status))
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId!!)
+        return withContext(dispatchers.io()) {
+            appDb.getProjectSectionDao().getSectionForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getItemDescription(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobDao().getItemDescription(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String?): String {
-        return withContext(Dispatchers.IO) {
-            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId!!)
+        return withContext(dispatchers.io()) {
+            appDb.getProjectSectionDao().getRouteForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String?): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun getJobMeasureItemPhotoPaths(itemMeasureId: String): List<String> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasurePhotoDao().getJobMeasureItemPhotoPaths(itemMeasureId)
         }
     }
@@ -247,11 +230,11 @@ class MeasureApprovalDataRepository(
                 appDb.getJobDao().updateJob(job.trackRouteId, job.actId, job.jiNo, job.jobId)
 
                 Timber.d("Updated Workflow: $job")
-                postWorkflowStatus(XISuccess("WORK_COMPLETE"))
+                postWorkflowStatus(XIResult.Success("WORK_COMPLETE"))
             } catch (t: Throwable) {
                 val message = "Could not save updated workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                postWorkflowStatus(XIError(LocalDataException(message), message))
+                throw TransmissionException(message, t)
             }
         }
     }
@@ -287,7 +270,7 @@ class MeasureApprovalDataRepository(
         } catch (t: Throwable) {
             Coroutines.io {
                 postWorkflowStatus(
-                    XIError(
+                    XIResult.Error(
                         LocalDataException(t.message ?: XIErrorHandler.UNKNOWN_ERROR),
                         t.message ?: XIErrorHandler.UNKNOWN_ERROR
                     )
@@ -301,47 +284,56 @@ class MeasureApprovalDataRepository(
         newQuantity: String,
         itemMeasureId: String
     ): String {
-        val newMeasureId = DataConversion.toLittleEndian(itemMeasureId)
+        try {
+            val newMeasureId = DataConversion.toLittleEndian(itemMeasureId)
 
-        val quantityUpdateResponse =
-            apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
-        postQuantity(
-            quantityUpdateResponse.errorMessage,
-            itemMeasureId,
-            newQuantity.toDouble()
-        )
-        val messages = quantityUpdateResponse.errorMessage ?: ""
-        return withContext(Dispatchers.IO) {
-            messages
-        }
-    }
+            val quantityUpdateResponse =
+                apiRequest { api.upDateMeasureQty(newMeasureId, newQuantity.toDouble()) }
 
-    private fun postQuantity(
-        errorMessage: String?,
-        itemMeasureId: String?,
-        newQuantity: Double
-    ) {
-        if (errorMessage.isNullOrBlank()) {
-            appDb.getJobItemMeasureDao().upDateQty(itemMeasureId!!, newQuantity)
-        } else {
-            val message = "Failed to update Quantity: $errorMessage"
-            val serviceException = ServiceException(message)
-            Timber.e(serviceException)
-            Coroutines.main {
-                postWorkflowStatus(XIError(serviceException, message))
+            if (quantityUpdateResponse.errorMessage != null) {
+                throw ServiceException(quantityUpdateResponse.errorMessage)
+            } else {
+                appDb.getJobItemMeasureDao().upDateQty(itemMeasureId, newQuantity.toDouble())
             }
+            return ""
+        } catch (exception: Exception) {
+            val errorMessage = "Failed to update measure: ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            throw TransmissionException(errorMessage, exception)
         }
     }
 
     suspend fun getQuantityForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getQuantityForMeasureItemId(itemMeasureId)
         }
     }
 
     suspend fun getLineRateForMeasureItemId(itemMeasureId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getJobItemMeasureDao().getLineRateForMeasureItemId(itemMeasureId)
+        }
+    }
+    @Suppress("TooGenericExceptionCaught")
+    // We have a really smart error-handler
+    suspend fun updateMeasureApprovalInfo(userId: String, jobId: String): Boolean {
+        try {
+
+            val requestData = JsonObject()
+            requestData.addProperty("UserId", userId)
+            requestData.addProperty("JobId", jobId)
+            Timber.d("Json Job: $requestData")
+
+            val approvalResponse = apiRequest {
+                api.updateMeasureApprovalInfo(requestData)
+            }
+            if (!approvalResponse.isSuccess) {
+                throw ServiceException(approvalResponse.errorMessage!!)
+            }
+            return true
+        } catch (e: Exception) {
+            val message = "Failed to update approval information"
+            Timber.e(e, message)
+            throw TransmissionException(message, e)
         }
     }
 }

@@ -4,21 +4,15 @@
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
-/**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.utils
 
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import java.text.DecimalFormat
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
 import java.util.Locale
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 
 object JobUtils {
     fun formatCost(value: Double): String {
@@ -31,25 +25,25 @@ object JobUtils {
     }
 
     fun formatTotalCost(job: JobDTO?): String {
-        Coroutines.main {
-        }
-        var quantity = 0.0
-        var cost = 0.0
-        job?.jobItemEstimates?.forEach { estimate ->
-            quantity += estimate.qty
-            cost += estimate.lineRate
-        }
-        return formatTotalCost(cost)
+        // Point and line components add to Total
+        // S McDonald - 22/12/2021
+        val estimateCost = job?.jobItemEstimates?.filter { estimate ->
+            (estimate.jobItemEstimateSize == "Point" && estimate.size() >= 1) or
+                (estimate.jobItemEstimateSize == "Line" && estimate.size() >= 2) and
+                (estimate.qty > 0.0 && estimate.lineRate > 0.0)
+        }?.map { it.qty * it.lineRate }?.fold(0.0, { total, item -> total + item }) ?: 0.0
+
+        return formatTotalCost(estimateCost)
     }
 
     fun areQuantitiesValid(job: JobDTO?): Boolean {
-        when {
-            job?.jobItemEstimates.isNullOrEmpty() -> return false
+        return when {
+            job?.jobItemEstimates.isNullOrEmpty() -> false
             else -> {
                 job?.jobItemEstimates?.forEach { estimate ->
                     if (estimate.qty < 0.01) return false
                 }
-                return true
+                true
             }
         }
     }
@@ -61,8 +55,8 @@ object JobUtils {
                 photos,
                 Comparator { o1, o2 ->
                     if (o1 == null || o2 == null) return@Comparator 0 // this case should never happen
-                    if (o1.isPhotoStart()) return@Comparator -1
-                    if (!o2.isPhotoStart()) {
+                    if (o1.isStartPhoto()) return@Comparator -1
+                    if (!o2.isStartPhoto()) {
                         0
                     } else {
                         1
@@ -71,5 +65,17 @@ object JobUtils {
             )
         }
         return photos
+    }
+
+    fun isGeoCoded(job: JobDTO): Boolean {
+        var result = true
+        for (estimate in job.jobItemEstimates) {
+            if (!estimate.geoCoded) {
+                result = false
+                break
+            }
+        }
+
+        return result
     }
 }

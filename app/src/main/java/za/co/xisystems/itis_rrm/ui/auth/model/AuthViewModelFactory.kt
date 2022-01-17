@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -20,9 +21,10 @@ import za.co.xisystems.itis_rrm.forge.XIArmoury
 class AuthViewModelFactory(
     private val repository: UserRepository,
     private val xiArmoury: XIArmoury,
+    private val photoUtil: PhotoUtil,
     private val application: Application
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return AuthViewModel(repository, xiArmoury, application) as T
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return AuthViewModel(repository, xiArmoury, photoUtil, application) as T
     }
 }

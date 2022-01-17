@@ -25,55 +25,49 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.doOnNextLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
+import com.xwray.groupie.viewbinding.GroupieViewHolder
+import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.R.layout
-import za.co.xisystems.itis_rrm.R.string
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
+import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
+import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XIStatus
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentMeasureApprovalBinding
-import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.databinding.MeasurementsItemBinding
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.extensions.failProgress
 import za.co.xisystems.itis_rrm.ui.extensions.initProgress
 import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
-class MeasureApprovalFragment : BaseFragment(), KodeinAware {
-    override val kodein by kodein()
+class MeasureApprovalFragment : BaseFragment() {
+    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
@@ -82,56 +76,51 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     private var workObserver = Observer<XIResult<String>?> { handleMeasureProcessing(it) }
     private var flowDirection: Int = 0
     private var measuresProcessed: Int = 0
-
-    private var uiScope = UiLifecycleScope()
+    private var selectedJobId: String? = null
     private var _ui: FragmentMeasureApprovalBinding? = null
     private val ui get() = _ui!!
-    private var groupAdapter = GroupAdapter<GroupieViewHolder>()
+    private var groupAdapter = GroupAdapter<GroupieViewHolder<MeasurementsItemBinding>>()
 
-    private fun handleMeasureProcessing(outcome: XIResult<String>?) {
+    private fun handleMeasureProcessing(outcome: XIResult<String>?) = uiScope.launch(dispatchers.ui()) {
         outcome?.let { result ->
             when (result) {
-                is XISuccess -> {
-                    if (result.data == "WORK_COMPLETE") {
-                        measurementsToApprove.clear()
-                        this@MeasureApprovalFragment.toggleLongRunning(false)
-                        initRecyclerView(measurementsToApprove.toMeasureItems())
-                        progressButton.doneProgress(progressButton.text.toString())
-                        popViewOnJobSubmit(flowDirection)
-                    }
+                is XIResult.Success -> {
+                    progressButton.doneProgress(progressButton.text.toString())
+                    this@MeasureApprovalFragment.toggleLongRunning(false)
+                    popViewOnJobSubmit(flowDirection)
                 }
-                is XIError -> {
+                is XIResult.Error -> {
                     progressButton.failProgress("Failed")
                     this@MeasureApprovalFragment.toggleLongRunning(false)
                     crashGuard(
-                        view = this.requireView(),
                         throwable = result,
-                        refreshAction = { this.retryMeasurements() }
+                        refreshAction = { this@MeasureApprovalFragment.retryMeasurements() }
                     )
                 }
-                is XIStatus -> {
-                    sharpToast(
+                is XIResult.Status -> {
+                    extensionToast(
                         message = result.message,
-                        style = INFO,
-                        position = BOTTOM,
-                        duration = SHORT
+                        style = ToastStyle.INFO,
+                        position = ToastGravity.BOTTOM,
+                        duration = ToastDuration.SHORT
                     )
                 }
-                is XIProgress -> {
-                    toggleLongRunning(result.isLoading)
-                    when (result.isLoading) {
-                        true -> {
-                            progressButton.startProgress(
-                                "Submitting ...",
-                                this@MeasureApprovalFragment.requireContext()
-                            )
-                            this@MeasureApprovalFragment.toggleLongRunning(true)
-                        }
-                        else -> progressButton.doneProgress(progressButton.text.toString())
-                    }
+                is XIResult.Progress -> {
+                    showWorkProgress(result)
                 }
                 else -> Timber.d("$result")
             }
+        }
+    }
+
+    private fun showWorkProgress(result: XIResult.Progress) {
+        toggleLongRunning(result.isLoading)
+        when (result.isLoading) {
+            true -> {
+                progressButton.startProgress("Submitting ...")
+                this@MeasureApprovalFragment.toggleLongRunning(true)
+            }
+            else -> progressButton.doneProgress(progressButton.text.toString())
         }
     }
 
@@ -145,8 +134,27 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
         (activity as MainActivity).supportActionBar?.title =
-            getString(string.measure_approval_title)
+            getString(R.string.measure_approval_title)
+
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            /**
+             * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
+             */
+            override fun handleOnBackPressed() {
+                Navigation.findNavController(this@MeasureApprovalFragment.requireView())
+                    .navigate(R.id.nav_approveMeasure)
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        approveViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -164,43 +172,39 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         return ui.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        approveViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(ApproveMeasureViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
 
             initVeiledRecycler()
 
             ui.viewMeasuredItems.veil()
-            approveViewModel.jobIdForApproval.observe(
-                viewLifecycleOwner,
-                { jobId ->
-                    getMeasureItems(jobId)
+            approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
+                jobId?.let {
+                    selectedJobId = it
+                    getMeasureItems(it)
                 }
-            )
+            })
 
             ui.approveMeasureButton.setOnClickListener {
                 val approveBuilder = AlertDialog.Builder(
                     requireActivity()
                 )
-                approveBuilder.setTitle(string.confirm)
+                approveBuilder.setTitle(R.string.confirm)
                 approveBuilder.setIcon(R.drawable.ic_approve)
-                approveBuilder.setMessage(string.are_you_sure_you_want_to_approve2)
+                approveBuilder.setMessage(R.string.are_you_sure_you_want_to_approve2)
                 // Yes button
                 approveBuilder.setPositiveButton(
-                    string.yes
+                    R.string.yes
                 ) { _, _ ->
                     progressButton = ui.approveMeasureButton
-                    progressButton.initProgress(viewLifecycleOwner, this@MeasureApprovalFragment.requireContext())
+                    progressButton.initProgress(viewLifecycleOwner)
                     processMeasurementWorkflow(NEXT)
                 }
 
                 // No button
                 approveBuilder.setNegativeButton(
-                    string.no
+                    R.string.no
                 ) { dialog, _ ->
                     // Do nothing but close dialog
                     dialog.dismiss()
@@ -213,9 +217,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
 
     private fun initVeiledRecycler() {
         ui.viewMeasuredItems.run {
-            setVeilLayout(
-                layout.measurements_item
-            ) { toast("Loading ...") }
+            setVeilLayout(R.layout.measurements_item) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
             addVeiledItems(10)
@@ -223,14 +225,14 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     }
 
     private fun processMeasurementWorkflow(workflowDirection: WorkflowDirection) {
-        if (this.requireContext().isConnected) {
+        if (ServiceUtil.isNetworkAvailable(this.requireContext().applicationContext)) {
             Coroutines.main {
                 workflowMeasurements(workflowDirection)
             }
         } else {
-            sharpToast(
-                message = getString(string.no_connection_detected),
-                style = NO_INTERNET
+            extensionToast(
+                message = getString(R.string.no_connection_detected),
+                style = ToastStyle.NO_INTERNET
             )
             progressButton.failProgress("No internet")
         }
@@ -240,58 +242,69 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         approveViewModel.workflowState.observe(viewLifecycleOwner, workObserver)
 
         val approvalJob = uiScope.launch(uiScope.coroutineContext) {
-            progressButton.startProgress("Submitting ...", this@MeasureApprovalFragment.requireContext())
+            progressButton.startProgress("Submitting ...")
 
             val user = approveViewModel.user.await()
-            user.observe(
-                viewLifecycleOwner,
-                { userDTO ->
+            user.observe(viewLifecycleOwner, { userDTO ->
 
-                    measuresProcessed = 0
-                    flowDirection = workflowDirection.value
+                measuresProcessed = 0
+                flowDirection = workflowDirection.value
 
-                    if (userDTO.userId.isBlank()) {
-                        showSubmissionError("User lacks permissions", "Invalid User")
-                    } else {
-                        Coroutines.main {
-                            withContext(uiScope.coroutineContext) {
-                                approveViewModel.approveMeasurements(
-                                    userDTO.userId,
-                                    workflowDirection,
-                                    measurementsToApprove
-                                )
-                            }
+                if (userDTO.userId.isBlank()) {
+                    showSubmissionError("User lacks permissions", "Invalid User")
+                } else {
+                    Coroutines.main {
+                        withContext(uiScope.coroutineContext) {
+                            approveViewModel.approveMeasurements(
+                                userDTO.userId,
+                                selectedJobId!!,
+                                workflowDirection,
+                                measurementsToApprove
+                            )
                         }
                     }
                 }
-            )
+            })
         }
         approvalJob.join()
     }
 
     private fun showSubmissionError(errMessage: String, progFailCaption: String) {
-        sharpToast(
-            message = errMessage,
-            style = ERROR,
-            position = CENTER
-        )
-        progressButton.failProgress(progFailCaption)
+        uiScope.launch(dispatchers.ui()) {
+            extensionToast(
+                message = errMessage,
+                style = ToastStyle.ERROR,
+                position = ToastGravity.CENTER
+            )
+            progressButton.failProgress(progFailCaption)
+        }
     }
 
     private fun popViewOnJobSubmit(direction: Int) {
-        if (direction == NEXT.value) {
-            sharpToast(resId = string.measurement_approved, style = SUCCESS, duration = SHORT)
-        } else if (direction == WorkflowDirection.FAIL.value) {
-            sharpToast(resId = string.measurement_declined, style = INFO, duration = SHORT)
+        when (direction) {
+            NEXT.value -> {
+                extensionToast(
+                    message = getString(R.string.measurement_approved),
+                    style = ToastStyle.SUCCESS,
+                    duration = ToastDuration.SHORT
+                )
+            }
+            WorkflowDirection.FAIL.value -> {
+                extensionToast(
+                    message = getString(R.string.measurement_declined),
+                    style = ToastStyle.INFO,
+                    duration = ToastDuration.SHORT
+                )
+            }
         }
-        Handler(Looper.getMainLooper()).postDelayed(
-            {
-                Intent(context?.applicationContext, MainActivity::class.java).also { home ->
-                    startActivity(home)
-                }
-            },
-            Constants.TWO_SECONDS
-        )
+        Handler(Looper.getMainLooper()).postDelayed({
+            Intent(this.requireActivity(), MainActivity::class.java).also { mainAct ->
+                mainAct.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+
+                startActivity(mainAct)
+            }
+        }, Constants.TWO_SECONDS)
     }
 
     private fun getMeasureItems(jobId: String) {
@@ -300,16 +313,13 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
                 jobId,
                 ActivityIdConstants.MEASURE_COMPLETE
             )
-            measurements.observe(
-                viewLifecycleOwner,
-                { jobItemMeasures ->
-                    jobItemMeasures?.let {
-                        measurementsToApprove = ArrayList()
-                        measurementsToApprove.addAll(it)
-                        initRecyclerView(it.toMeasureItems())
-                    }
+            measurements.observe(viewLifecycleOwner, { jobItemMeasures ->
+                jobItemMeasures?.let {
+                    measurementsToApprove = ArrayList()
+                    measurementsToApprove.addAll(it)
+                    initRecyclerView(it.toMeasureItems())
                 }
-            )
+            })
         }
     }
 
@@ -317,10 +327,13 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
         groupAdapter.apply {
             clear()
             update(measureListItems)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, measureListItems.size)
         }
-        ui.viewMeasuredItems.run {
-            setAdapter(groupAdapter, layoutManager = LinearLayoutManager(context))
+        ui.viewMeasuredItems.getRecyclerView().run {
+            adapter = groupAdapter
+            layoutManager = LinearLayoutManager(
+                this@MeasureApprovalFragment.requireContext()
+            )
             doOnNextLayout { ui.viewMeasuredItems.unVeil() }
         }
     }
@@ -328,7 +341,6 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
     override fun onDestroyView() {
         super.onDestroyView()
         // clear out all the leakers
-        uiScope.destroy()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         ui.viewMeasuredItems.setAdapter(null)
         _ui = null
@@ -339,7 +351,7 @@ class MeasureApprovalFragment : BaseFragment(), KodeinAware {
             MeasurementsItem(
                 it,
                 approveViewModel,
-                activity,
+                WeakReference(this@MeasureApprovalFragment),
                 viewLifecycleOwner
             )
         }

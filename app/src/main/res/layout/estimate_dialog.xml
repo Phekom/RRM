@@ -1,92 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout8"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    <LinearLayout
-            android:layout_marginTop="@dimen/dimen_10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="@dimen/dimen_30dp">
-
-        <TextView
-                android:id="@+id/rate_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/dimen_20dp"
-                android:layout_gravity="center"
-                android:text="@string/tender_rate"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/primaryTextColor" />
-
-        <TextView
-                android:id="@+id/current_rate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:hint="@string/total"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black" />
+    android:layout_height="match_parent">
 
 
-    </LinearLayout>
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="@dimen/dimen_30dp">
+    <TextView
+        android:id="@+id/rate_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
+        android:text="@string/tender_rate"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/primaryTextColor"
+        app:layout_constraintEnd_toStartOf="@+id/current_rate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-                android:id="@+id/new_qty_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/dimen_20dp"
-                android:text="@string/quantity"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/black"
-            android:labelFor="@id/new_qty"/>
-        <EditText
-                android:id="@+id/new_qty"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:digits=".0123456789"
-                android:layout_marginStart="@dimen/dimen_20dp"
-                android:backgroundTint="@color/itis_burnt_orange"
-                android:inputType="numberSigned|numberDecimal"
-                android:minWidth="@dimen/dimen_50dp"
-                android:visibility="visible"
-            android:importantForAutofill="no"/>
-    </LinearLayout>
-
-    <LinearLayout
-            android:layout_marginTop="@dimen/dimen_10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="@dimen/dimen_30dp">
-
-        <TextView
-                android:id="@+id/total_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/dimen_20dp"
-                android:text="@string/total_amount"
-                android:layout_gravity="center"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/primaryTextColor" />
-
-        <TextView
-                android:id="@+id/new_total"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:hint="@string/total"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/primaryTextColor" />
+    <TextView
+        android:id="@+id/current_rate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="16dp"
+        android:hint="@string/total"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/rate_label"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="TextContrastCheck,TextContrastCheck" />
 
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/new_qty_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:labelFor="@id/new_qty"
+        android:text="@string/quantity"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@android:color/black"
+        app:layout_constraintStart_toStartOf="@+id/rate_label"
+        app:layout_constraintTop_toBottomOf="@+id/rate_label" />
 
-</LinearLayout>
+    <EditText
+        android:id="@+id/new_qty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:backgroundTint="@color/itis_burnt_orange"
+        android:digits=".0123456789"
+        android:importantForAutofill="no"
+        android:inputType="numberSigned|numberDecimal"
+        android:minWidth="@dimen/dimen_50dp"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@+id/current_rate"
+        app:layout_constraintTop_toBottomOf="@+id/current_rate"
+        android:minHeight="48dp"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+
+
+
+
+    <TextView
+        android:id="@+id/total_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:text="@string/total_amount"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/primaryTextColor"
+        app:layout_constraintBaseline_toBaselineOf="@+id/new_total"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/new_total"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:hint="@string/total"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/primaryTextColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/new_qty"
+        app:layout_constraintTop_toBottomOf="@+id/new_qty"
+        tools:ignore="TextContrastCheck" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

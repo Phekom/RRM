@@ -1,16 +1,15 @@
-
-
 package za.co.xisystems.itis_rrm.data.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.Dispatchers
+import androidx.room.Transaction
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 /**
@@ -18,7 +17,8 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
  */
 class UserRepository(
     private val api: BaseConnectionApi,
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
     private val users = MutableLiveData<UserDTO>()
@@ -43,17 +43,18 @@ class UserRepository(
     }
 
     suspend fun getHash(): String? {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getHash()
         }
     }
 
     suspend fun getUser(): LiveData<UserDTO> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     suspend fun userRegister(
         username: String,
         password: String,
@@ -81,34 +82,28 @@ class UserRepository(
         androidDevice: String,
         binHash: String
     ) {
-        Coroutines.io {
-
-            appDb.getUserDao().updateUser(
-                binHash,
-                phoneNumber,
-                imei,
-                androidDevice
-            ) // userId,
-        }
+        appDb.getUserDao().updateUser(
+            binHash,
+            phoneNumber,
+            imei,
+            androidDevice
+        ) // userId,
     }
 
     fun updateHash(newHash: String, oldHash: String) {
-        Coroutines.io {
-            appDb.getUserDao().updateUserHash(newHash, oldHash) // userId,
-        }
+        appDb.getUserDao().updateUserHash(newHash, oldHash) // userId,
     }
 
+    @Transaction
     private suspend fun saveUser(user: UserDTO) {
-        Coroutines.io {
 
-            if (!appDb.getUserDao().checkUserExists(user.userId)) {
-                appDb.getUserDao().insert(user)
-            }
+        if (!appDb.getUserDao().checkUserExists(user.userId)) {
+            appDb.getUserDao().insert(user)
+        }
 
-            if (user.userRoles.isNotEmpty()) {
-                for (userRole in user.userRoles) {
-                    appDb.getUserRoleDao().saveRole(userRole)
-                }
+        if (user.userRoles.isNotEmpty()) {
+            for (userRole in user.userRoles) {
+                appDb.getUserRoleDao().saveRole(userRole)
             }
         }
     }
@@ -119,6 +114,5 @@ class UserRepository(
 
     suspend fun expirePin() {
         appDb.getUserDao().pinExpired()
-        // AppDatabase.onAppClose()
     }
 }

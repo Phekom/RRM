@@ -17,6 +17,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 
 /**
@@ -27,29 +28,21 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 interface JobItemEstimateDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateJobItemEstimate(jobItemEstimate: JobItemEstimateDTO)
+    fun insertJobItemEstimate(jobItemEstimate: JobItemEstimateDTO)
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun checkIfJobItemEstimateExist(estimateId: String): Boolean
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId AND actId = :actID")
-    fun getJobEstimationItemsForJobId(jobId: String, actID: Int): LiveData<List<JobItemEstimateDTO>>
+    fun getJobEstimationItemsForJobId(jobId: String, actID: Int): List<JobItemEstimateDTO>
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>
 
-    @Query(
-        "SELECT * FROM JOB_ITEM_ESTIMATE " +
-            "WHERE actId = :actId and measureActId IN " +
-            "(:activityId2,:activityId3) ORDER BY measureActId DESC "
-    )
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId and measureActId IN (:activityId2,:activityId3) ORDER BY measureActId DESC ")
     fun getJobMeasureForActivityId(actId: Int, activityId2: Int, activityId3: Int): LiveData<List<JobItemEstimateDTO>>
 
-    @Query(
-        "SELECT * FROM JOB_ITEM_ESTIMATE " +
-            "WHERE actId = :actId AND measureActId =:activityId " +
-            "ORDER BY measureActId ASC "
-    )
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND measureActId =:activityId ORDER BY measureActId ASC ")
     fun getJobMeasureForActivityId2(actId: Int, activityId: Int): LiveData<List<JobItemEstimateDTO>>
 
     @Query("SELECT qty FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
@@ -58,8 +51,8 @@ interface JobItemEstimateDao {
     @Query("SELECT lineRate FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double>
 
-    @Query("UPDATE JOB_ITEM_ESTIMATE SET qty =:newQuantity, lineRate =:newTotal  WHERE estimateId = :newEstimateId")
-    fun upDateLineRate(newEstimateId: String, newQuantity: Double, newTotal: Double)
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET qty =:newQuantity, lineRate = :newRate  WHERE estimateId = :newEstimateId")
+    fun upDateLineRate(newEstimateId: String, newQuantity: Double, newRate: Double)
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId LIKE :actId  ORDER BY jobId ASC ")
     fun getJobsForActivityId(actId: Int): LiveData<List<JobItemEstimateDTO>>
@@ -74,10 +67,7 @@ interface JobItemEstimateDao {
         estimateId: String?
     )
 
-    @Query(
-        "UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, " +
-            "ActId =:actId AND measureActId =:actId WHERE estimateId = :estimateId"
-    )
+    @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId AND measureActId =:actId WHERE estimateId = :estimateId")
     fun updateExistingJobItemEstimateWorkflow2(
         trackRouteId: String?,
         actId: Int,
@@ -96,12 +86,8 @@ interface JobItemEstimateDao {
     @Query("UPDATE JOB_ITEM_ESTIMATE SET measureActId =:actId WHERE estimateId = :estimateId")
     fun setMeasureActId(actId: Int, estimateId: String)
 
-    @Query(
-        "SELECT COUNT(A.estimateId ) AS 'workDone' " +
-            "FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  " +
-            "AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete " +
-            "WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete "
-    )
+    @Suppress("MaxLineLength")
+    @Query("SELECT COUNT(A.estimateId) AS 'workDone' FROM JOB_ITEM_ESTIMATE AS A JOIN JOB_ESTIMATE_WORKS  AS B ON B.estimateId = A.estimateId AND B.actId = :estWorksComplete WHERE A.jobId LIKE :jobId AND A.actId = :estimateWorkPartComplete ")
     fun getJobItemsEstimatesDoneForJobId(
         jobId: String?,
         estimateWorkPartComplete: Int,
@@ -109,8 +95,17 @@ interface JobItemEstimateDao {
     ): Int
 
     @Query("UPDATE JOB_ITEM_ESTIMATE set actId = :actId WHERE estimateId = :estimateId")
-    suspend fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
+    fun updateActIdForJobItemEstimate(actId: Int, estimateId: String): Int
 
     @Query("DELETE FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
-    suspend fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
+    fun deleteJobItemEstimateByEstimateId(estimateId: String): Int
+
+    @Update
+    fun updateJobItemEstimate(jobItemEstimate: JobItemEstimateDTO): Int
+
+    @Update
+    fun updateJobItemEstimates(jobItemEstimates: List<JobItemEstimateDTO>): Int
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE projectItemId = :itemId AND jobId = :jobId LIMIT 1")
+    fun getJobEstimateIndexByItemAndJobId(itemId: String, jobId: String): JobItemEstimateDTO?
 }

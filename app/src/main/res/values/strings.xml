@@ -4,7 +4,7 @@
   * Copyright (c) 2021.  XI Systems  - All rights reserved
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Typos">
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_settings">Settings</string>
@@ -73,7 +73,6 @@
     <string name="save">Save</string>
     <string name="section">Section</string>
     <string name="some_super_long_item_name_in_case_it_gets_cut_off">Some super long item name in case it gets cut off</string>
-    <string name="space">" "</string>
     <string name="start">Start</string>
     <string name="start_km">Start Km</string>
     <string name="submit">Submit</string>
@@ -108,7 +107,6 @@
     <string name="menu_estMeasure">Measure Estimates</string>
     <string name="menu_approvMeasure">Approve Measurements</string>
 
-    <string name="enter_passcode_text">Please enter your unique 4 digit pin code</string>
     <!-- Sync Preferences -->
     <string name="notificationS_title">Vibrate</string>
     <string name="notificationv_title">Notification tone</string>
@@ -120,8 +118,7 @@
 
     <string name="theme_title">Change Theme</string>
     <string name="attach_title">Keep on Dark Mode</string>
-    <string name="attach_summary_on">Switch off dark mode and start app in default theme
-    </string>
+    <string name="attach_summary_on">Switch off dark mode and start app in default theme</string>
     <string name="attach_summary_off">Automatically start app in dark mode</string>
 
 
@@ -157,19 +154,11 @@
     <string name="uom_quantity">each</string>
     <string name="uom_m2">per m²</string>
     <string name="uom_m3">per m³</string>
-    <string name="uom_amount">each</string>
-    <string name="uom_length_m">per m</string>
-    <string name="uom_m3_km">per m³/km</string>
-    <string name="uom_kg">per kg</string>
     <string name="uom_t">per ton</string>
     <string name="uom_hour">per hour</string>
-    <string name="uom_prov_sum">provisional sum</string>
+    <string name="uom_prov_sum">prov sum</string>
     <string name="uom_lump_sum">lump sum</string>
     <string name="uom_l">per liter</string>
-    <string name="uom_km">per km</string>
-    <string name="uom_kl">per kiloliter</string>
-    <string name="uom_ha">per hectare</string>
-    <string name="uom_percentage">%</string>
 
     <!-- Estimate Photo Gallery Fragment -->
     <string name="label_quantity">Quantity</string>
@@ -189,12 +178,6 @@
 
     <!-- ForegroundOnly Location Service -->
 
-    <string name="launch_activity">Launch activity</string>
-
-    <string name="stop_location_updates_button_text">Stop receiving location updates</string>
-
-    <string name="preference_file_key">com.example.android.while_in_use_location.PREFERENCE_FILE_KEY</string>
-    <string name="no_location_text">No current location</string>
     <string name="badge">(%1$s)</string>
     <string name="pair">%1$s %2$s</string>
     <string name="comment_placeholder">No comment</string>
@@ -216,8 +199,6 @@
     <string name="click_to_select_date">(Click to select date)</string>
     <string name="estimated_due_date">Estimated Due Date:</string>
     <string name="add_item">add item</string>
-    <string name="pin_light">pin light</string>
-    <string name="delete_button">delete button</string>
     <string name="user_name">USER NAME</string>
     <string name="no_information">No information.</string>
     <string name="user_icon">user icon</string>
@@ -237,10 +218,6 @@
     <string name="incomplete_estimate">Incomplete Estimate…</string>
     <string name="engineering_section_title">Engineering Section</string>
 
-    <string name="password_strength_weak">Weak</string>
-    <string name="password_strength_medium">Medium</string>
-    <string name="password_strength_strong">Strong</string>
-    <string name="password_strength_very_strong">Very Strong</string>
     <string name="uom">UOM</string>
     <string name="start_photo_preview">Start Photo Preview</string>
     <string name="end_photo_preview">End Photo Preview</string>
@@ -250,7 +227,54 @@
     <string name="application_settings">application settings</string>
     <string name="tender_rate">Tender Rate</string>
     <string name="image_kb">$1%d KB</string>
-    <string name="user_blocked">The account $1%s is locked out. Please call Sanral Support for enquiries.</string>
-    <string name="measurements_photo_image">Measurement Image</string>
-    <string name="work_data_incomplete">Please contact support about this job, and have them restore or remove it</string>
+    <string name="user_blocked">The account $1%s is locked out. Please call or email ITIS Support for enquiries.</string>
+
+    <!-- Location Validation -->
+    <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
+    <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
+    <string name="invalid_km_marker">The closest active section to this location ($1%s) is $2%s km away,\n at the $3%s km marker position.</string>
+    <string name="for_review_purposes_only">For Review Purposes Only</string>
+    <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>
+    <string name="item_number">No:..</string>
+
+    <!-- Offline Mode -->
+    <string name="complete_upload">Complete Upload</string>
+    <string name="row_number_mask">No:..</string>
+    <string name="default_uom">each</string>
+    <string name="qty_rate">Qty / Rate</string>
+    <string name="not_allowed">Work Process Not Permitted</string>
+    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>
+    <string name="action_not_permitted">Work can only be initiated at the JI\'s location</string>
+    <string name="goto_work_location">Drive To Work Site</string>
+    <string name="work">Drive to Work</string>
+    <string name="user_location_permission_explanation">This app needs location permission to direct you tools the job sites, and verify the work you perform</string>
+    <string name="user_location_permission_not_granted">Allow location permission</string>
+    <string name="drive_button">Drive Button</string>
+    <string name="navigating_to_work_location">Navigating To Location</string>
+    <string name="no_routes">No Routes Found</string>
+    <string name="distance_misiing">Missing Data</string>
+    <string name="start_work">Start Work</string>
+    <string name="start_the_work_process">START THE WORK PROCESS</string>
+    <string name="jino_or_desc_search_hint">Search by JI no or description</string>
+    <string name="add_a_photo">Add a photo</string>
+    <string name="pin_entry">pin entry</string>
+    <string name="take_a_new_live_photo">Take a new live photo</string>
+    <string name="choose_an_rrm_gallery_photo">Choose an RRM gallery photo</string>
+    <string name="select_image">Select Image</string>
+    <string name="cancel_selection">Cancel Selection</string>
+    <string name="retake_image">Retake Image</string>
+    <string name="delete_image">Delete Image</string>
+    <string name="capture_photos">Capture Photos</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="select_job_type">Select Job Type</string>
+    <string name="capture_photo">Capture Photo</string>
+    <string name="capture_start">Start Photo</string>
+    <string name="end_photo">End Photo</string>
+    <string name="line">Line</string>
+    <string name="point">Point</string>
+    <string name="captured_photo_of_hazard_or_defect">Captured photo of road hazard or defect</string>
+    <string name="job_no">Job No:</string>
+    <string name="measurement_photograph">Measurement Photograph</string>
+
 </resources>

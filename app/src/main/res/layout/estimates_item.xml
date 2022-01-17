@@ -17,7 +17,7 @@
         android:maxWidth="180dp"
         android:layout_marginStart="10dp"
         android:text="@string/some_super_long_item_name_in_case_it_gets_cut_off"
-        android:textColor="@color/sanral_burnt_orange"
+        android:textColor="#DD2C00"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <TextView

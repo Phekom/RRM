@@ -6,18 +6,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
 import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -34,13 +32,13 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
+class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
         const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
     }
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
@@ -51,8 +49,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         Manifest.permission.ACCESS_FINE_LOCATION
     )
 
+    private lateinit var binding: ActivityRegisterPinBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterPinBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         appContext = this
 
         if (startPermissionRequest(permissions)) {
@@ -61,32 +65,33 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterPinBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register_pin)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
         viewModel.authListener = this
 
         Coroutines.main {
+            binding.registerPinbutton.setOnClickListener {
+                val enterPin = binding.enterPinEditText
+                val confirmPin = binding.confirmPinEditText
+
+                viewModel.onRegPinButtonClick(it, enterPin, confirmPin)
+            }
+
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(
-                this,
-                { user ->
-                    // Register the user
-                    if (user?.pinHash != null) {
-                        Intent(this, LoginActivity::class.java).also { login ->
-                            login.flags =
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                            startActivity(login)
-                        }
+            loggedInUser.observe(this, { user ->
+                // Register the user
+                if (user?.pinHash != null) {
+                    Intent(this, LoginActivity::class.java).also { login ->
+                        login.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(login)
                     }
                 }
-            )
-            serverTextView.setOnClickListener {
+            })
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(appContext)
             }
         }
@@ -98,20 +103,22 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST) {
-            var allAllowed = true
-            for (i in permissions.indices) {
-                if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                    allAllowed = false
-                    val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
-                    if (requestAgain) {
-                        toast("Permission Denied")
-                    } else {
-                        toast("Please enable permissions from your Device Settings")
+        when (requestCode) {
+            PERMISSION_REQUEST -> {
+                var allAllowed = true
+                for (i in permissions.indices) {
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                        allAllowed = false
+                        val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
+                        if (requestAgain) {
+                            toast("Permission Denied")
+                        } else {
+                            toast("Please enable permissions from your Device Settings")
+                        }
                     }
                 }
+                if (allAllowed) toast("Permissions Granted")
             }
-            if (allAllowed) toast("Permissions Granted")
         }
     }
 
@@ -141,7 +148,7 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         } catch (t: Throwable) {
-            val xiErr = XIError(t, "Failed to login")
+            val xiErr = Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
                 XIErrorHandler.handleError(
                     view = findViewById(R.id.reg_container),
@@ -165,13 +172,13 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
-        toast("Pin registered for ${userDTO.userName}")
+        binding.loading.hide()
+        toast("You are Logged in as ${userDTO.userName}")
         gotoMainActivity()
     }
 
@@ -180,9 +187,9 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

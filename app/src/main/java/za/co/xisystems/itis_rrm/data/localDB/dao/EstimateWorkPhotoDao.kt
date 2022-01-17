@@ -14,17 +14,20 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
 interface EstimateWorkPhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertEstimateWorksPhoto(estimateWorksPhoto: JobEstimateWorksPhotoDTO)
+    fun insertEstimateWorksPhoto(estimateWorksPhoto: JobEstimateWorksPhotoDTO)
 
     @Query("SELECT EXISTS (SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE filename = :filename)")
     fun checkIfEstimateWorksPhotoExist(filename: String): Boolean
 
     @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE worksId = :worksId")
-    suspend fun getEstimateWorksPhotoForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO>
+    fun getEstimateWorksPhotoForWorksId(worksId: String): List<JobEstimateWorksPhotoDTO>
 
     @Query("DELETE FROM JOB_ESTIMATE_WORKS_PHOTO")
     fun deleteAll()
 
     @Update
     fun updateExistingEstimateWorksPhoto(estimateWorksPhoto: JobEstimateWorksPhotoDTO)
+
+    @Query("SELECT * FROM JOB_ESTIMATE_WORKS_PHOTO WHERE worksId = :worksId AND photoActivityId = :actId")
+    fun getEstimateWorksPhotoForWorksIdAndActID(worksId: String, actId: Int): List<JobEstimateWorksPhotoDTO>
 }

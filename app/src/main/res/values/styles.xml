@@ -11,7 +11,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
-        <item name="colorAccent">@color/secondaryLightColor</item>
+        <item name="colorAccent">@color/secondaryDarkColor</item>
 
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -22,7 +22,7 @@
 <!--    </style>-->
 
     <style name="ActionBarTheme"  parent="ThemeOverlay.MaterialComponents.ActionBar">
-<!--        <item name="android:textColorPrimary">@android:color/white</item>-->
+        <item name="android:textColorPrimary">@android:color/white</item>
 <!--        <item name="android:textColorSecondary">@color/itis_silver</item>-->
     </style>
 
@@ -35,10 +35,6 @@
 
     <style name="ItisRegularText" parent="ItisText">
         <item name="android:textColor">@color/primaryTextColor</item>
-    </style>
-    <style name="ItisText.Title">
-        <item name="android:textSize">@dimen/text_title</item>
-        <item name="fontFamily">@font/roboto_medium</item>
     </style>
 
     <style name="ItisText.Input">
@@ -90,7 +86,7 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <style name="_linear_layout_horiz" parent="_default">
+    <style name="_linear_layout_horizon" parent="_default">
         <item name="android:orientation">horizontal</item>
     </style>
 

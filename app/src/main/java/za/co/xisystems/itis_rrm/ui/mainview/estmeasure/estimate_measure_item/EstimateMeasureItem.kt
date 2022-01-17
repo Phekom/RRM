@@ -8,12 +8,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item
 
 import android.annotation.SuppressLint
 import android.view.View
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.item_header.*
-import kotlinx.android.synthetic.main.single_listview_item.appListID
+import com.xwray.groupie.viewbinding.BindableItem
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -24,13 +22,13 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class EstimateMeasureItem(
     val jobItemEstimateDTO: JobItemEstimateDTO,
     private val measureViewModel: MeasureViewModel
-) : Item() {
+) : BindableItem<ItemHeaderBinding>() {
 
     var sectionId: String? = null
 
     @SuppressLint("SetTextI18n")
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    override fun bind(viewBinding: ItemHeaderBinding, position: Int) {
+        viewBinding.apply {
             appListID.text = getItemId(position + 1).toString()
 
             Coroutines.main {
@@ -48,8 +46,12 @@ class EstimateMeasureItem(
     }
 
     override fun getLayout() = R.layout.item_header
-}
 
-private fun GroupieViewHolder.getItemId(position: Int): Long {
-    return position.toLong()
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun initializeViewBinding(view: View): ItemHeaderBinding {
+        return ItemHeaderBinding.bind(view)
+    }
 }

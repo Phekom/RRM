@@ -34,7 +34,7 @@ data class JobItemEstimatesPhotoDTO(
     @SerializedName("PhotoEnd")
     val photoEnd: String?,
     @SerializedName("Startkm")
-    val startKm: Double = 0.0,
+    var startKm: Double = 0.0,
     @SerializedName("Endkm")
     val endKm: Double = 0.0,
     @SerializedName("PhotoLatitude")
@@ -55,7 +55,8 @@ data class JobItemEstimatesPhotoDTO(
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
     var isPhotostart: Boolean,
-    var kmMarkerTag: String? = null
+    var sectionMarker: String?,
+    val geoCoded: Boolean = false
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -76,12 +77,9 @@ data class JobItemEstimatesPhotoDTO(
         recordSynchStateId = parcel.readInt(),
         recordVersion = parcel.readInt(),
         isPhotostart = parcel.readByte() != 0.toByte(),
-        kmMarkerTag = parcel.readString()
+        sectionMarker = parcel.readString(),
+        geoCoded = parcel.readByte() != 0.toByte()
     )
-
-    fun isPhotoStart(): Boolean {
-        return isPhotostart
-    }
 
     override fun equals(other: Any?): Boolean {
         return when {
@@ -89,16 +87,18 @@ data class JobItemEstimatesPhotoDTO(
             javaClass != other?.javaClass -> false
             else -> {
                 other as JobItemEstimatesPhotoDTO
-                when {
-                    descr != other.descr -> false
-                    estimateId != other.estimateId -> false
-                    filename != other.filename -> false
-                    photoDate != other.photoDate -> false
-                    photoId != other.photoId -> false
-                    else -> true
-                }
+                isOtherEqual(other)
             }
         }
+    }
+
+    private fun isOtherEqual(other: JobItemEstimatesPhotoDTO) = when {
+        descr != other.descr -> false
+        estimateId != other.estimateId -> false
+        filename != other.filename -> false
+        photoDate != other.photoDate -> false
+        photoId != other.photoId -> false
+        else -> true
     }
 
     override fun hashCode(): Int {
@@ -125,11 +125,16 @@ data class JobItemEstimatesPhotoDTO(
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)
         parcel.writeByte(if (isPhotostart) 1 else 0)
-        parcel.writeString(kmMarkerTag)
+        parcel.writeString(sectionMarker)
+        parcel.writeByte(if (geoCoded) 1 else 0)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun isStartPhoto(): Boolean {
+        return this.isPhotostart
     }
 
     companion object CREATOR : Creator<JobItemEstimatesPhotoDTO> {

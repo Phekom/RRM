@@ -52,14 +52,14 @@
                 <ImageButton
                     android:id="@+id/resetButton"
                     style="@style/Base.Widget.AppCompat.Button.Borderless"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:src="@drawable/ic_baseline_cancel_24px"
-                    android:tint="@color/sanral_orange_red"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    android:contentDescription="@string/cancel" />
+                    android:contentDescription="@string/cancel"
+                    app:tint="@color/sanral_orange_red" />
 
                 <TextView
                     android:id="@+id/projectLabel"
@@ -92,7 +92,7 @@
 
         <LinearLayout
             android:id="@+id/addItemLayout"
-            style="@style/_linear_layout_horiz"
+            style="@style/_linear_layout_horizon"
             android:layout_marginTop="@dimen/small"
             android:gravity="center_vertical"
             android:visibility="visible"
@@ -111,8 +111,8 @@
                 android:layout_width="56dp"
                 android:layout_height="44dp"
                 android:src="@drawable/ic_baseline_add_box_24px"
-                android:tint="@color/sanral_orange_red"
-                android:contentDescription="@string/add_item" />
+                android:contentDescription="@string/add_item"
+                app:tint="@color/sanral_orange_red" />
         </LinearLayout>
     </LinearLayout>
 

@@ -11,17 +11,17 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.StringKeyValuePair
 interface StringKeyValueDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(keyValueData: StringKeyValuePair)
+    fun insert(keyValueData: StringKeyValuePair)
 
     @Query("SELECT * FROM StringKeyValuePair WHERE `key` = :key LIMIT 1")
-    suspend fun get(@NonNull key: String): StringKeyValuePair?
+    fun get(@NonNull key: String): StringKeyValuePair?
 
     @Query("DELETE FROM StringKeyValuePair WHERE `key` = :key")
-    suspend fun delete(@NonNull key: String)
+    fun delete(@NonNull key: String)
 
     @Query("DELETE FROM StringKeyValuePair")
-    suspend fun clear()
+    fun clear()
 
     @Query("SELECT * FROM StringKeyValuePair")
-    suspend fun getAll(): List<StringKeyValuePair>?
+    fun getAll(): List<StringKeyValuePair>?
 }

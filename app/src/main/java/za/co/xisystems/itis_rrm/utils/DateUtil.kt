@@ -9,6 +9,8 @@ package za.co.xisystems.itis_rrm.utils
 import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -22,17 +24,27 @@ object DateUtil {
     private const val parsingIso8601DateTimeFailed = "Parsing ISO8601 datetime failed"
 
     private val iso8601Format: DateFormat =
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.ROOT)
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.ROOT)
 
-    private val readableDateForm: DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT)
+    private val localDateTimeFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+    private val readableDateForm: DateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
     fun stringToDate(stringDate: String?): Date? {
         return if (null == stringDate) null else try {
-            iso8601Format.parse(stringDate)
+            return if (stringDate.contains('+') || stringDate.lastIndexOf("-") > 8) {
+                iso8601Format.parse(stringDate)
+            } else {
+                val localDateTime = LocalDateTime.parse(stringDate)
+                Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant())
+            }
         } catch (e: ParseException) {
             Timber.e(e, parsingIso8601DateTimeFailed)
             null
         }
+    }
+
+    fun dateToLocalString(date: Date?): String? {
+        return date?.toInstant()?.toEpochMilli()?.toString()
     }
 
     fun dateToString(date: Date?): String? {

@@ -12,28 +12,29 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.create
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
-import java.util.ArrayList
-import java.util.Date
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.x.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.SUCCESS
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.WARNING
-import za.co.xisystems.itis_rrm.custom.results.XIError
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -48,6 +49,8 @@ import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreatejobBinding
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.setSpinner
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -55,15 +58,17 @@ import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
+import java.util.ArrayList
+import java.util.Date
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
  * Updated by Shaun McDonald on 2020/04/22
  */
 
-class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
+class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var createViewModel: CreateViewModel
     private val factory: CreateViewModelFactory by instance()
 
@@ -79,9 +84,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
     internal var selectedProject: ProjectSelector? = null
 
-    internal var selectedProjectItem: ProjectItemDTO? = null
-
-    var newJob: JobDTO? = null
+    private var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
@@ -97,6 +100,8 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
         newJobItemEstimatesWorksList = ArrayList()
+        createViewModel =
+            ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
 
         setHasOptionsMenu(true)
     }
@@ -132,36 +137,28 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        createViewModel = activity?.run {
-            ViewModelProvider(this, factory).get(CreateViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
             val user = createViewModel.user.await()
-            user.observe(
-                viewLifecycleOwner,
-                { userDTO ->
-                    useR = userDTO
-                }
-            )
+            user.observe(viewLifecycleOwner, { userDTO ->
+                useR = userDTO
+            })
         }
 
-        val myClickListener = View.OnClickListener { view ->
-            when (view?.id) {
-                R.id.selectContractProjectContinueButton -> {
+        val myClickListener = View.OnClickListener { clickedView ->
+            when (clickedView) {
+                ui.selectContractProjectContinueButton -> {
                     val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
                     if (description.isEmpty()) {
-                        sharpToast(message = "Please Enter Description", style = WARNING)
+                        extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
                         ui.descriptionEditText.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
                         createNewJob()
                         descri = description
                         createViewModel.setDescription(descri!!)
-                        setContractAndProjectSelection(view)
+                        setContractAndProjectSelection(clickedView)
                     }
                 }
             }
@@ -169,14 +166,18 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
         ui.selectContractProjectContinueButton.setOnClickListener(myClickListener)
 
+
+    }
+
+    override fun onResume() {
+        super.onResume()
         try {
             setContract()
         } catch (t: Throwable) {
-            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                view = this.requireView(),
                 throwable = contractErr,
-                refreshAction = { retryContracts() }
+                refreshAction = { this.retryContracts() }
             )
         }
     }
@@ -193,12 +194,9 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
                 descri
             )
             createViewModel.backupJob(newJob!!)
-            createViewModel.jobId.observe(
-                viewLifecycleOwner,
-                {
-                    Timber.d("Job PK: $it")
-                }
-            )
+            createViewModel.jobId.observe(viewLifecycleOwner, {
+                Timber.d("Job PK: $it")
+            })
         }
     }
 
@@ -264,7 +262,7 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
             isSynced = null
 
         )
-        sharpToast(message = "New job created", style = SUCCESS)
+        extensionToast(message = "New job created", style = ToastStyle.SUCCESS)
         return createdJob
     }
 
@@ -308,43 +306,39 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
 
                 val contractData = createViewModel.getContractSelectors()
 
-                contractData.observe(
-                    viewLifecycleOwner,
-                    { contractList ->
-                        val allData = contractList.count()
-                        if (contractList.size == allData) {
-                            val contractIndices = arrayOfNulls<String>(contractList.size)
-                            for (contract in contractList.indices) {
-                                contractIndices[contract] = contractList[contract].contractNo
-                            }
+                contractData.observe(viewLifecycleOwner, { contractList ->
+                    val allData = contractList.count()
+                    if (contractList.size == allData) {
+                        val contractIndices = arrayOfNulls<String>(contractList.size)
+                        for (contract in contractList.indices) {
+                            contractIndices[contract] = contractList[contract].contractNo
+                        }
 
-                            Timber.d("Thread completed.")
-                            setSpinner(
-                                requireContext().applicationContext,
-                                ui.contractSpinner,
-                                contractList,
-                                contractIndices,
-                                object : SpinnerHelper.SelectionListener<ContractSelector> {
-                                    override fun onItemSelected(position: Int, item: ContractSelector) {
-                                        selectedContract = item
-                                        setProjects(item.contractId)
-                                        Coroutines.main {
-                                            createViewModel.setContractId(item.contractId)
-                                        }
+                        Timber.d("Thread completed.")
+                        setSpinner(
+                            requireContext().applicationContext,
+                            ui.contractSpinner,
+                            contractList,
+                            contractIndices,
+                            object : SpinnerHelper.SelectionListener<ContractSelector> {
+                                override fun onItemSelected(position: Int, item: ContractSelector) {
+                                    selectedContract = item
+                                    setProjects(item.contractId)
+                                    Coroutines.main {
+                                        createViewModel.setContractId(item.contractId)
                                     }
                                 }
-                            )
-                        }
-                        ui.dataLoading.hide()
+                            }
+                        )
                     }
-                )
+                    ui.dataLoading.hide()
+                })
             }
         } catch (t: Throwable) {
-            val contractErr = XIError(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
-                this.requireView(),
-                contractErr,
-                refreshAction = { retryContracts() }
+                throwable = contractErr,
+                refreshAction = { this.retryContracts() }
             )
         } finally {
             ui.dataLoading.hide()
@@ -361,35 +355,32 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         Coroutines.main {
             val projects = createViewModel.getProjectSelectors(contractId!!)
             ui.dataLoading.show()
-            projects.observe(
-                viewLifecycleOwner,
-                { projectList ->
-                    val allData = projectList.count()
-                    if (projectList.size == allData) {
+            projects.observe(viewLifecycleOwner, { projectList ->
+                val allData = projectList.count()
+                if (projectList.size == allData) {
 
-                        val projectNmbr = arrayOfNulls<String>(projectList.size)
-                        for (project in projectList.indices) {
-                            projectNmbr[project] = projectList[project].projectCode
-                        }
-                        setSpinner(
-                            requireContext().applicationContext,
-                            ui.projectSpinner,
-                            projectList,
-                            projectNmbr, // null)
-                            object : SpinnerHelper.SelectionListener<ProjectSelector> {
-                                override fun onItemSelected(position: Int, item: ProjectSelector) {
-                                    selectedProject = item
-                                    Coroutines.main {
-                                        createViewModel.setProjectId(item.projectId)
-                                    }
+                    val projectNmbr = arrayOfNulls<String>(projectList.size)
+                    for (project in projectList.indices) {
+                        projectNmbr[project] = projectList[project].projectCode
+                    }
+                    setSpinner(
+                        requireContext().applicationContext,
+                        ui.projectSpinner,
+                        projectList,
+                        projectNmbr, // null)
+                        object : SpinnerHelper.SelectionListener<ProjectSelector> {
+                            override fun onItemSelected(position: Int, item: ProjectSelector) {
+                                selectedProject = item
+                                Coroutines.main {
+                                    createViewModel.setProjectId(item.projectId)
                                 }
                             }
-                        )
+                        }
+                    )
 
-                        ui.dataLoading.hide()
-                    }
+                    ui.dataLoading.hide()
                 }
-            )
+            })
         }
     }
 
@@ -426,5 +417,16 @@ class CreateFragment : BaseFragment(), OfflineListener, KodeinAware {
         const val CONTRACT_KEY = "contractId"
         const val PROJECT_KEY = "projectId"
         const val JOB_KEY = "jobId"
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                this@CreateFragment.findNavController().navigate(MobileNavigationDirections.actionGlobalNavHome())
+            }
+        }
+        requireActivity().onBackPressedDispatcher
+            .addCallback(this, callback)
     }
 }

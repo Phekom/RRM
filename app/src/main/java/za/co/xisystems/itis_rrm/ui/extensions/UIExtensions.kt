@@ -13,6 +13,7 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 
 /**
  * Created by Shaun McDonald on 2020/06/08.
+ * Copyright (c) 2020 XI Systems. All rights reserved.
  * Last modified on 26/06/2021, 05:52
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
@@ -43,6 +44,7 @@ fun ImageCollectionView.addZoomedImages(
 ) {
 
     photoPaths.forEach { pair ->
+
         this.addImage(
             pair.second!!,
             object : ImageCollectionView.OnImageClickListener {

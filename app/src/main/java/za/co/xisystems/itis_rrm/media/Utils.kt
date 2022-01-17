@@ -12,10 +12,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import androidx.core.app.ActivityCompat
-import androidx.core.os.BuildCompat
 import androidx.fragment.app.Fragment
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,7 +32,7 @@ private const val IMAGE_EXTENSION_PNG = "png"
 fun hasSdkHigherThan(sdk: Int): Boolean {
     // Early previous of R will return Build.VERSION.SDK_INT as 29
     if (Build.VERSION_CODES.R == sdk) {
-        return BuildCompat.isAtLeastR()
+        return true
     }
     return Build.VERSION.SDK_INT > sdk
 }
@@ -55,7 +52,7 @@ fun requestStoragePermission(fragment: Fragment, requestCode: Int) {
 }
 
 fun hasMediaLocationPermission(context: Context): Boolean {
-    return if (VERSION.SDK_INT >= VERSION_CODES.Q) {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         hasPermission(context, Manifest.permission.ACCESS_MEDIA_LOCATION)
     } else {
         true
@@ -63,7 +60,7 @@ fun hasMediaLocationPermission(context: Context): Boolean {
 }
 
 fun requestMediaLocationPermission(activity: Activity, requestCode: Int) {
-    if (VERSION.SDK_INT >= VERSION_CODES.Q) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_MEDIA_LOCATION), requestCode)
     }
 }

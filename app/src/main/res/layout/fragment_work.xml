@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/datagrid"
+        android:id="@+id/dataGrid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
@@ -26,6 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:visibility="visible">
+
 
             <com.skydoves.androidveil.VeilRecyclerFrameView
                 android:id="@+id/veiled_work_list_view"
@@ -95,7 +96,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/datagrid"
+        app:layout_constraintEnd_toEndOf="@+id/dataGrid"
         android:contentDescription="@string/no_data" />
 
 

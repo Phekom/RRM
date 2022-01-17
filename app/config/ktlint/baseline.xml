@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseline version="1.0">
+    <file name="src/main/java/za/co/xisystems/itis_rrm/data/repositories/MeasureCreationDataRepository.kt">
+        <error column="37" line="575" source="indent" />
+    </file>
+    <file name="src/main/java/za/co/xisystems/itis_rrm/ui/mainview/approvejobs/ApproveJobsFragment.kt">
+        <error column="1" line="11" source="import-ordering" />
+    </file>
+    <file name="src/main/java/za/co/xisystems/itis_rrm/ui/mainview/approvejobs/view_job_info/EstimatesItem.kt">
+        <error column="1" line="15" source="import-ordering" />
+    </file>
+    <file name="src/main/java/za/co/xisystems/itis_rrm/utils/PhotoUtil.kt">
+        <error column="1" line="9" source="import-ordering" />
+    </file>
+    <file name="src/test/java/za/co/xisystems/itis_rrm/forge/Argon2Test.kt">
+        <error column="1" line="188" source="max-line-length" />
+        <error column="1" line="206" source="max-line-length" />
+        <error column="1" line="224" source="max-line-length" />
+    </file>
+</baseline>

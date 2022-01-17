@@ -1,8 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.extensions
 
-import android.content.Context
+import android.graphics.Color
 import android.widget.Button
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.github.razir.progressbutton.DrawableButton
 import com.github.razir.progressbutton.attachTextChangeAnimator
@@ -15,22 +14,23 @@ import za.co.xisystems.itis_rrm.R
  * ProgressButton UI extensions for XI
  */
 
-fun Button.initProgress(lifecycleOwner: LifecycleOwner, context: Context) {
+// TODO: Exchange hard-coded colours to match the theme
+fun Button.initProgress(lifecycleOwner: LifecycleOwner) {
     lifecycleOwner.bindProgressButton(this)
     this.attachTextChangeAnimator {
         fadeInMills = 100
         fadeOutMills = 100
-        textColor = ContextCompat.getColor(context, R.color.progressTextColor)
+        textColor = Color.WHITE
     }
 }
 
-fun Button.startProgress(caption: String? = null, context: Context) {
+fun Button.startProgress(caption: String? = null) {
     this.setBackgroundResource(R.drawable.round_corner_green)
     this.showProgress {
         buttonText = caption ?: "Loading"
         gravity = DrawableButton.GRAVITY_TEXT_END
         textMarginRes = R.dimen.progressMargin
-        progressColor = ContextCompat.getColor(context, R.color.progressTextColor)
+        progressColor = Color.WHITE
         progressRadiusRes = R.dimen.smallRadius
         progressStrokeRes = R.dimen.stroke3
     }

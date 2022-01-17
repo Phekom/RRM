@@ -15,7 +15,7 @@ class CorrectionsViewModelFactory(
 //    private val Db : AppDatabase,
 //    val context: Context
 ) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return CorrectionsViewModel(offlineDataRepository) as T
 //        return MeasureViewModel(repository,,Db ,context) as T
     }

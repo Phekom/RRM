@@ -20,7 +20,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -35,31 +34,33 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.google.android.material.navigation.NavigationView
 import com.raygun.raygun4android.RaygunClient
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.launch
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
+import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
-import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsActivity
+import za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragmentDirections
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.toast
 
 class MainActivity :
     BaseActivity(),
     NavigationView.OnNavigationItemSelectedListener,
-    KodeinAware {
+    DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private lateinit var mainActivityViewModel: MainActivityViewModel
     private val factory: MainActivityViewModelFactory by instance()
     private lateinit var navController: NavController
@@ -75,15 +76,15 @@ class MainActivity :
     private var gpsEnabled = false
     private var networkEnabled = false
     private var uiScope = UiLifecycleScope()
-    private lateinit var ui: ActivityMainBinding
     private var doubleBackToExitPressed = 0
-    private var progressBar: ProgressBar? = null
+    private val binding by viewBinding(ActivityMainBinding::inflate)
+
     private val appBarConfiguration by lazy {
         AppBarConfiguration(
             setOf(
                 R.id.nav_home
             ),
-            ui.drawerLayout
+            binding.drawerLayout
         )
     }
 
@@ -105,10 +106,8 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        ui = ActivityMainBinding.inflate(layoutInflater)
-        val view = ui.root
-        setContentView(view)
-        setSupportActionBar(ui.toolbar)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         // Get a support ActionBar corresponding to this toolbar
         val ab: ActionBar? = supportActionBar
@@ -119,22 +118,30 @@ class MainActivity :
             throw NullPointerException("Something went wrong")
         }
 
+        // Set MotionToast to use Sanral colours
+        MotionToast.setErrorColor(R.color.sanral_dark_red)
+        MotionToast.setSuccessColor(R.color.sanral_dark_green)
+        MotionToast.setWarningColor(R.color.sanral_dark_red)
+        MotionToast.setInfoColor(R.color.dark_bg_color)
+        MotionToast.setDeleteColor(R.color.dark_bg_color)
+
         // Because we're creating the NavHostFragment using FragmentContainerView, we must
         // retrieve the NavController directly from the NavHostFragment instead
         navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.navController
 
-        navigationView = ui.navView
+        navigationView = binding.navView
         NavigationUI.setupActionBarWithNavController(this, navController)
-        NavigationUI.setupWithNavController(ui.toolbar, navController, appBarConfiguration)
+        NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfiguration)
 
         Coroutines.io {
             RaygunClient.init(application)
             RaygunClient.enableCrashReporting()
         }
 
-        this.mainActivityViewModel = ViewModelProvider(this, factory).get(MainActivityViewModel::class.java)
+        this.mainActivityViewModel =
+            ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
 
         initializeCountDrawer()
 
@@ -144,19 +151,19 @@ class MainActivity :
         displayPromptForEnablingGPS(this)
         this.toggle = ActionBarDrawerToggle(
             this,
-            drawer_layout,
-            toolbar,
+            binding.drawerLayout,
+            binding.toolbar,
             R.string.navigation_drawer_open,
             R.string.navigation_drawer_close
         )
 
-        drawer_layout.addDrawerListener(toggle!!)
+        binding.drawerLayout.addDrawerListener(toggle!!)
 
         toggle!!.syncState()
 
         this.hideKeyboard()
 
-        nav_view.setNavigationItemSelectedListener(this)
+        binding.navView.setNavigationItemSelectedListener(this)
         badgeUnSubmitted =
             navigationView.menu.findItem(R.id.nav_unSubmitted).actionView as TextView
 //        nav_correction =
@@ -170,10 +177,9 @@ class MainActivity :
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
 
-        progressBar = findViewById(R.id.progressbar)
-
         if (savedInstanceState == null) {
-            navController.navigate(R.id.action_global_nav_home)
+            val home = HomeFragmentDirections.actionGlobalNavHome()
+            navController.navigate(home)
         }
     }
 
@@ -187,7 +193,7 @@ class MainActivity :
         }
 
         try {
-            networkEnabled = this.isConnected
+            networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
         } catch (e: Exception) {
             Timber.e(e, "Network-related error")
         }
@@ -214,29 +220,24 @@ class MainActivity :
 
     override fun onBackPressed() {
 
-        if (ui.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            ui.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
             if (navHostFragment.childFragmentManager.backStackEntryCount > 1) {
                 super.onBackPressed()
                 toggle?.syncState()
             } else {
-                navController
                 doubleBackToExitPressed++
-                if (doubleBackToExitPressed >= 2) {
+                if (doubleBackToExitPressed == 2) {
                     logoutApplication()
-                    finish()
+                    finishAndRemoveTask()
                 } else {
+
                     toast("Please press Back again to exit")
 
-                    if (doubleBackToExitPressed > 0) {
-                        Handler(mainLooper).postDelayed(
-                            {
-                                doubleBackToExitPressed--
-                            },
-                            TWO_SECONDS
-                        )
-                    }
+                    Handler(mainLooper).postDelayed({
+                        doubleBackToExitPressed = 0
+                    }, TWO_SECONDS)
                 }
             }
         }
@@ -291,25 +292,35 @@ class MainActivity :
 
     override fun onSupportNavigateUp(): Boolean {
 
-        return NavigationUI.navigateUp(navController, ui.drawerLayout) || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(
+            navController,
+            binding.drawerLayout
+        ) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
+        val home = HomeFragmentDirections.actionGlobalNavHome()
 
         when (item.itemId) {
             R.id.nav_home -> {
-                navController.navigate(R.id.nav_home)
+                navController.navigate(home)
                 toggle?.syncState()
                 initializeCountDrawer()
             }
             R.id.nav_create -> {
-                navController.navigate(R.id.nav_create)
+                val createDirections = HomeFragmentDirections.actionNavHomeToNavCreate()
+                navController.navigate(home).also {
+                    navController.navigate(createDirections)
+                }
                 toggle?.syncState()
             }
 
             R.id.nav_unSubmitted -> {
-                navController.navigate(R.id.nav_unSubmitted)
+                val unsubDirections = HomeFragmentDirections.actionNavHomeToNavUnSubmitted()
+                navController.navigate(home).also {
+                    navController.navigate(unsubDirections)
+                }
                 toggle?.syncState()
             }
             R.id.nav_correction -> {
@@ -317,24 +328,38 @@ class MainActivity :
                 toggle?.syncState()
             }
             R.id.nav_work -> {
-                navController.navigate(R.id.nav_work)
+                val workDirections = HomeFragmentDirections.actionNavHomeToNavWork(jobId = null)
+                navController.navigate(home).also {
+                    navController.navigate(workDirections)
+                }
                 toggle?.syncState()
             }
             R.id.nav_estMeasure -> {
-                navController.navigate(R.id.nav_estMeasure)
+                val estMeasureDirections = HomeFragmentDirections.actionNavHomeToNavEstMeasure()
+                navController.navigate(home).also {
+                    navController.navigate(estMeasureDirections)
+                }
                 toggle?.syncState()
             }
             R.id.nav_approveJobs -> {
-                navController.navigate(R.id.nav_approveJobs)
+                val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
+                navController.navigate(home).also {
+                    navController.navigate(approveDirections)
+                }
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {
-                navController.navigate(R.id.nav_approveMeasure)
+                val approveMeasureDirections =
+                    HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
+                navController.navigate(home).also {
+                    navController.navigate(approveMeasureDirections)
+                }
+
                 toggle?.syncState()
             }
         }
 
-        drawer_layout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -365,52 +390,51 @@ class MainActivity :
             navApproveMeasures.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(
-                this,
-                { roleList ->
+            userRoles.observe(this, { roleList ->
 
-                    for (role in roleList) {
-                        val roleID = role.roleDescription
-                        // Only enable what is needed for each role description.
-                        // Users with multiple roles get 'best permissions'
-                        when {
-                            roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                                navCreate.isEnabled = true
-                                navUnsubmitted.isEnabled = true
-                            }
+                for (role in roleList) {
+                    val roleID = role.roleDescription
+                    // Only enable what is needed for each role description.
+                    // Users with multiple roles get 'best permissions'
+                    when {
+                        roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            navCreate.isEnabled = true
+                            navUnsubmitted.isEnabled = true
+                        }
 
-                            roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                        roleID.equals(
+                            PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER,
+                            ignoreCase = true
+                        ) -> {
 
-                                navWork.isEnabled = true
-                            }
+                            navWork.isEnabled = true
+                        }
 
-                            roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                        roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
-                                navCreate.isEnabled = true
-                                navUnsubmitted.isEnabled = true
-                                navWork.isEnabled = true
-                                navEstMeasures.isEnabled = true
-                            }
+                            navCreate.isEnabled = true
+                            navUnsubmitted.isEnabled = true
+                            navWork.isEnabled = true
+                            navEstMeasures.isEnabled = true
+                        }
 
-                            roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                        roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
-                                navCreate.isEnabled = true
-                                navUnsubmitted.isEnabled = true
-                                navEstMeasures.isEnabled = true
-                            }
+                            navCreate.isEnabled = true
+                            navUnsubmitted.isEnabled = true
+                            navEstMeasures.isEnabled = true
+                        }
 
-                            roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                                navCreate.isEnabled = true
-                                navUnsubmitted.isEnabled = true
-                                navWork.isEnabled = true
-                                navEstMeasures.isEnabled = true
-                                navApproveMeasures.isEnabled = true
-                                navApproveJobs.isEnabled = true
-                            }
+                        roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            navCreate.isEnabled = true
+                            navUnsubmitted.isEnabled = true
+                            navEstMeasures.isEnabled = true
+                            navApproveMeasures.isEnabled = true
+                            navApproveJobs.isEnabled = true
                         }
                     }
                 }
-            )
+            })
         }
     }
 
@@ -421,14 +445,12 @@ class MainActivity :
 
             // Unsubmitted jobs are collected here
             mainActivityViewModel.getJobsForActivityId(
-                ActivityIdConstants.JOB_ESTIMATE
-            ).observe(
-                this@MainActivity,
-                { newJobData ->
-                    val tasks = newJobData.distinctBy { job -> job.jobId }.count()
-                    writeBadge(badgeUnSubmitted, tasks)
-                }
-            )
+                ActivityIdConstants.JOB_ESTIMATE,
+                ActivityIdConstants.JOB_PENDING_UPLOAD
+            ).observe(this@MainActivity, { newJobData ->
+                val tasks = newJobData.distinctBy { job -> job.jobId }.count()
+                writeBadge(badgeUnSubmitted, tasks)
+            })
 
             // Corrections section is for Phase 2
 
@@ -436,54 +458,42 @@ class MainActivity :
             mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(
-                this@MainActivity,
-                { workList ->
-                    val tasks = workList.distinctBy { job -> job.jobId }.count()
-                    writeBadge(badgeWork, tasks)
-                }
-            )
+            ).observe(this@MainActivity, { workList ->
+                val tasks = workList.distinctBy { job -> job.jobId }.count()
+                writeBadge(badgeWork, tasks)
+            })
 
             // Estimate measurements
             mainActivityViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
-            ).observe(
-                this@MainActivity,
-                { measurementJobs ->
-                    val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
-                    writeBadge(badgeEstMeasure, tasks)
-                }
-            )
+            ).observe(this@MainActivity, { measurementJobs ->
+                val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
+                writeBadge(badgeEstMeasure, tasks)
+            })
 
             // Jobs awaiting approval
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
-            ).observe(
-                this@MainActivity,
-                { jobApprovalData ->
-                    val tasks = jobApprovalData.count()
-                    writeBadge(badgeApproveJobs, tasks)
-                }
-            )
+            ).observe(this@MainActivity, { jobApprovalData ->
+                val tasks = jobApprovalData.count()
+                writeBadge(badgeApproveJobs, tasks)
+            })
 
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(
-                this@MainActivity,
-                {
-                    val tasks = it.distinctBy { job -> job.jobId }.count()
-                    writeBadge(badgeApprovMeasure, tasks)
-                }
-            )
+            ).observe(this@MainActivity, {
+                val tasks = it.distinctBy { job -> job.jobId }.count()
+                writeBadge(badgeApprovMeasure, tasks)
+            })
         }
     }
 
     override fun startLongRunningTask() {
         Timber.i("starting task...")
-        progressBar?.visibility = View.VISIBLE
+        binding.progressbar.visibility = View.VISIBLE
         // Make UI untouchable for duration of task
         window.setFlags(
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
@@ -497,7 +507,7 @@ class MainActivity :
 
     override fun endLongRunningTask() {
         Timber.i("stopping task...")
-        progressBar?.visibility = View.GONE
+        binding.progressbar.visibility = View.GONE
 
         // Re-enable UI touches
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
@@ -527,10 +537,5 @@ class MainActivity :
             // initializeCountDrawer()
             // refreshData()
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        uiScope.destroy()
     }
 }

@@ -6,18 +6,20 @@
 
 package za.co.xisystems.itis_rrm.utils
 
+import android.app.Activity
 import com.password4j.SecureString
-import java.math.BigInteger
+import okhttp3.internal.and
+import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
 import java.util.Arrays
 import kotlin.math.round
-import okhttp3.internal.and
-import timber.log.Timber
 
 @Suppress("MagicNumber")
 object Utils {
@@ -34,6 +36,37 @@ object Utils {
         return sb.toString()
     }
 
+    fun isQtyCompliant(quantity: String, activityRef: WeakReference<Activity>?): Boolean {
+        val qty = quantity.toDoubleOrNull() ?: 0.0
+        var weakActivity = activityRef!!.get()
+        when {
+            (qty <= 0 || qty.isNaN()) -> {
+                return showWarning(
+                    weakActivity,
+                    message = "Please enter a valid quantity"
+                )
+            }
+
+            (quantity.length >= 9) -> {
+                return showWarning(
+                    weakActivity,
+                    "You have exceeded the allowable quantity"
+                )
+            }
+            else -> {
+                return true
+            }
+        }
+    }
+
+    private fun showWarning(activity: Activity?, message: String): Boolean {
+        activity?.extensionToast(
+            message = message,
+            style = ToastStyle.WARNING
+        )
+        return false
+    }
+
     fun nanCheck(toString: String): Boolean {
         return try {
             val dbl = toString.toDouble()
@@ -48,11 +81,6 @@ object Utils {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
         return round(this * multiplier) / multiplier
-    }
-
-    fun String.md5(): String {
-        val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(toByteArray())).toString(16).padStart(32, '0')
     }
 
     private val DEFAULT_CHARSET: Charset = StandardCharsets.UTF_8

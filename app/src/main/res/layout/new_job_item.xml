@@ -17,33 +17,33 @@
         android:layout_margin="@dimen/small"
         android:layout_weight="1"
         android:padding="@dimen/xsmall"
-        android:gravity="center_vertical"
+        android:gravity="start"
         android:text="M020.03(A): Advertising Cost"
-        app:layout_constraintEnd_toStartOf="@+id/editImageView"
+        app:layout_constraintEnd_toStartOf="@id/editImageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="HardcodedText" />
-
-    <ImageView
-            android:id="@+id/editImageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_chevron_right_24px"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/estimate_chevron" />
-
     <TextView
             android:id="@+id/subTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small"
         android:hint="@string/click_to_edit_estimate"
         android:padding="@dimen/xsmall"
         android:textColor="@color/red"
-            android:textColorHint="@color/silver"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewItem" />
+        android:textColorHint="@color/silver"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewItem" />
+
+    <ImageView
+        android:id="@+id/editImageView"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:padding="4dp"
+        android:src="@drawable/ic_baseline_chevron_right_24px"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/estimate_chevron" />
 
     <TextView
         android:id="@+id/costTextView"
@@ -53,7 +53,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:gravity="end"
-        android:hint="2 x R150 = R300"
+        android:hint="Incomplete Estimate ..."
         android:textAppearance="@style/ItisText.ListItemItemTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewItem"

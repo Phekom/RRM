@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 interface VoItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertVoItems(voItem: VoItemDTO)
+    fun insertVoItems(voItem: VoItemDTO)
 
     @Query("INSERT INTO TABLE_JOB_VO_ITEM (projectVoId,itemCode,voDescr,descr,uom,rate,projectItemId,contractVoId, contractVoItemId, projectId) VALUES (:projectVoId,:itemCode, :voDescr,:descr, :uom, :rate,:projectItemId,:contractVoId,:contractVoItemId,:projectId )")
     fun insertVoItem(

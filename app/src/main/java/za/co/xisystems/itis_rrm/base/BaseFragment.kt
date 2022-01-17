@@ -1,8 +1,10 @@
 package za.co.xisystems.itis_rrm.base
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.View
@@ -11,36 +13,35 @@ import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenStarted
 import com.google.android.material.snackbar.Snackbar
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.withContext
-import org.kodein.di.KodeinAware
-import org.kodein.di.generic.instance
+import kotlinx.coroutines.launch
+import org.kodein.di.DIAware
+import org.kodein.di.android.x.closestDI
+import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.SSL_PORT
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
-import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.SHORT
-import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.INFO
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.NO_INTERNET
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.Animations
 import za.co.xisystems.itis_rrm.data._commons.views.IProgressView
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.forge.XIArmoury
+import za.co.xisystems.itis_rrm.services.LocationModel
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
+import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
 
@@ -51,14 +52,45 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  */
 
-abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
+abstract class BaseFragment(
+    protected val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+) : Fragment(), IProgressView, DIAware {
 
     private lateinit var sharedViewModel: SharedViewModel
+    override val di by closestDI()
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
 
+    // =========================================================================================
+    internal open var currentLocation: LocationModel? = null
+    private lateinit var locationViewModel: LocationViewModel
+    private val locationFactory by instance<LocationViewModelFactory>()
+    private var gpsEnabled: Boolean = false
+    private var networkEnabled: Boolean = false
+    protected var uiScope = UiLifecycleScope()
+
+    init {
+        lifecycleScope.launch {
+            whenStarted {
+                uiScope.onCreate(viewLifecycleOwner)
+                viewLifecycleOwner.lifecycle.addObserver(uiScope)
+            }
+        }
+    }
+
+    val navPermissions: List<String> = listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+
+    val photoPermissions: MutableList<String> = mutableListOf(
+        Manifest.permission.CAMERA,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
     companion object {
+        const val GPS_REQUEST = 100
+        const val LOCATION_REQUEST = 101
 
         @JvmField
         var bounce: Animation? = null
@@ -127,6 +159,9 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         animations = Animations(requireContext().applicationContext)
+        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            photoPermissions.add(Manifest.permission.ACCESS_MEDIA_LOCATION)
+        }
     }
 
     private fun initAnimations() {
@@ -173,7 +208,7 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     ) {
         super.onViewCreated(view, savedInstanceState)
         coordinator = view.findViewById(R.id.coordinator)
-        sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory).get(SharedViewModel::class.java)
+        sharedViewModel = ViewModelProvider(this.requireActivity(), shareFactory)[SharedViewModel::class.java]
         initAnimations()
     }
 
@@ -193,16 +228,13 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     // before allowing the suspend function to execute
     protected suspend fun connectedCheck(
         call: suspend () -> Unit,
-        coroutineContext: CoroutineContext
     ) {
         when {
             !isOnline() -> noConnectionWarning()
             !hasInternet() -> noInternetWarning()
             !isServiceAvailable() -> noServicesWarning()
             else -> {
-                withContext(coroutineContext) {
-                    call.invoke()
-                }
+                call.invoke()
             }
         }
     }
@@ -214,55 +246,19 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     override fun toast(resid: String?) {
         resid?.let {
             if (!activity?.isFinishing!!) {
-                sharpToast(resource = resid)
+                sharedViewModel.setMessage(resid)
             }
         }
     }
 
-    protected fun sharpToast(resource: String) {
-        sharpToast(message = resource)
-    }
-
-    protected fun sharpToast(
-        title: String? = null,
-        resId: Int,
-        style: ToastStyle = INFO,
-        position: ToastGravity = BOTTOM,
-        duration: ToastDuration = SHORT
-    ) {
-        if (!activity?.isFinishing!!) {
-            val message = getString(resId)
-            sharpToast(title, message, style, position, duration)
-        }
-    }
-
-    fun sharpToast(
-        title: String? = null,
-        message: String,
-        style: ToastStyle = INFO,
-        position: ToastGravity = BOTTOM,
-        duration: ToastDuration = SHORT
-    ) {
-        if (!activity?.isFinishing!!) {
-            sharedViewModel.setColorMessage(
-                title = title,
-                message = message,
-                style = style,
-                position = position,
-                duration = duration
-
-            )
-        }
-    }
-
     private fun isOnline(): Boolean {
-        return this.requireContext().isConnected
+        return this.requireActivity().isConnected
     }
 
     protected fun noConnectionWarning() {
-        sharpToast(
+        extensionToast(
             message = "Please ensure that you have a valid data or wifi connection",
-            style = NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
@@ -277,24 +273,25 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     }
 
     private fun noServicesWarning() {
-        sharpToast(
+        extensionToast(
             message = "RRM services are unreachable, try again later ...",
-            style = NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
     }
 
     protected fun noInternetWarning() {
-        sharpToast(
+        extensionToast(
             message = "No internet access, try again later ...",
-            style = NO_INTERNET,
+            style = ToastStyle.NO_INTERNET,
             position = BOTTOM,
             duration = LONG
         )
     }
 
-    protected fun toggleLongRunning(toggle: Boolean) {
+    fun toggleLongRunning(toggle: Boolean) {
+        sharedViewModel.takingPhotos = toggle
         sharedViewModel.toggleLongRunning(toggle)
     }
 
@@ -311,43 +308,6 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
         snackError(coordinator, string)
     }
 
-    /**
-     * if the exception is connectivity-related, give the user the option to retry.
-     * Shaun McDonald - 2020/06/01
-     */
-    protected fun crashGuard(view: View, throwable: XIError, refreshAction: (() -> Unit)? = null) {
-
-        when (throwable.isRecoverableException()) {
-
-            true -> {
-                if (refreshAction != null) {
-                    XIErrorHandler.handleError(
-                        view = view,
-                        throwable = throwable,
-                        shouldShowSnackBar = true,
-                        refreshAction = { refreshAction() }
-                    )
-                }
-            }
-            else -> {
-
-                sharpToast(
-                    message = throwable.message,
-                    style = ERROR,
-                    position = BOTTOM,
-                    duration = LONG
-                )
-
-                XIErrorHandler.handleError(
-                    view = view,
-                    throwable = throwable,
-                    shouldToast = false,
-                    shouldShowSnackBar = false
-                )
-            }
-        }
-    }
-
     fun takingPhotos() {
         sharedViewModel.takingPhotos = true
     }
@@ -357,4 +317,9 @@ abstract class BaseFragment : Fragment(), IProgressView, KodeinAware {
     }
 
     abstract fun onCreateOptionsMenu(menu: Menu): Boolean
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        uiScope.onDestroy(viewLifecycleOwner)
+    }
 }

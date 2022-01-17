@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+<!--<layout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools">-->
 
-    <data>
+<!--    <data>-->
 
-        <variable
-            name="viewmodel"
-            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />
+<!--        <variable-->
+<!--            name="viewmodel"-->
+<!--            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />-->
 
-    </data>
+<!--    </data>-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -19,7 +22,7 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:background="@drawable/login_reg_background"
             android:scaleType="fitCenter"
-            tools:context=".new_app.ui.auth.RegisterActivity"
+            tools:context=".ui.auth.RegisterActivity"
             android:id="@+id/reg_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -70,19 +73,19 @@
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/register_username_editText"
+                            android:id="@+id/registerusernameeditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:background="@null"
                             android:drawableStart="@drawable/ic_baseline_person_white_24px"
-                            android:drawableTint="@color/colorIcons"
+                            android:drawableTint="@color/white"
                             android:gravity="start"
                             android:imeOptions="actionNext"
                             android:inputType="textVisiblePassword|textNoSuggestions"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.username}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
 
@@ -99,36 +102,35 @@
                         app:hintTextAppearance="@style/TextAppearance.AppCompat">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/register_password_editText"
+                            android:id="@+id/registerpasswordeditText"
                             android:layout_width="fill_parent"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:background="@null"
                             android:drawableStart="@drawable/ic_baseline_lock_white_24px"
-                            android:drawableTint="@color/colorIcons"
+                            android:drawableTint="@color/white"
                             android:ems="10"
                             android:gravity="start"
                             android:inputType="textPassword"
                             android:padding="4dp"
                             android:singleLine="true"
-                            android:text="@={viewmodel.password}"
+
                             android:textColor="@android:color/white"
                             android:textColorHint="@android:color/white" />
                     </com.google.android.material.textfield.TextInputLayout>
 
 
                     <Button
-                        android:id="@+id/register_button"
+                        android:id="@+id/registerbutton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="4dp"
                         android:background="@drawable/round_corner_orange"
-                        android:onClick="@{viewmodel::onRegButtonClick}"
                         android:text="@string/login"
                         android:textColor="@android:color/white" />
                 </LinearLayout>
-
+                <!-- android:onClick="@{viewmodel::onRegButtonClick}"-->
                 <ImageButton
                     android:id="@+id/registration_settings_imageButton"
                     android:layout_width="40dp"
@@ -222,6 +224,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</layout>
+<!--</layout>-->
 
 

@@ -13,9 +13,10 @@ import androidx.core.util.Pair
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
+import za.co.xisystems.itis_rrm.utils.JobUtils
 import java.io.Serializable
 import java.util.ArrayList
-import za.co.xisystems.itis_rrm.utils.JobUtils
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -35,6 +36,8 @@ data class JobItemEstimateDTO(
     var jobId: String?,
     @SerializedName("LineRate")
     var lineRate: Double,
+    @SerializedName("JobEstimateSize") // JobEstimateSize
+    var jobItemEstimateSize: String?,
     @SerializedName("MobileEstimateWorks")
     var jobEstimateWorks: ArrayList<JobEstimateWorksDTO> = ArrayList(),
     @SerializedName("MobileJobItemEstimatesPhotos")
@@ -64,8 +67,7 @@ data class JobItemEstimateDTO(
 
     @SerializedName("SelectedItemUOM")
     val selectedItemUom: String?,
-    var startKmMarker: String? = null,
-    var endKmMarker: String? = null
+    var geoCoded: Boolean = false
 ) : Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
@@ -73,6 +75,7 @@ data class JobItemEstimateDTO(
         estimateId = parcel.readString()!!,
         jobId = parcel.readString(),
         lineRate = parcel.readDouble(),
+        jobItemEstimateSize = parcel.readString(),
         jobEstimateWorks = arrayListOf<JobEstimateWorksDTO>().apply {
             parcel.readList(this.toList(), JobEstimateWorksDTO::class.java.classLoader)
         },
@@ -95,21 +98,17 @@ data class JobItemEstimateDTO(
         estimateComplete = parcel.readString(),
         measureActId = parcel.readInt(),
         selectedItemUom = parcel.readString(),
-        startKmMarker = parcel.readString(),
-        endKmMarker = parcel.readString()
+        geoCoded = parcel.readByte() != 0.toByte()
     )
 
-    private fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
-        return when (this.jobItemEstimatePhotos.isNullOrEmpty()) {
-            true -> Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
-            else -> {
-                jobItemEstimatePhotos.filter { photo ->
-                    photo.isPhotostart == lookForStartPhoto
-                }.mapIndexed { index, jobItemEstimatesPhotoDTO ->
-                    Pair(index, jobItemEstimatesPhotoDTO)
-                }.firstOrNull() ?: Pair<Int, JobItemEstimatesPhotoDTO>(-1, null)
-            }
-        }
+    fun getJobItemEstimatePhoto(lookForStartPhoto: Boolean): Pair<Int, JobItemEstimatesPhotoDTO> {
+
+        val photoToReplace =
+            jobItemEstimatePhotos.firstOrNull { photo ->
+                photo.isStartPhoto() == lookForStartPhoto
+            } ?: return Pair(-1, null)
+        val photoIndex = jobItemEstimatePhotos.indexOf(photoToReplace)
+        return Pair(photoIndex, photoToReplace)
     }
 
     fun getPhoto(x: Int): JobItemEstimatesPhotoDTO? {
@@ -122,15 +121,15 @@ data class JobItemEstimateDTO(
         if (jobItemEstimatePhotos.isEmpty()) {
             jobItemEstimatePhotos.add(photo)
         } else {
-            val photoToChange = getJobItemEstimatePhoto(photo.isPhotoStart())
-            val index = photoToChange.first ?: -1
+            val photoToChange = getJobItemEstimatePhoto(photo.isStartPhoto())
+            val index = photoToChange.first!!
             if (index == -1) {
                 jobItemEstimatePhotos.add(photo)
             } else {
                 jobItemEstimatePhotos[index] = photo
             }
         }
-        JobUtils.sort(jobItemEstimatePhotos)
+        jobItemEstimatePhotos = JobUtils.sort(jobItemEstimatePhotos)!!
     }
 
     fun size(): Int {
@@ -142,6 +141,7 @@ data class JobItemEstimateDTO(
         parcel.writeString(estimateId)
         parcel.writeString(jobId)
         parcel.writeDouble(lineRate)
+        parcel.writeString(jobItemEstimateSize)
         parcel.writeString(projectItemId)
         parcel.writeString(projectVoId)
         parcel.writeDouble(qty)
@@ -156,12 +156,24 @@ data class JobItemEstimateDTO(
         parcel.writeList(jobItemEstimatePhotos.toList())
         parcel.writeValue(jobItemEstimatePhotoStart)
         parcel.writeValue(jobItemEstimatePhotoEnd)
-        parcel.writeString(startKmMarker)
-        parcel.writeString(endKmMarker)
+        parcel.writeByte(if (geoCoded) 1 else 0)
     }
 
     override fun describeContents(): Int {
         return 0
+    }
+
+    fun arePhotosGeoCoded(): Boolean {
+        var result = true
+        if (jobItemEstimateSize == JobItemEstimateSize.POINT.getValue() && jobItemEstimatePhotos.size < 1) return false
+        if (jobItemEstimateSize == JobItemEstimateSize.LINE.getValue() && jobItemEstimatePhotos.size < 2) return false
+        for (photo in jobItemEstimatePhotos) {
+            if (!photo.geoCoded) {
+                result = false
+                break
+            }
+        }
+        return result
     }
 
     companion object CREATOR : Creator<JobItemEstimateDTO> {

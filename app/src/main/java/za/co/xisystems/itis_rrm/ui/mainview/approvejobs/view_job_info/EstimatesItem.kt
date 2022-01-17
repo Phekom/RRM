@@ -15,8 +15,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.view_job_info
 import android.app.Dialog
 import android.net.Uri
 import android.text.Editable
-import android.text.InputType
-import android.text.method.DigitsKeyListener
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -25,25 +23,23 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import java.io.File
-import kotlinx.android.synthetic.main.estimates_item.*
+import com.xwray.groupie.viewbinding.BindableItem
 import timber.log.Timber
-import www.sanju.motiontoast.MotionToast
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.extensions.isConnected
+import za.co.xisystems.itis_rrm.databinding.EstimatesItemBinding
 import za.co.xisystems.itis_rrm.extensions.uomForUI
-import za.co.xisystems.itis_rrm.ui.extensions.DecimalSignedDigitsKeyListener
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.Utils.nanCheck
 import za.co.xisystems.itis_rrm.utils.Utils.round
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2020/01/02.
@@ -54,38 +50,50 @@ class EstimatesItem(
     private val activity: FragmentActivity?,
     private val viewLifecycleOwner: LifecycleOwner,
     private val updateObserver: Observer<XIResult<String>?>
-) : Item() {
+) : BindableItem<EstimatesItemBinding>() {
 
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    override fun initializeViewBinding(view: View): EstimatesItemBinding {
+        return EstimatesItemBinding.bind(view)
+    }
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewDataBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: EstimatesItemBinding, position: Int) {
+        viewBinding.apply {
             Coroutines.main {
-                val quantity =
-                    approveViewModel.getQuantityForEstimationItemId(jobItemEstimateDTO.estimateId)
-                quantity.observe(
-                    viewLifecycleOwner,
-                    { qty ->
-                        activity?.getString(R.string.pair, "Qty:", qty.toString())
-                            .also { estimation_item_quantity_textView.text = it }
+                val estimate =
+                    approveViewModel.getJobEstimationItemByEstimateId(jobItemEstimateDTO.estimateId)
+                estimate.observe(viewLifecycleOwner, {
+                    it?.let {
+                        viewBinding.estimationItemPriceTextView.text =
+                            activity?.getString(R.string.pair, "R", (it.qty * it.lineRate).round(2).toString())
+                        viewBinding.estimationItemQuantityTextView.text =
+                            activity?.getString(R.string.pair, "Qty:", it.qty.toString())
                     }
-                )
-                val lineRate =
-                    approveViewModel.getLineRateForEstimationItemId(jobItemEstimateDTO.estimateId)
-                lineRate.observe(
-                    viewLifecycleOwner,
-                    {
-                        estimation_item_price_textView.text = activity?.getString(R.string.pair, "R", it.toString())
-                    }
-                )
+                })
+
                 val descr =
                     approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
                 val uom =
                     approveViewModel.getUOMForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-                measure_item_description_textView.text = descr
+                viewBinding.measureItemDescriptionTextView.text = descr
 
-                if (uom.isEmpty().or(uom == "None")) {
-                    estimation_item_uom_textView.text = ""
+                estimationItemUomTextView.text = if (uom == "NONE" || uom.isNullOrBlank()) {
+                    activity?.getString(
+                        R.string.pair,
+                        jobItemEstimateDTO.lineRate.toString(),
+                        "each"
+                    )
                 } else {
-                    estimation_item_uom_textView.text = activity?.uomForUI(uom)
+                    activity?.getString(
+                        R.string.pair,
+                        jobItemEstimateDTO.lineRate.toString(),
+                        activity.uomForUI(uom)
+                    )
                 }
                 correctButton.setOnClickListener {
                     sendItemType(jobItemEstimateDTO)
@@ -111,8 +119,9 @@ class EstimatesItem(
         val textEntryView: View =
             activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
         val quantityEntry = textEntryView.findViewById<View>(R.id.new_qty) as EditText
-        val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
+        val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
+
         var updated = false
         val alert = AlertDialog.Builder(activity) // ,android.R.style.Theme_DeviceDefault_Dialog
         alert.setView(textEntryView)
@@ -123,39 +132,30 @@ class EstimatesItem(
         Coroutines.main {
             val tenderRate =
                 approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
-            totalEntry.text = activity.getString(R.string.pair, "R", jobItemEstimateDTO.lineRate.toString())
+            val total = (jobItemEstimateDTO.qty * jobItemEstimateDTO.lineRate)
+            totalEntry.text = activity.getString(R.string.pair, "R", total.toString())
 
             rate.text = activity.getString(R.string.pair, "R", tenderRate.toString())
             var cost: Double
             val newQuantity = jobItemEstimateDTO.qty
-            val defaultQty = 0.0
 
-            quantityEntry.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL and InputType.TYPE_NUMBER_VARIATION_NORMAL
             quantityEntry.text = Editable.Factory.getInstance().newEditable("$newQuantity")
-            val digitsKeyListener = DigitsKeyListener.getInstance("-1234567890.")
-            quantityEntry.keyListener = DecimalSignedDigitsKeyListener(digitsKeyListener)
 
+            quantityEntry.setSelectAllOnFocus(true)
+            quantityEntry.requestFocus()
             quantityEntry.doOnTextChanged { text, _, _, _ ->
                 updated = true
                 val input = text.toString()
-                when {
-                    nanCheck(input) || input.toDouble() == 0.0 -> {
-                        cost = 0.0
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    }
-                    input.length > 9 -> {
-                        quantityEntry.text =
-                            Editable.Factory.getInstance().newEditable("$defaultQty")
-                        activity.extensionToast(
-                            message = "You Have exceeded the amount of Quantity allowed",
-                            motionType = MotionToast.TOAST_WARNING
-                        )
-                    }
-                    else -> {
-                        val qty = input.toDouble()
-                        cost = (tenderRate * qty).round(2)
-                        totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
-                    }
+                val newQty = validateDouble(
+                    input,
+                    editText = quantityEntry,
+                    default = jobItemEstimateDTO.qty.toString(),
+                    activity = activity
+                )
+
+                if (newQty != 0.0) {
+                    cost = (tenderRate * newQty).round(2)
+                    totalEntry.text = activity.getString(R.string.pair, "R", cost.toString())
                 }
             }
         }
@@ -165,7 +165,12 @@ class EstimatesItem(
             R.string.save
         ) { dialog, _ ->
             if (updated) {
-                validateUpdateQty(activity, quantityEntry, totalEntry, jobItemEstimateDTO)
+                Coroutines.io {
+                    val tenderRate =
+                        approveViewModel.getTenderRateForProjectItemId(jobItemEstimateDTO.projectItemId!!)
+
+                    validateUpdateQty(activity, quantityEntry, tenderRate, jobItemEstimateDTO)
+                }
             } else {
                 dialog.dismiss()
             }
@@ -184,29 +189,37 @@ class EstimatesItem(
     private fun validateUpdateQty(
         activity: FragmentActivity,
         quantityEntry: EditText,
-        totalEntry: TextView,
+        tenderRate: Double,
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
-        if (activity.isConnected) {
+        if (ServiceUtil.isNetworkAvailable(activity.applicationContext)) {
             Coroutines.main {
+                val doubleQauntity =
+                    quantityEntry.text.toString().toDoubleOrNull() ?: 0.0
                 when {
-                    quantityEntry.text.toString() == "" ||
-                        nanCheck(quantityEntry.text.toString()) ||
-                        quantityEntry.text.toString().toDouble() < 0.0 -> {
-                        activity.extensionToast("Please Enter a valid Quantity", MotionToast.TOAST_WARNING)
+                    doubleQauntity <= 0 ||
+                        doubleQauntity.isNaN() ||
+                        doubleQauntity.toString().length > 9 -> {
+                        activity.extensionToast(
+                            message = "Please Enter a valid Quantity",
+                            style = ToastStyle.WARNING
+                        )
                     }
                     else -> {
                         approveViewModel.updateState.observe(viewLifecycleOwner, updateObserver)
                         approveViewModel.upDateEstimate(
                             quantityEntry.text.toString(),
-                            totalEntry.text.split(" ", ignoreCase = true)[1],
+                            tenderRate.toString(),
                             jobItemEstimateDTO.estimateId
                         )
                     }
                 }
             }
         } else {
-            activity.extensionToast("No connection detected.", MotionToast.TOAST_NO_INTERNET)
+            activity.extensionToast(
+                message = "No connection detected.",
+                style = ToastStyle.NO_INTERNET
+            )
         }
     }
 
@@ -223,7 +236,7 @@ class EstimatesItem(
 
     override fun getLayout(): Int = R.layout.estimates_item
 
-    private fun GroupieViewHolder.updateStartImage() {
+    private fun EstimatesItemBinding.updateStartImage() {
         Coroutines.main {
 
             try {
@@ -231,7 +244,7 @@ class EstimatesItem(
                 val startPhoto =
                     approveViewModel.getJobEstimationItemsPhotoStartPath(jobItemEstimateDTO.estimateId)
 
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root)
                     .load(Uri.fromFile(File(startPhoto)))
                     .centerCrop()
                     .error(R.drawable.no_image)
@@ -250,13 +263,13 @@ class EstimatesItem(
         }
     }
 
-    private fun GroupieViewHolder.updateEndImage() {
+    private fun EstimatesItemBinding.updateEndImage() {
         Coroutines.main {
             try {
                 val endPhoto =
                     approveViewModel.getJobEstimationItemsPhotoEndPath(jobItemEstimateDTO.estimateId)
 
-                GlideApp.with(this.containerView)
+                GlideApp.with(this.root)
                     .load(Uri.fromFile(File(endPhoto)))
                     .centerCrop()
                     .error(R.drawable.no_image)
@@ -271,6 +284,26 @@ class EstimatesItem(
                 Timber.d(e, "End photo missing from job!")
             } catch (e: Exception) {
                 Timber.e(e)
+            }
+        }
+    }
+
+    private fun validateDouble(input: String, editText: EditText, default: String, activity: FragmentActivity): Double {
+        return when {
+            nanCheck(input) || input.toDouble() == 0.0 -> {
+                0.0
+            }
+            input.length > 9 -> {
+                editText.text =
+                    Editable.Factory.getInstance().newEditable(default)
+                activity.extensionToast(
+                    message = "You Have exceeded the allowable maximum",
+                    style = ToastStyle.WARNING
+                )
+                0.0
+            }
+            else -> {
+                input.toDouble()
             }
         }
     }

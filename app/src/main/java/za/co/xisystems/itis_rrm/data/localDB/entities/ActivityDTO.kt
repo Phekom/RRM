@@ -24,7 +24,6 @@ const val ACTIVITY_TABLE = "ACTIVITY_TABLE"
 @Entity(tableName = ACTIVITY_TABLE)
 data class ActivityDTO(
     @SerializedName("ActId")
-    @NotNull
     @PrimaryKey
     val actId: Long,
     @SerializedName("ActTypeId")

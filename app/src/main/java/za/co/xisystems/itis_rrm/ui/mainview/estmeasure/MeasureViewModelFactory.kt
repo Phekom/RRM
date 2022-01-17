@@ -17,7 +17,7 @@ class MeasureViewModelFactory(
     private val offlineDataRepository: OfflineDataRepository
 ) : ViewModelProvider.AndroidViewModelFactory(application) {
     private var mApplication = application
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return MeasureViewModel(
             mApplication,
             measureCreationDataRepository,

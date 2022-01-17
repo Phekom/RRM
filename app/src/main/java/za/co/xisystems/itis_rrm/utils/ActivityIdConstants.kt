@@ -7,6 +7,7 @@ package za.co.xisystems.itis_rrm.utils
 object ActivityIdConstants {
     // region (Public Static Final Fields)
     const val JOB_ESTIMATE = 0
+    const val JOB_PENDING_UPLOAD = 1
     const val JOB_APPROVE = 2
     const val JOB_APPROVED = 3
     const val JOB_COMPLETED = 4
@@ -20,5 +21,6 @@ object ActivityIdConstants {
     const val MEASURE_APPROVED = 12
     const val ESTIMATE_CANCELLED = 14
     const val EST_WORKS_CANCELLED = 20
-    const val EST_WORKS_COMPLETE = 21 // endregion (Public Static Final Fields)
+    const val EST_WORKS_COMPLETE = 21
+    // endregion (Public Static Final Fields)
 }

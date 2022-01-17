@@ -6,6 +6,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.activities
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -15,8 +16,8 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.CENTER
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
-import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle.ERROR
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class SharedViewModel(private val userRepository: UserRepository) : ViewModel() {
     val message: MutableLiveData<*> = MutableLiveData<Any?>()
@@ -26,16 +27,18 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
     var originalCaption: String = ""
     val colorMessage: MutableLiveData<ColorToast> = MutableLiveData()
     var takingPhotos: Boolean = false
-    var loggedIn: Boolean = false
-
     fun setMessage(msg: String?) {
         message.value = msg
+    }
+
+    val currentUser by lazyDeferred {
+        userRepository.getUser().distinctUntilChanged()
     }
 
     fun setColorMessage(
         title: String? = null,
         message: String,
-        style: ToastStyle = ERROR,
+        style: ToastStyle = ToastStyle.ERROR,
         position: ToastGravity = CENTER,
         duration: ToastDuration = LONG
     ) {
@@ -61,6 +64,5 @@ class SharedViewModel(private val userRepository: UserRepository) : ViewModel() 
 
     fun logOut() = viewModelScope.launch(Dispatchers.IO) {
         userRepository.expirePin()
-        loggedIn = false
     }
 }

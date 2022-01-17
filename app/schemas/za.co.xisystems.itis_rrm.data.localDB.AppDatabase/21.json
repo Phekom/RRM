@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 21,
-    "identityHash": "bd4009a59415916d44bcae5bb3940cdb",
+    "identityHash": "2039d04c07f506d7d1b4c912a8735abd",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -1829,7 +1829,7 @@
       },
       {
         "tableName": "JOB_ITEM_ESTIMATE_PHOTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoStart` TEXT, `photoEnd` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `photoLatitude` REAL, `photoLongitude` REAL, `photoLatitudeEnd` REAL NOT NULL, `photoLongitudeEnd` REAL NOT NULL, `photoPath` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `isPhotostart` INTEGER NOT NULL, `kmMarkerTag` TEXT, PRIMARY KEY(`photoId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoStart` TEXT, `photoEnd` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `photoLatitude` REAL, `photoLongitude` REAL, `photoLatitudeEnd` REAL NOT NULL, `photoLongitudeEnd` REAL NOT NULL, `photoPath` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `isPhotostart` INTEGER NOT NULL, `sectionMarker` TEXT, PRIMARY KEY(`photoId`))",
         "fields": [
           {
             "fieldPath": "descr",
@@ -1934,8 +1934,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "kmMarkerTag",
-            "columnName": "kmMarkerTag",
+            "fieldPath": "sectionMarker",
+            "columnName": "sectionMarker",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -2707,7 +2707,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bd4009a59415916d44bcae5bb3940cdb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2039d04c07f506d7d1b4c912a8735abd')"
     ]
   }
 }

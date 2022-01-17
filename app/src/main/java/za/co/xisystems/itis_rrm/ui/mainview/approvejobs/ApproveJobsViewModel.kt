@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -17,14 +18,15 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
+import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 /**
@@ -34,6 +36,7 @@ class ApproveJobsViewModel(
     application: Application,
     private val jobApprovalDataRepository: JobApprovalDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
     private val superJob = SupervisorJob()
@@ -43,7 +46,7 @@ class ApproveJobsViewModel(
     private val workExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val message = "Caught during workflow: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
         Timber.e(throwable)
-        val caughtException = XIError(
+        val caughtException = XIResult.Error(
             throwable, message
         )
         workflowState.postValue(caughtException)
@@ -79,32 +82,32 @@ class ApproveJobsViewModel(
         offlineDataRepository.getUserTaskList()
     }
 
-    suspend fun getUOMForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+    suspend fun getUOMForProjectItemId(projectItemId: String): String? {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getUOMForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getTenderRateForProjectItemId(projectItemId: String): Double {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getTenderRateForProjectItemId(projectItemId)
         }
     }
 
     suspend fun getProjectSectionIdForJobId(jobId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getProjectSectionIdForJobId(jobId)
         }
     }
 
     suspend fun getRouteForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getRouteForProjectSectionId(sectionId)
         }
     }
 
     suspend fun getSectionForProjectSectionId(sectionId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getSectionForProjectSectionId(sectionId)
         }
     }
@@ -114,91 +117,109 @@ class ApproveJobsViewModel(
         jobApprovalItem.value = approveJobItem
     }
 
-    suspend fun processWorkflowMove(
+    fun processWorkflowMove(
         userId: String,
         trackRouteId: String,
         description: String?,
         direction: Int,
         jobId: String
-    ) = viewModelScope.launch(viewModelScope.coroutineContext) {
-        withContext(ioContext) {
-            try {
-                workflowState.postValue(XIProgress(true))
+    ) = viewModelScope.launch(mainContext) {
+        try {
+            withContext(mainContext) {
+                workflowState.postValue(XIResult.Progress(true))
+            }
 
-                jobApprovalDataRepository.processWorkflowMove(
-                    userId,
-                    jobId,
-                    trackRouteId,
-                    description,
-                    direction
+            jobApprovalDataRepository.processWorkflowMove(
+                userId,
+                jobId,
+                trackRouteId,
+                description,
+                direction
+            )
+            if (direction == WorkflowDirection.NEXT.value) {
+                jobApprovalDataRepository.updateApprovalInfo(
+                    userId = userId,
+                    jobId = jobId,
+                    remarks = description ?: "Job approved."
                 )
-            } catch (t: Throwable) {
+            }
+        } catch (t: Throwable) {
+            withContext(mainContext) {
                 val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState.postValue(XIError(t, message))
-            } finally {
-                workflowState.postValue(XIProgress(false))
+                workflowState.postValue(XIResult.Error(t.cause ?: t, message))
+            }
+        } finally {
+            withContext(mainContext) {
+                workflowState.postValue(XIResult.Progress(false))
             }
         }
     }
 
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
-        return withContext(ioContext) {
-            jobApprovalDataRepository.getJobsForActivityId(
-                activityId
-            ).distinctUntilChanged()
-        }
+    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> = withContext(ioContext) {
+        return@withContext jobApprovalDataRepository.getJobsForActivityId(
+            activityId
+        ).distinctUntilChanged()
     }
 
     suspend fun getDescForProjectId(projectId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getProjectDescription(projectId)
         }
     }
 
     suspend fun getJobEstimationItemsForJobId(jobID: String?): LiveData<List<JobItemEstimateDTO>> {
-        return withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID)
+        return withContext(dispatchers.io()) {
+            jobApprovalDataRepository.getJobEstimationItemsForJobId(jobID).distinctUntilChanged()
         }
     }
 
     suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
         }
     }
 
     suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 
     suspend fun getDescForProjectItemId(projectItemId: String): String {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getProjectItemDescription(projectItemId)
         }
     }
 
     suspend fun upDateEstimate(
         updatedQty: String,
-        updatedTotal: String,
+        updatedRate: String,
         estimateId: String
     ) {
-        withContext(Dispatchers.IO) {
-            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedTotal, estimateId)
+        withContext(dispatchers.io()) {
+            jobApprovalDataRepository.upDateEstimate(updatedQty, updatedRate, estimateId)
         }
     }
 
     suspend fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getQuantityForEstimationItemId(estimateId)
         }
     }
 
     suspend fun getLineRateForEstimationItemId(estimateId: String): LiveData<Double> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             jobApprovalDataRepository.getLineRateForEstimationItemId(estimateId)
         }
+    }
+
+    fun getJobEstimationItemByEstimateId(estimateId: String) = liveData {
+        val estimate = jobApprovalDataRepository.getJobEstimationItemByEstimateId(estimateId)
+        emit(estimate)
+    }
+
+    fun backupJobInProgress(job: JobDTO) = viewModelScope.launch(ioContext) {
+        jobApprovalDataRepository.insertOrUpdateJob(job)
     }
 
     /**

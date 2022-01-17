@@ -30,7 +30,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
 interface JobDaoTemp {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdateJobs(jobs: JobDTOTemp)
+    fun insertOrUpdateJobs(jobs: JobDTOTemp)
 
     @Query("SELECT * FROM JOB_TABLE_TEMP WHERE jobId = :jobId")
     fun checkIfJobExist(jobId: String): Boolean

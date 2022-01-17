@@ -2,7 +2,7 @@
 -optimizationpasses 5
 -repackageclasses ''
 -allowaccessmodification
--optimizations !code/simplification/arithmetic
+-optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 -keepattributes *Annotation*
 -keepattributes LineNumberTable,SourceFile
 
@@ -34,7 +34,7 @@
 -dontwarn retrofit.**
 -keep class retrofit.** { *; }
 -keepclasseswithmembers class * {
-    @retrofit.http.* <methods>;
+    @retrofit.http.** <methods>;
 }
 
 -keep class sun.misc.Unsafe { *; }
@@ -44,11 +44,18 @@
 -keep class za.co.xisystems.itis_rrm.data.localDB.views.** { *; }
 -keep class za.co.xisystems.itis_rrm.data.network.responses.** { *; }
 -keep class za.co.xisystems.itis_rrm.data.network.request.** { *; }
+-keep class za.co.xisystems.itis_rrm.services.LocationValidation {*; }
+-keep class za.co.xisystems.itis_rrm.forge.** { *;}
+-keep class za.co.xisystems.itis_rrm.custom.** { *; }
+-keepclasseswithmembers class za.co.xisystems.itis_rrm.domain.** { *; }
 
 # Keep these for GSON and Jackson
 -keepattributes Signature
--keepattributes *Annotation*
 -keepattributes EnclosingMethod
+-keepattributes InnerClasses
+-keepattributes Annotation
+-keepattributes *Annotation*
+
 -keep class sun.misc.Unsafe { *; }
 -keep class com.google.gson.** { *; }
 
@@ -74,3 +81,36 @@
 -keep interface android.view.WindowInsetsController { *; }
 -keep interface android.view.WindowInsetsAnimationControlListener { *; }
 -keep interface android.view.WindowInsetsAnimation { *; }
+
+-dontwarn com.google.errorprone.annotations.Immutable
+-dontwarn java.awt.color.ICC_Profile
+-dontwarn org.w3c.dom.bootstrap.DOMImplementationRegistry
+
+# kodein requirements
+-keep, allowobfuscation, allowoptimization class org.kodein.type.TypeReference
+-keep, allowobfuscation, allowoptimization class org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest
+
+-keep, allowobfuscation, allowoptimization class * extends org.kodein.type.TypeReference
+-keep, allowobfuscation, allowoptimization class * extends org.kodein.type.JVMAbstractTypeToken$Companion$WrappingTest
+
+# --- AutoValue ---
+# AutoValue annotations are retained but dependency is compileOnly.
+-dontwarn com.google.auto.value.**
+
+# Proguard configuration for Jackson 2.x (fasterxml package instead of codehaus package)
+-keep class com.fasterxml.jackson.databind.ObjectMapper {
+    public <methods>;
+    protected <methods>;
+}
+-keep class com.fasterxml.jackson.databind.ObjectWriter {
+    public ** writeValueAsString(**);
+}
+-keepnames class com.fasterxml.jackson.** { *; }
+-dontwarn com.fasterxml.jackson.databind.**
+
+# mapbox
+-keep interface android.view.** { *; }
+-keep class java.beans.** { *; }
+-keep class com.google.auto.value.** { *;}
+
+-dontwarn org.slf4j.impl.StaticLoggerBinder

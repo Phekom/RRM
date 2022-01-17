@@ -3,8 +3,11 @@ package za.co.xisystems.itis_rrm.custom.results
 import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLProtocolException
 import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
+import za.co.xisystems.itis_rrm.custom.errors.RecoverableException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
 import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 
@@ -18,38 +21,44 @@ import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
 
 sealed class XIResult<out T : Any> {
     companion object {
-        fun progress(isLoading: Boolean): XIResult<Nothing> = XIProgress(isLoading)
-        fun success(data: Any): XIResult<Any> = XISuccess(data)
-        fun error(exception: Throwable, message: String): XIResult<Nothing> = XIError(exception, message)
-        fun status(message: String): XIResult<Nothing> = XIStatus(message)
-        fun progressUpdate(key: String, ratio: Float): XIResult<Nothing> = XIProgressUpdate(key, ratio)
-        fun webException(code: Int, error: ErrorResponse): XIResult<Nothing> = XIRestException(code, error)
+        fun progress(isLoading: Boolean): XIResult<Nothing> = Progress(isLoading)
+        fun success(data: Any): XIResult<Any> = Success(data)
+        fun error(
+            exception: Throwable,
+            message: String,
+            topic: String? = null
+        ): XIResult<Nothing> = Error(exception, message, topic)
+
+        fun status(message: String): XIResult<Nothing> = Status(message)
+        fun progressUpdate(key: String, ratio: Float): XIResult<Nothing> = ProgressUpdate(key, ratio)
+        fun webException(code: Int, error: ErrorResponse): XIResult<Nothing> = RestException(code, error)
     }
+
+    class Success<out T : Any>(val data: T) : XIResult<T>()
+
+    class Error(
+        val exception: Throwable,
+        val message: String,
+        val topic: String? = null
+    ) : XIResult<Nothing>()
+
+    class RestException(
+        val code: Int? = null,
+        val error: ErrorResponse? = null
+    ) : XIResult<Nothing>()
+
+    class ProgressUpdate(val key: String, val ratio: Float = 0.0f) : XIResult<Nothing>()
+
+    class Progress(val isLoading: Boolean) : XIResult<Nothing>()
+
+    class Status(val message: String) : XIResult<Nothing>()
 }
-
-class XISuccess<out T : Any>(val data: T) : XIResult<T>()
-
-class XIError(
-    val exception: Throwable,
-    val message: String
-) : XIResult<Nothing>()
-
-class XIRestException(
-    val code: Int? = null,
-    val error: ErrorResponse? = null
-) : XIResult<Nothing>()
-
-class XIProgressUpdate(val key: String, val ratio: Float = 0.0f) : XIResult<Nothing>()
-
-class XIProgress(val isLoading: Boolean) : XIResult<Nothing>()
-
-class XIStatus(val message: String) : XIResult<Nothing>()
 
 /**
  * A catch-all implementation for network errors, since they can be common,
  * but are usually transient - the user can retry the operation.
  */
-fun XIError.isRecoverableException(): Boolean {
+fun XIResult.Error.isRecoverableException(): Boolean {
     return when (exception) {
         is IOException -> true
         is NoInternetException -> true
@@ -57,12 +66,19 @@ fun XIError.isRecoverableException(): Boolean {
         is ServiceHostUnreachableException -> true
         is SocketException -> true
         is SocketTimeoutException -> true
+        is SSLProtocolException -> true
+        is SSLHandshakeException -> true
+        is RecoverableException -> true
         else -> false
     }
 }
 
+fun XIResult.Error.isFatalException(): Boolean {
+    return !this.isRecoverableException()
+}
+
 const val PERCENT_RATIO: Float = 100.0f
 
-fun XIProgressUpdate.getPercentageComplete(): Float {
+fun XIResult.ProgressUpdate.getPercentageComplete(): Float {
     return this.ratio * PERCENT_RATIO
 }

@@ -24,12 +24,22 @@ object Coroutines {
         }
 
     fun io(work: suspend (() -> Unit)) =
-        CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             work()
         }
 
     fun api(work: suspend (() -> Unit)) =
-        CoroutineScope(Dispatchers.IO + connectivityHandler).launch {
+        CoroutineScope(Dispatchers.IO).launch {
+            work()
+        }
+
+    fun default(work: suspend (() -> Unit)) =
+        CoroutineScope(Dispatchers.Default).launch {
+            work()
+        }
+
+    fun ui(work: suspend (() -> Unit)) =
+        CoroutineScope(Dispatchers.Main.immediate).launch {
             work()
         }
 }

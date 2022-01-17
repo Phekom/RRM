@@ -13,30 +13,29 @@ import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.view.WindowManager
 import android.widget.EditText
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.ExpandableItem
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import java.util.ArrayList
-import java.util.Date
-import kotlinx.android.synthetic.main.item_header.appListID
-import kotlinx.android.synthetic.main.item_header.icon
-import kotlinx.android.synthetic.main.item_measure_header.headerLin
 import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
+import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
+import za.co.xisystems.itis_rrm.extensions.uomForUI
+import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.MeasureHeaderItem
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import java.util.ArrayList
+import java.util.Date
 
 class ExpandableHeaderMeasureItem(
     private var fragment: Fragment,
@@ -57,10 +56,11 @@ class ExpandableHeaderMeasureItem(
 
     var onExpandListener: ((ExpandableGroup) -> Unit)? = null
     private lateinit var expandableGroup: ExpandableGroup
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        super.bind(viewHolder, position)
 
-        viewHolder.apply {
+    override fun bind(viewBinding: ItemMeasureHeaderBinding, position: Int) {
+        super.bind(viewBinding, position)
+
+        viewBinding.apply {
             appListID.text = getItemId(position + 1).toString()
             icon.apply {
                 visibility = View.VISIBLE
@@ -68,7 +68,7 @@ class ExpandableHeaderMeasureItem(
                 setOnClickListener {
                     expandableGroup.onToggleExpanded()
                     onExpandListener?.invoke(expandableGroup)
-                    bindIcon(viewHolder)
+                    bindIcon(viewBinding)
                 }
             }
             headerLin.apply {
@@ -80,26 +80,23 @@ class ExpandableHeaderMeasureItem(
             }
         }
 
-        viewHolder.itemView.setOnClickListener {
+        viewBinding.root.rootView.setOnClickListener {
             clickListener?.invoke(this)
         }
     }
 
     private fun measureJobItemEstimate() {
         Coroutines.main {
-            val jobForJobItemEstimate = measureViewModel.getJobFromJobId(measureItem.jobId)
-            jobForJobItemEstimate.observeOnce(
-                fragment.requireActivity(),
-                { job ->
-                    if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
-                        showAddMeasurementQuantityDialog(
-                            measureItem,
-                            job,
-                            jobItemMeasurePhotoDTOArrayList
-                        )
-                    }
+            val jobForMeasures = measureViewModel.getJobFromJobId(measureItem.jobId)
+            jobForMeasures.observeOnce(fragment.viewLifecycleOwner, { job ->
+                if (measureItem.jobId != null && job.jobId == measureItem.jobId!!) {
+                    showAddMeasurementQuantityDialog(
+                        measureItem,
+                        job,
+                        jobItemMeasurePhotoDTOArrayList
+                    )
                 }
-            )
+            })
         }
     }
 
@@ -117,91 +114,106 @@ class ExpandableHeaderMeasureItem(
             quantityInputEditText.setSingleLine()
 
             val selectedItemMeasure = measureViewModel.getItemForItemId(measureItem.projectItemId)
-            selectedItemMeasure.observeOnce(
-                fragment.requireActivity(),
-                { selected ->
+            selectedItemMeasure.observeOnce(fragment.requireActivity(), { selected ->
 
-                    if (selected != null) {
-                        var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
-                        quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
-                        if (!selected.uom.equals(fragment.requireActivity().getString(R.string.none))) {
-                            quantityInputEditText.hint = selected.uom
-                            message += fragment.requireActivity().getString(R.string.badge, selected.uom)
-                        }
-                        Coroutines.main {
-                            val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
+                if (selected != null) {
+                    var message: String = fragment.requireActivity().getString(R.string.enter_quantity_measured)
+                    quantityInputEditText.textAlignment = View.TEXT_ALIGNMENT_CENTER
+                    if (!selected.uom.isNullOrBlank() &&
+                        selected.uom != fragment.requireActivity().getString(R.string.none)
+                    ) {
+                        val friendlyUOM = fragment.requireActivity().uomForUI(selected.uom)
+                        quantityInputEditText.hint = friendlyUOM
 
-                            val enterQuantityDialog: AlertDialog =
-                                AlertDialog.Builder(fragment.requireActivity()) // android.R.style.Theme_DeviceDefault_Dialog
-                                    .setTitle(
-                                        "Estimate - " + desc + System.lineSeparator() + "Quantity : " + measureItem.qty.toString()
-                                            .dropLast(
-                                                2
-                                            )
-                                    )
-                                    .setMessage(message)
-                                    .setCancelable(false)
-                                    .setIcon(R.drawable.ic_border_)
-                                    .setView(quantityInputEditText)
-                                    .setPositiveButton(
-                                        R.string.ok
-                                    ) { _, _ ->
-                                        updateMeasureQuantity(
-                                            quantityInputEditText,
-                                            selected,
-                                            jobForJobItemEstimate,
-                                            measureItem,
-                                            jobItemMeasurePhotoDTO
+                        message += fragment.requireActivity().getString(R.string.badge, friendlyUOM)
+                    }
+                    Coroutines.main {
+                        val desc = measureViewModel.getDescForProjectItemId(projectItemIdz!!)
+
+                        val enterQuantityDialog: AlertDialog =
+                            AlertDialog.Builder(fragment.requireActivity())
+                                // android.R.style.Theme_DeviceDefault_Dialog
+                                .setTitle(
+                                    "Estimate - $desc${System.lineSeparator()}Quantity : " + measureItem.qty.toString()
+                                        .dropLast(
+                                            2
                                         )
-                                    }
+                                )
+                                .setMessage(message)
+                                .setCancelable(false)
+                                .setIcon(R.drawable.ic_border_)
+                                .setView(quantityInputEditText)
+                                .setPositiveButton(R.string.ok) { _, _ ->
 
-                                    .setNegativeButton(
-                                        R.string.cancel
-                                    ) { _, _ -> }.show()
-                            quantityInputEditText.onFocusChangeListener =
-                                OnFocusChangeListener { _, hasFocus ->
-                                    if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
-                                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
-                                    )
+                                    val measureQuantity =
+                                        quantityInputEditText.text.toString().toDoubleOrNull() ?: 0.0
+                                    when {
+                                        measureQuantity <= 0.0 || measureQuantity.isNaN() -> {
+                                            fragment.extensionToast(
+                                                message = "Please Enter a valid Quantity",
+                                                style = ToastStyle.WARNING
+                                            )
+                                        }
+                                        quantityInputEditText.text.toString().length > 9 -> {
+                                            fragment.extensionToast(
+                                                message = "You have exceeded the quantity allowed",
+                                                style = ToastStyle.WARNING
+                                            )
+                                        }
+                                        else -> {
+                                            updateMeasureQuantity(
+                                                measureQuantity,
+                                                selected,
+                                                jobForJobItemEstimate,
+                                                measureItem,
+                                                jobItemMeasurePhotoDTO
+                                            )
+                                        }
+                                    }
                                 }
-                            quantityInputEditText.requestFocus()
-                        }
+                                .setNegativeButton(
+                                    R.string.cancel
+                                ) { _, _ -> }.show()
+                        quantityInputEditText.onFocusChangeListener =
+                            OnFocusChangeListener { _, hasFocus ->
+                                if (hasFocus) enterQuantityDialog.window?.setSoftInputMode(
+                                    WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
+                                )
+                            }
+                        quantityInputEditText.requestFocus()
                     }
                 }
-            )
+            })
         }
     }
 
     private fun updateMeasureQuantity(
-        quantityInputEditText: EditText,
+        measureQuantity: Double,
         selected: ProjectItemDTO?,
         jobForJobItemEstimate: JobDTO,
         measureItem: JobItemEstimateDTO,
         jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
     ) {
-        if (quantityInputEditText.text.toString() == "") {
-            Toast.makeText(
-                fragment.requireActivity().applicationContext,
-                fragment.requireActivity().getString(R.string.place_quantity),
-                Toast.LENGTH_LONG
-            ).show()
-        } else {
-            if (quantityInputEditText.text.toString()
-                .isNotEmpty()
-            ) {
-                Coroutines.main {
-                    val jobItemMeasure = setJobItemMeasure(
-                        selected,
-                        quantityInputEditText.text.toString()
-                            .toDouble(),
-                        jobForJobItemEstimate,
-                        measureItem,
-                        jobItemMeasurePhotoDTO
-                    )
-                    jobItemMeasureArrayList.add(jobItemMeasure)
-                    captureItemMeasureImages(jobItemMeasure)
-                }
-            }
+        createJobMeasureItem(selected, measureQuantity, jobForJobItemEstimate, measureItem, jobItemMeasurePhotoDTO)
+    }
+
+    private fun createJobMeasureItem(
+        selected: ProjectItemDTO?,
+        measureQuantity: Double,
+        jobForJobItemEstimate: JobDTO,
+        measureItem: JobItemEstimateDTO,
+        jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
+    ) {
+        Coroutines.main {
+            val jobItemMeasure = this@ExpandableHeaderMeasureItem.setJobItemMeasure(
+                selected,
+                measureQuantity,
+                jobForJobItemEstimate,
+                measureItem,
+                jobItemMeasurePhotoDTO
+            )
+            jobItemMeasureArrayList.add(jobItemMeasure)
+            captureItemMeasureImages(jobItemMeasure)
         }
     }
 
@@ -255,8 +267,8 @@ class ExpandableHeaderMeasureItem(
         }
     }
 
-    private fun bindIcon(viewHolder: GroupieViewHolder) {
-        viewHolder.icon.apply {
+    private fun bindIcon(viewBinding: ItemMeasureHeaderBinding) {
+        viewBinding.icon.apply {
             visibility = View.VISIBLE
             setImageResource(
                 if (expandableGroup.isExpanded) {
@@ -272,8 +284,8 @@ class ExpandableHeaderMeasureItem(
     override fun setExpandableGroup(onToggleListener: ExpandableGroup) {
         this.expandableGroup = onToggleListener
     }
-}
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
 }

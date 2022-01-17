@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "26947d7e2686c7ab4fafc853355cce76",
+    "identityHash": "e692b8d7a106f85f6b6d830ef9d61013",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -418,7 +418,7 @@
       },
       {
         "tableName": "PROJECT_ITEM_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT NOT NULL, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT, FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT, FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -460,7 +460,7 @@
             "fieldPath": "uom",
             "columnName": "uom",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflowId",
@@ -1829,7 +1829,7 @@
       },
       {
         "tableName": "JOB_ITEM_ESTIMATE_PHOTO",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoStart` TEXT, `photoEnd` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `photoLatitude` REAL, `photoLongitude` REAL, `photoLatitudeEnd` REAL NOT NULL, `photoLongitudeEnd` REAL NOT NULL, `photoPath` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `isPhotostart` INTEGER NOT NULL, `kmMarkerTag` TEXT, PRIMARY KEY(`photoId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`descr` TEXT NOT NULL, `estimateId` TEXT NOT NULL, `filename` TEXT NOT NULL, `photoDate` TEXT NOT NULL, `photoId` TEXT NOT NULL, `photoStart` TEXT, `photoEnd` TEXT, `startKm` REAL NOT NULL, `endKm` REAL NOT NULL, `photoLatitude` REAL, `photoLongitude` REAL, `photoLatitudeEnd` REAL NOT NULL, `photoLongitudeEnd` REAL NOT NULL, `photoPath` TEXT NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `isPhotostart` INTEGER NOT NULL, `sectionMarker` TEXT, `geoCoded` INTEGER NOT NULL, PRIMARY KEY(`photoId`))",
         "fields": [
           {
             "fieldPath": "descr",
@@ -1934,10 +1934,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "kmMarkerTag",
-            "columnName": "kmMarkerTag",
+            "fieldPath": "sectionMarker",
+            "columnName": "sectionMarker",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "geoCoded",
+            "columnName": "geoCoded",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -2037,7 +2043,7 @@
       },
       {
         "tableName": "JOB_ITEM_ESTIMATE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `jobId` TEXT, `lineRate` REAL NOT NULL, `jobEstimateWorks` TEXT NOT NULL, `jobItemEstimatePhotos` TEXT NOT NULL, `jobItemMeasure` TEXT NOT NULL, `projectItemId` TEXT, `projectVoId` TEXT, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT, `jobItemEstimatePhotoStart` TEXT, `jobItemEstimatePhotoEnd` TEXT, `estimateComplete` TEXT, `measureActId` INTEGER NOT NULL, `selectedItemUom` TEXT, `startKmMarker` TEXT, `endKmMarker` TEXT, PRIMARY KEY(`estimateId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`actId` INTEGER NOT NULL, `estimateId` TEXT NOT NULL, `jobId` TEXT, `lineRate` REAL NOT NULL, `jobEstimateWorks` TEXT NOT NULL, `jobItemEstimatePhotos` TEXT NOT NULL, `jobItemMeasure` TEXT NOT NULL, `projectItemId` TEXT, `projectVoId` TEXT, `qty` REAL NOT NULL, `recordSynchStateId` INTEGER NOT NULL, `recordVersion` INTEGER NOT NULL, `trackRouteId` TEXT, `jobItemEstimatePhotoStart` TEXT, `jobItemEstimatePhotoEnd` TEXT, `estimateComplete` TEXT, `measureActId` INTEGER NOT NULL, `selectedItemUom` TEXT, `geoCoded` INTEGER NOT NULL, PRIMARY KEY(`estimateId`))",
         "fields": [
           {
             "fieldPath": "actId",
@@ -2148,16 +2154,10 @@
             "notNull": false
           },
           {
-            "fieldPath": "startKmMarker",
-            "columnName": "startKmMarker",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "endKmMarker",
-            "columnName": "endKmMarker",
-            "affinity": "TEXT",
-            "notNull": false
+            "fieldPath": "geoCoded",
+            "columnName": "geoCoded",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -2642,7 +2642,7 @@
       },
       {
         "tableName": "WORKFLOWs_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT NOT NULL, `workflows` TEXT NOT NULL, PRIMARY KEY(`activities`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`activities` TEXT NOT NULL, `infoClasses` TEXT, `workflows` TEXT, PRIMARY KEY(`activities`))",
         "fields": [
           {
             "fieldPath": "activities",
@@ -2654,13 +2654,13 @@
             "fieldPath": "infoClasses",
             "columnName": "infoClasses",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflows",
             "columnName": "workflows",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -2719,7 +2719,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '26947d7e2686c7ab4fafc853355cce76')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e692b8d7a106f85f6b6d830ef9d61013')"
     ]
   }
 }

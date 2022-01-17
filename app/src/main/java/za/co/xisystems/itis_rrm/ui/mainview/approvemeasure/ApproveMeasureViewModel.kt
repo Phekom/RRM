@@ -19,7 +19,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
-import java.util.concurrent.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -27,20 +26,20 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler.UNKNOWN_ERROR
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
-import za.co.xisystems.itis_rrm.custom.results.XIError
-import za.co.xisystems.itis_rrm.custom.results.XIProgress
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.custom.results.XISuccess
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.MeasureApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
+import za.co.xisystems.itis_rrm.utils.DataConversion
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
+import java.util.concurrent.CancellationException
 
 /**
  * Created by Francis Mahlava on 03,October,2019
@@ -48,7 +47,8 @@ import za.co.xisystems.itis_rrm.utils.lazyDeferred
 class ApproveMeasureViewModel(
     application: Application,
     private val measureApprovalDataRepository: MeasureApprovalDataRepository,
-    private val offlineDataRepository: OfflineDataRepository
+    private val offlineDataRepository: OfflineDataRepository,
+    private val photoUtil: PhotoUtil
 ) : AndroidViewModel(application) {
 
     val offlineUserTaskList by lazyDeferred {
@@ -73,19 +73,15 @@ class ApproveMeasureViewModel(
 
     private val contextMain = Job(superJob) + Dispatchers.Main
     private val contextIO = Job(superJob) + Dispatchers.IO
-    private lateinit var photoUtil: PhotoUtil
 
     init {
         viewModelScope.launch(contextMain) {
 
-            if (!this@ApproveMeasureViewModel::photoUtil.isInitialized) {
-                photoUtil = PhotoUtil.getInstance(getApplication())
-            }
             workflowStatus = measureApprovalDataRepository.workflowStatus
 
             workflowState = Transformations.map(workflowStatus) {
                 it.getContentIfNotHandled()
-            } as MutableLiveData<XIResult<String>?>
+            }.distinctUntilChanged() as MutableLiveData<XIResult<String>?>
 
             galleryMeasure.observeForever {
                 generateGallery(it)
@@ -154,21 +150,25 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun approveMeasurements(
+    fun approveMeasurements(
         userId: String,
+        jobId: String,
         workflowDirection: WorkflowDirection,
         measurements: List<JobItemMeasureDTO>
     ) = viewModelScope.launch {
-        workflowState.postValue(XIProgress(true))
+
+        workflowState.postValue(XIResult.Progress(true))
 
         withContext(contextIO) {
             try {
-                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value)
-
-                // workflowState.postValue(XISuccess("WORK_COMPLETE"))
-            } catch (t: Throwable) {
+                val jobGuid = DataConversion.toLittleEndian(jobId)!!
+                measureApprovalDataRepository.processWorkflowMove(userId, measurements, workflowDirection.value).also {
+                    measureApprovalDataRepository.updateMeasureApprovalInfo(userId, jobGuid)
+                }
+            } catch (t: TransmissionException) {
                 withContext(contextMain) {
-                    workflowState.postValue(XIError(t, t.message ?: UNKNOWN_ERROR))
+                    Timber.e(t.cause ?: t)
+                    workflowState.postValue(XIResult.Error(t.cause ?: t, t.message ?: UNKNOWN_ERROR))
                 }
             }
         }
@@ -189,7 +189,7 @@ class ApproveMeasureViewModel(
         }
     }
 
-    suspend fun generateGalleryUI(itemMeasureId: String) =
+    fun generateGalleryUI(itemMeasureId: String) =
         viewModelScope.launch(contextMain) {
             try {
                 getJobItemMeasureByItemMeasureId(itemMeasureId).observeForever {
@@ -199,7 +199,7 @@ class ApproveMeasureViewModel(
                 }
             } catch (e: Exception) {
                 Timber.e(e, galleryError)
-                val galleryFail = XIError(e, galleryError)
+                val galleryFail = XIResult.Error(e, galleryError)
                 measureGalleryUIState.postValue(galleryFail)
             }
         }
@@ -231,7 +231,7 @@ class ApproveMeasureViewModel(
                         photoUtil.getPhotoPathFromExternalDirectory(fileName)
                     }
                     val bmap = uri?.let { mUri ->
-                        photoUtil.getPhotoBitMapFromFile(
+                        photoUtil.getPhotoBitmapFromFile(
                             mUri,
                             photoQuality
                         )
@@ -250,12 +250,12 @@ class ApproveMeasureViewModel(
                 )
 
                 withContext(contextMain) {
-                    measureGalleryUIState.postValue(XISuccess(uiState))
+                    measureGalleryUIState.postValue(XIResult.Success(uiState))
                 }
             } catch (t: Throwable) {
                 val message = "$galleryError: ${t.message ?: UNKNOWN_ERROR}"
                 Timber.e(t, message)
-                val galleryFail = XIError(t, message)
+                val galleryFail = XIResult.Error(t, message)
                 withContext(contextMain) {
                     measureGalleryUIState.postValue(galleryFail)
                 }
@@ -272,13 +272,6 @@ class ApproveMeasureViewModel(
         }
     }
 
-    /**
-     * This method will be called when this ViewModel is no longer used and will be destroyed.
-     *
-     *
-     * It is useful when ViewModel observes some data and you need to clear this subscription to
-     * prevent a leak of this ViewModel.
-     */
     override fun onCleared() {
         super.onCleared()
         superJob.cancelChildren(CancellationException("clearing measureApprovalViewModel"))

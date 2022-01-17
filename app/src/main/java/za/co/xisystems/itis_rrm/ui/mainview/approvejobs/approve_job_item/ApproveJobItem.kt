@@ -2,11 +2,10 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item
 
 import android.content.Context
 import android.view.View
-import com.xwray.groupie.kotlinandroidextensions.GroupieViewHolder
-import com.xwray.groupie.kotlinandroidextensions.Item
-import kotlinx.android.synthetic.main.item_header.*
+import com.xwray.groupie.viewbinding.BindableItem
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
@@ -18,12 +17,12 @@ class ApproveJobItem(
     val jobDTO: JobDTO,
     private val approveViewModel: ApproveJobsViewModel,
     private val context: Context
-) : Item() {
+) : BindableItem<ItemHeaderBinding>() {
     var route: String? = null
     var section: String? = null
     var sectionId: String? = null
-    override fun bind(viewHolder: GroupieViewHolder, position: Int) {
-        viewHolder.apply {
+    override fun bind(viewBinding: ItemHeaderBinding, position: Int) {
+        viewBinding.apply {
             appListID.text = getItemId(position + 1).toString()
             title.text = context.getString(R.string.pair, "JI: ", jobDTO.jiNo.toString())
             Coroutines.main {
@@ -46,8 +45,12 @@ class ApproveJobItem(
     }
 
     override fun getLayout() = R.layout.item_header
-}
 
-private fun getItemId(position: Int): Long {
-    return position.toLong()
+    private fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun initializeViewBinding(view: View): ItemHeaderBinding {
+        return ItemHeaderBinding.bind(view)
+    }
 }

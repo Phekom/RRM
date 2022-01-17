@@ -17,7 +17,32 @@ import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 /**
  * Sage provides cryptographic keys for master, preferences and files
  */
-class Sage(private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()) {
+class Sage(
+    context: Context,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+) {
+    internal val masterKeyAlias: MasterKey
+
+    companion object {
+        @Volatile
+        private var instance: Sage? = null
+        private val Lock = Any()
+
+        fun getInstance(
+            appContext: Context,
+            dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+        ): Sage {
+            return instance ?: synchronized(Lock) {
+                Sage(context = appContext, dispatchers = dispatchers)
+            }.also {
+                instance = it
+            }
+        }
+    }
+
+    init {
+        this.masterKeyAlias = this.generateMasterKey(context.applicationContext)
+    }
 
     suspend fun generateFutureMasterKey(context: Context): MasterKey {
         return withContext(dispatchers.default()) {

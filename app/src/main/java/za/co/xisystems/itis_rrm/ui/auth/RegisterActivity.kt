@@ -5,25 +5,23 @@ package za.co.xisystems.itis_rrm.ui.auth
  */
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import kotlinx.android.synthetic.main.activity_register.*
-import org.kodein.di.KodeinAware
-import org.kodein.di.android.kodein
-import org.kodein.di.generic.instance
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
+import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -36,12 +34,11 @@ import za.co.xisystems.itis_rrm.utils.toast
 
 private const val PERMISSION_REQUEST = 10
 
-class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
+class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
-    override val kodein by kodein()
+    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
-    private lateinit var appContext: Context
     private var permissions = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -54,52 +51,66 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
         val TAG: String = RegisterActivity::class.java.simpleName
     }
 
+    private lateinit var binding: ActivityRegisterBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         if (startPermissionRequest(permissions)) {
             toast("Permissions already provided.")
         } else {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        val binding: ActivityRegisterBinding =
-            DataBindingUtil.setContentView(this, R.layout.activity_register)
         viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        binding.viewmodel = viewModel
-        viewModel.authListener = this
+        viewModel.setupAuthListener(this)
 
         Coroutines.main {
-            val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(
-                this,
-                { user ->
-                    // Register the user
-                    if (user != null) {
-                        when {
-                            user.userStatus != "Y" -> {
-                                onFailure(getString(R.string.user_blocked, user.userName))
-                            }
-                            user.pinHash == null -> {
-                                Coroutines.main {
-                                    registerPinOrNot()
+            binding.registerbutton.setOnClickListener {
+                val username = binding.registerusernameeditText
+                val password = binding.registerpasswordeditText
+                viewModel.onRegButtonClick(it, username, password)
+                // ToastUtils().toastServerAddress(this.applicationContext)
+            }
+
+            when (this@RegisterActivity.isConnected) {
+                true -> {
+                    val loggedInUser = viewModel.user.await()
+                    loggedInUser.observe(this, { user ->
+                        // Register the user
+                        if (user != null) {
+                            when {
+                                user.userStatus != "Y" -> {
+                                    onFailure(getString(R.string.user_blocked, user.userName))
+                                }
+                                user.pinHash == null -> {
+                                    Coroutines.main {
+                                        registerPinOrNot()
+                                    }
+                                }
+                                else -> {
+                                    authorizeUser()
                                 }
                             }
-                            else -> {
-                                authorizeUser()
-                            }
                         }
-                    }
+                    })
                 }
-            )
-            serverTextView.setOnClickListener {
+                else -> {
+                    onFailure("This step requires an active internet connection.")
+                }
+            }
+
+            binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(this.applicationContext)
             }
 
-            buildFlavorTextView.setOnClickListener {
+            binding.buildFlavorTextView.setOnClickListener {
                 ToastUtils().toastVersion(this.applicationContext)
             }
         }
-        isOnline()
     }
 
     private fun authorizeUser() {
@@ -195,23 +206,19 @@ class RegisterActivity : AppCompatActivity(), AuthListener, KodeinAware {
     }
 
     override fun onStarted() {
-        loading.show()
+        binding.loading.show()
         hideKeyboard()
     }
 
     override fun onSuccess(userDTO: UserDTO) {
-        loading.hide()
-        toast("You are logged in as ${userDTO.userName}")
+        binding.loading.hide()
+        toast("You are registered as ${userDTO.userName}")
     }
 
     override fun onFailure(message: String) {
-        loading.hide()
+        binding.loading.hide()
         hideKeyboard()
-        reg_container.snackbar(message)
-    }
-
-    private fun isOnline(): Boolean {
-        return ServiceUtil.isNetworkAvailable(this.applicationContext)
+        binding.regContainer.snackbar(message)
     }
 
     override fun onSignOut(userDTO: UserDTO) {

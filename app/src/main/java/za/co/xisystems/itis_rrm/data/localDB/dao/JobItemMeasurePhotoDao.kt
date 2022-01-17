@@ -15,7 +15,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 interface JobItemMeasurePhotoDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertJobItemMeasurePhoto(jobItemMeasurePhoto: JobItemMeasurePhotoDTO)
+    fun insertJobItemMeasurePhoto(jobItemMeasurePhoto: JobItemMeasurePhotoDTO)
 
     @Query("SELECT * FROM JOB_ITEM_MEASURE_PHOTO WHERE filename = :filename")
     fun checkIfJobItemMeasurePhotoExists(filename: String): Boolean
@@ -39,5 +39,5 @@ interface JobItemMeasurePhotoDao {
     fun deleteItemMeasurephotofromList(itemMeasureId: String)
 
     @Query("DELETE FROM JOB_ITEM_MEASURE_PHOTO WHERE PhotoId =:photoId")
-    suspend fun deleteItemMeasurePhoto(photoId: String): Int
+    fun deleteItemMeasurePhoto(photoId: String): Int
 }

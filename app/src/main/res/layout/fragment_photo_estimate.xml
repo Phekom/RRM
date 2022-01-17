@@ -1,255 +1,360 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/photoLin"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        android:orientation="vertical"
-        android:padding="@dimen/small"
-        tools:ignore="MissingConstraints">
-
-        <TextView
-            android:id="@+id/titleTextView"
-            style="@style/_orangeTextLabel"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_margin="@dimen/small"
-            android:layout_weight="1"
-            android:hint="M020.01(A): TYPE 1 (LAR...)"
-            android:textSize="@dimen/text_medium"
-            tools:ignore="HardcodedText" />
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/xsmall">
-
-            <LinearLayout
-                style="@style/_linear_layout_horiz"
-                android:layout_margin="@dimen/xsmall"
-                android:baselineAligned="false"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/xsmall"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <Button
-                        android:id="@+id/startPhotoButton"
-                        style="@style/_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/button_size"
-                        android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
-                        android:text="@string/start" />
-
-                    <TextView
-                        android:id="@+id/startSectionTextView"
-                        style="@style/_default"
-                        android:gravity="center"
-                        android:hint="Click for Start Photo"
-                        tools:ignore="HardcodedText" />
-
-                    <ImageView
-                        android:id="@+id/startImageView"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/image_xlarge"
-                        android:layout_marginTop="@dimen/small"
-                        android:src="@drawable/logo_new_medium"
-                        tools:ignore="ContentDescription" />
-
-                    <com.airbnb.lottie.LottieAnimationView
-                        android:id="@+id/startAnimationView"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/image_xlarge"
-                        android:layout_marginTop="@dimen/small"
-                        android:visibility="gone"
-                        app:lottie_autoPlay="true"
-                        app:lottie_loop="true"
-                        app:lottie_rawRes="@raw/image_loading" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/xsmall"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <Button
-                        android:id="@+id/endPhotoButton"
-                        style="@style/_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/button_size"
-                        android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
-                        android:text="@string/end" />
-
-                    <TextView
-                        android:id="@+id/endSectionTextView"
-                        style="@style/_default"
-                        android:gravity="center"
-                        android:hint="Click for End Photo"
-                        tools:ignore="HardcodedText" />
-
-                    <ImageView
-                        android:id="@+id/endImageView"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/image_xlarge"
-                        android:layout_marginTop="@dimen/small"
-                        android:src="@drawable/logo_new_medium"
-                        tools:ignore="ContentDescription" />
-
-                    <com.airbnb.lottie.LottieAnimationView
-                        android:id="@+id/endAnimationView"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/image_xlarge"
-                        android:layout_marginTop="@dimen/small"
-                        android:visibility="gone"
-                        app:lottie_autoPlay="true"
-                        app:lottie_loop="true"
-                        app:lottie_rawRes="@raw/image_loading" />
-
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <TextView
-            style="@style/_default"
-            android:layout_marginTop="@dimen/small"
-            android:gravity="center"
-            android:hint="Calculate Cost"
-            tools:ignore="HardcodedText" />
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/costCard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/xsmall">
-
-            <LinearLayout
-                style="@style/_linear_layout_horiz"
-                android:gravity="center_vertical|end"
-                android:paddingEnd="@dimen/small"
-                tools:ignore="RtlSymmetry">
-
-                <TextView
-                    android:id="@+id/labelTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/small"
-                    android:layout_marginBottom="@dimen/small"
-                    android:gravity="end"
-                    android:text="Quantity"
-                    android:labelFor="@id/valueEditText"
-                    tools:ignore="HardcodedText" />
-
-                <EditText
-                    android:id="@+id/valueEditText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="@color/itis_burnt_orange"
-                    android:digits="-.0123456789"
-                    android:gravity="center"
-                    android:inputType="numberDecimal"
-                    android:minWidth="48dp"
-                    android:visibility="visible"
-                    android:importantForAutofill="no" />
-
-                <NumberPicker
-                    android:id="@+id/numberPicker"
-                    android:layout_width="wrap_content"
-                    android:layout_height="96dp"
-                    android:layout_margin="@dimen/xsmall"
-                    android:padding="@dimen/xsmall"
-                    android:scaleY="0.7"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/costTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:hint="  *  500  =  1500"
-                    android:textSize="@dimen/text_medium"
-                    android:textStyle="bold"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            style="@style/_linear_layout_horiz"
-            android:gravity="center_vertical|end">
+            android:id="@+id/photoLin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical"
+            android:padding="@dimen/small"
+            tools:ignore="MissingConstraints">
 
-            <Button
-                android:id="@+id/cancelButton"
-                style="@style/_button"
+            <TextView
+                android:id="@+id/titleTextView"
+                style="@style/_orangeTextLabel"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/button_size"
+                android:layout_height="0dp"
                 android:layout_margin="@dimen/small"
                 android:layout_weight="1"
-                android:text="CANCEL"
+                android:hint="M020.01(A): TYPE 1 (LAR...)"
+                android:textSize="@dimen/text_medium"
                 tools:ignore="HardcodedText" />
 
-            <Button
-                android:id="@+id/updateButton"
-                style="@style/_button"
+            <LinearLayout
+                android:id="@+id/spinnerrel"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/button_size"
-                android:layout_margin="@dimen/small"
-                android:layout_weight="1"
-                android:text="UPDATE"
+                android:layout_height="@dimen/dimen_48dp"
+                android:orientation="horizontal"
+                android:layout_margin="@dimen/xsmall"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/label1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:gravity="center|left"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:text="@string/select_job_type"
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    tools:ignore="RtlHardcoded" />
+
+                <RadioGroup
+                    android:id="@+id/jobTypeRadioGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/dimen_48dp"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="@dimen/dimen_10dp"
+                    android:layout_marginTop="@dimen/dimen_5dp"
+                    android:layout_gravity="fill_horizontal"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:layout_marginEnd="@dimen/dimen_10dp">
+
+                    <RadioButton
+                        android:id="@+id/point"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/point"
+                        android:layout_marginEnd="@dimen/dimen_10dp" />
+
+                    <RadioButton
+                        android:id="@+id/line"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/dimen_5dp"
+                        android:checked="false"
+                        android:text="@string/line" />
+
+                </RadioGroup>
+
+
+            </LinearLayout>
+
+
+
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/xsmall">
+
+                <LinearLayout
+                    style="@style/_linear_layout_horizon"
+                    android:layout_margin="@dimen/xsmall"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/xsmall"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/startPhotoButton"
+                            style="@style/_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_size"
+                            android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
+                            android:text="@string/start"
+                            android:visibility="visible" />
+
+
+                        <TextView
+                            android:id="@+id/startSectionTextView"
+                            style="@style/_default"
+                            android:gravity="center"
+                            android:hint="Click for Start Photo"
+                            tools:ignore="HardcodedText" />
+
+                        <ImageView
+                            android:id="@+id/startImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/image_xlarge"
+                            android:layout_marginTop="@dimen/small"
+                            android:src="@drawable/logo_new_medium"
+                            tools:ignore="ContentDescription"
+                            android:visibility="visible" />
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/startAnimationView"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/image_xlarge"
+                            android:layout_marginTop="@dimen/small"
+                            android:visibility="gone"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true"
+                            app:lottie_rawRes="@raw/image_loading" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/xsmall"
+                        android:layout_weight="1"
+                        android:id="@+id/secondImage"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/endPhotoButton"
+                            style="@style/_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/button_size"
+                            android:drawableStart="@drawable/ic_baseline_photo_camera_24px"
+                            android:text="@string/end_photo" />
+
+                        <TextView
+                            android:id="@+id/endSectionTextView"
+                            style="@style/_default"
+                            android:gravity="center"
+                            android:hint="Click for End Photo"
+                            tools:ignore="HardcodedText" />
+
+                        <ImageView
+                            android:id="@+id/endImageView"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/image_xlarge"
+                            android:layout_marginTop="@dimen/small"
+                            android:src="@drawable/logo_new_medium"
+                            tools:ignore="ContentDescription" />
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/endAnimationView"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/image_xlarge"
+                            android:layout_marginTop="@dimen/small"
+                            android:visibility="gone"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true"
+                            app:lottie_rawRes="@raw/image_loading" />
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                style="@style/_default"
+                android:layout_marginTop="@dimen/small"
+                android:gravity="center"
+                android:hint="Calculate Cost"
                 tools:ignore="HardcodedText" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/costCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/xsmall"
+                tools:visibility="visible"
+                android:visibility="gone">
+
+                <LinearLayout
+                    style="@style/_linear_layout_horizon"
+                    android:gravity="center_vertical|end"
+                    android:paddingEnd="@dimen/small"
+                    tools:ignore="RtlSymmetry">
+
+                    <TextView
+                        android:id="@+id/labelTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/small"
+                        android:layout_marginBottom="@dimen/small"
+                        android:gravity="end"
+                        android:text="Quantity"
+                        android:labelFor="@id/valueEditText"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/valueEditText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/itis_burnt_orange"
+                        android:digits="-.0123456789"
+                        android:gravity="center"
+                        android:inputType="numberDecimal"
+                        android:minWidth="48dp"
+                        android:visibility="visible"
+                        android:importantForAutofill="no" />
+
+                    <NumberPicker
+                        android:id="@+id/numberPicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="96dp"
+                        android:layout_margin="@dimen/xsmall"
+                        android:padding="@dimen/xsmall"
+                        android:scaleY="0.7"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/costTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:hint="  *  500  =  1500"
+                        android:textSize="@dimen/text_medium"
+                        android:textStyle="bold"
+                        tools:ignore="HardcodedText" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                style="@style/_linear_layout_horizon"
+                android:gravity="center_vertical|end">
+
+                <Button
+                    android:id="@+id/cancelButton"
+                    style="@style/_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_size"
+                    android:layout_margin="@dimen/small"
+                    android:layout_weight="1"
+                    android:text="CANCEL"
+                    tools:ignore="HardcodedText" />
+
+                <Button
+                    android:id="@+id/updateButton"
+                    style="@style/_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/button_size"
+                    android:layout_margin="@dimen/small"
+                    android:layout_weight="1"
+                    android:text="UPDATE"
+                    tools:ignore="HardcodedText"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dimen_150dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/buttonshape"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="UselessLeaf">
+
+                <com.mapbox.maps.MapView
+                    android:id="@+id/estimatemapview"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/xsmall"
+                    android:layout_weight="1"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
-    </LinearLayout>
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/group13_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="data2_loading,textView_loading"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/group13_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:constraint_referenced_ids="data2_loading,textView_loading"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <ProgressBar
+            android:id="@+id/data2_loading"
+            android:layout_width="46dp"
+            android:layout_height="51dp"
+            android:layout_marginTop="110dp"
+            android:layout_marginBottom="100dp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.3" />
 
-    <ProgressBar
-        android:id="@+id/data2_loading"
-        android:layout_width="46dp"
-        android:layout_height="51dp"
-        android:layout_marginTop="110dp"
-        android:layout_marginBottom="100dp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.3" />
-
-    <TextView
-        android:id="@+id/textView_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/loading_please_wait"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/data2_loading"
-        app:layout_constraintVertical_bias="0.0" />
+        <TextView
+            android:id="@+id/textView_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/loading_please_wait"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/data2_loading"
+            app:layout_constraintVertical_bias="0.0" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

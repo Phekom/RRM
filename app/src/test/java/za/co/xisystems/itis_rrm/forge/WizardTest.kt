@@ -105,11 +105,11 @@ class WizardTest {
      securityToken
      ).also { result ->
      when (result) {
-     is XISuccess<Boolean> -> {
+     is XIResult.Success<Boolean> -> {
      assertEquals(true, result.data)
      println("Legit cmp passed")
      }
-     is XIError -> {
+     is  XIResult.Error -> {
      fail(result.message)
      }
      else -> {
@@ -127,11 +127,11 @@ class WizardTest {
      ).also { result ->
 
      when (result) {
-     is XISuccess<Boolean> -> {
+     is XIResult.Success<Boolean> -> {
      assertEquals(false, result.data)
      println("Bogus cmp passed")
      }
-     is XIError -> {
+     is  XIResult.Error -> {
      fail(result.message)
      }
      else -> {
@@ -142,8 +142,8 @@ class WizardTest {
 
      assertTrue(securityToken.isNotEmpty())
      } catch (t: Throwable) {
-     val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
-     Timber.e(t) { t.message ?: XIErrorHandler.UNKNOWN_ERROR }
+     val message = t.message ?:   XIErrorHandler.UNKNOWN_ERROR
+     Timber.e(t) { t.message ?:   XIErrorHandler.UNKNOWN_ERROR }
      fail("It should not have thrown this exception: $message")
      }
      }
