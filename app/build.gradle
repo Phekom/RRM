@@ -55,7 +55,10 @@ android {
         buildConfig true
     }
 
+    // def versionLabel = "${versioning.name}.${versioning.build}"
     def versionLabel = "${versioning.name}.${versioning.build}"
+    // def versionLabel = "1.6.0.26"
+
     def versionBuild = 1
     def versionBuildDate = getDate()
     def appId = "za.co.xisystems.itismaintenance"
