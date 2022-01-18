@@ -30,6 +30,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.skydoves.progressview.ProgressView
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -55,7 +56,6 @@ import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment() {
 
@@ -65,7 +65,7 @@ class HomeFragment : BaseFragment() {
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private var userDTO: UserDTO? = null
-    private lateinit var synchJob: Job
+    private lateinit var syncJob: Job
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
     private val colorNotConnected: Int
@@ -200,16 +200,12 @@ class HomeFragment : BaseFragment() {
     override fun onStart() {
 
         super.onStart()
-        checkConnectivity()
-        homeDiagnostic()
 
         // Configure progressView
         initProgressViews()
 
         // Configure SwipeToRefresh
         initSwipeToRefresh()
-
-        isAppDbSynched()
 
         ui.serverTextView.setOnClickListener {
             ToastUtils().toastServerAddress(requireContext())
@@ -242,6 +238,13 @@ class HomeFragment : BaseFragment() {
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkConnectivity()
+        homeDiagnostic()
+        isAppDbSynced()
+    }
+
     private fun initProgressViews() {
         ui.pvContracts.setOnProgressChangeListener {
             progressListener(it, ui.pvContracts, "projects")
@@ -255,7 +258,7 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun progressListener(it: Float, progressView: ProgressView, label: String) {
-        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synched") }
+        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synced") }
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed(
             {
@@ -289,7 +292,7 @@ class HomeFragment : BaseFragment() {
         ui.pvSections.progress = 0.0f
     }
 
-    private fun isAppDbSynched() {
+    private fun isAppDbSynced() {
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
                 Timber.d("Synced: $it")
@@ -384,7 +387,7 @@ class HomeFragment : BaseFragment() {
                 if (networkEnabled) {
                     acquireUser()
                 } else {
-                    synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
+                    syncJob.cancel(CancellationException("Connectivity lost ... please try again later"))
                 }
             } catch (t: Throwable) {
                 val pingEx = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -410,10 +413,14 @@ class HomeFragment : BaseFragment() {
                     )
                 }
                 is XIResult.Status -> {
-                    extensionToast(message = result.message, style = ToastStyle.INFO, position = BOTTOM)
+                    this@HomeFragment.extensionToast(
+                        message = result.message,
+                        style = ToastStyle.INFO,
+                        position = BOTTOM
+                    )
                 }
                 is XIResult.Error -> {
-                    synchJob.cancel(CancellationException(result.message))
+                    syncJob.cancel(CancellationException(result.message))
                     showProgress()
 
                     extensionToast(
@@ -484,8 +491,8 @@ class HomeFragment : BaseFragment() {
                 resetProgressViews()
                 showProgress(true)
                 homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
-                synchJob = homeViewModel.fetchAllData(userDTO!!.userId)
-                synchJob.join()
+                syncJob = homeViewModel.fetchAllData(userDTO!!.userId)
+                syncJob.join()
                 ping()
             } catch (t: Throwable) {
                 val errorMessage = "Failed to download remote data: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -582,5 +589,10 @@ class HomeFragment : BaseFragment() {
                 )
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 }
