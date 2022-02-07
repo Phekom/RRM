@@ -25,6 +25,9 @@ interface UserRoleDao {
     @Query("SELECT * FROM USER_ROLE_TABLE ")
     fun getRoles(): LiveData<List<UserRoleDTO>>
 
+    @Query("SELECT * FROM USER_ROLE_TABLE ")
+    fun getRolesList(): List<UserRoleDTO>
+
     @Query("SELECT * FROM USER_ROLE_TABLE WHERE roleIdentifier = :roleIdentifier")
     fun checkRole(roleIdentifier: String): LiveData<List<UserRoleDTO>>
 

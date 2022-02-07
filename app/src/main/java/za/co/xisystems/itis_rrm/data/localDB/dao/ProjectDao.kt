@@ -42,8 +42,11 @@ interface ProjectDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateProject(project: ProjectDTO)
 
-    @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = projectId")
-    fun getProjectId(): String
+    @Query("SELECT contractId FROM PROJECT_TABLE WHERE projectId = :projectId")
+    fun getContractIdForProjectId(projectId: String): String
+
+//    @Query("SELECT projectId FROM PROJECT_TABLE WHERE projectId = projectId")
+//    fun getProjectId(): String
 
     @Query("SELECT * FROM PROJECT_TABLE ")
     fun getAllProjects(): LiveData<List<ProjectDTO>>

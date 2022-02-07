@@ -133,20 +133,20 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ui.estimateImageCollectionView.clearImages()
+        _ui?.estimateImageCollectionView?.clearImages()
         measureViewModel =
             ViewModelProvider(this.requireActivity(), factory)[MeasureViewModel::class.java]
 
         jobItemMeasurePhotoArrayList = ArrayList()
-        ui.galleryLayout.visibility = View.INVISIBLE
-        ui.photoButtons.visibility = View.GONE
+        _ui?.galleryLayout?.visibility = View.INVISIBLE
+        _ui?.photoButtons?.visibility = View.GONE
 
         uiScope.launch(uiScope.coroutineContext) {
             measureViewModel.jobItemMeasure.observe(
                 viewLifecycleOwner,
                 { selectedJobItemM ->
                     selectedJobItemM?.let { it ->
-                        ui.estimateImageCollectionView.clearImages()
+                        _ui?.estimateImageCollectionView?.clearImages()
                         viewPhotosOnly = false
 
                         if (measureViewModel.measuredJiNo != it.jimNo) {
@@ -167,11 +167,11 @@ class CaptureItemMeasurePhotoFragment :
             measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
 
-        ui.captureAnotherPhotoButton.setOnClickListener {
+        _ui?.captureAnotherPhotoButton?.setOnClickListener {
             launchCamera()
         }
 
-        ui.doneImageButton.setOnClickListener { save ->
+        _ui?.doneImageButton?.setOnClickListener { save ->
             saveImagesAndExit(save)
         }
     }
@@ -191,7 +191,7 @@ class CaptureItemMeasurePhotoFragment :
             }
         }
 
-        ui.estimateImageCollectionView.clearImages()
+        _ui?.estimateImageCollectionView?.clearImages()
 
         Navigation.findNavController(view)
             .navigate(R.id.action_captureItemMeasurePhotoFragment_to_submitMeasureFragment)
@@ -199,7 +199,7 @@ class CaptureItemMeasurePhotoFragment :
 
     private fun checkForPhotos(selectedJobItemMeasure: JobItemMeasureDTO) {
         uiScope.launch(uiScope.coroutineContext) {
-            ui.estimateImageCollectionView.clearImages()
+            _ui?.estimateImageCollectionView?.clearImages()
             val photoFetch =
                 measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId)
             photoFetch.observe(viewLifecycleOwner, {
@@ -217,16 +217,16 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun setupControls() {
-        ui.galleryLayout.visibility = View.VISIBLE
-        ui.doneImageButton.visibility = View.VISIBLE
+        _ui?.galleryLayout?.visibility = View.VISIBLE
+        _ui?.doneImageButton?.visibility = View.VISIBLE
         when (viewPhotosOnly) {
             true -> {
-                ui.photoButtons.visibility = View.VISIBLE
-                ui.captureAnotherPhotoButton.visibility = View.GONE
+                _ui?.photoButtons?.visibility = View.VISIBLE
+                _ui?.captureAnotherPhotoButton?.visibility = View.GONE
             }
             else -> {
-                ui.photoButtons.visibility = View.VISIBLE
-                ui.captureAnotherPhotoButton.visibility = View.VISIBLE
+                _ui?.photoButtons?.visibility = View.VISIBLE
+                _ui?.captureAnotherPhotoButton?.visibility = View.VISIBLE
             }
         }
     }
@@ -317,7 +317,7 @@ class CaptureItemMeasurePhotoFragment :
 
     private suspend fun processAndSetImage() = Coroutines.main {
 
-        ui.estimateImageCollectionView.scaleForSize(
+        _ui?.estimateImageCollectionView?.scaleForSize(
             jobItemMeasurePhotoArrayList.size
         )
 
@@ -326,7 +326,7 @@ class CaptureItemMeasurePhotoFragment :
             PhotoQuality.HIGH
         ).also { bmp ->
             bmp?.run {
-                ui.estimateImageCollectionView.addImage(
+                _ui?.estimateImageCollectionView?.addImage(
                     this,
                     object : ImageCollectionView.OnImageClickListener {
                         override fun onClick(bitmap: Bitmap, imageView: ImageView) {
@@ -390,14 +390,14 @@ class CaptureItemMeasurePhotoFragment :
     private fun handleGallerySuccess(response: XIResult.Success<MeasureGalleryUIState>) {
         toggleLongRunning(false)
         val uiState = response.data
-        ui.estimateImageCollectionView.clearImages()
+        _ui?.estimateImageCollectionView?.clearImages()
 
         if (uiState.photoPairs.isNotEmpty()) {
 
-            ui.estimateImageCollectionView.scaleForSize(
+            _ui?.estimateImageCollectionView?.scaleForSize(
                 uiState.photoPairs.size
             )
-            ui.estimateImageCollectionView.addZoomedImages(
+            _ui?.estimateImageCollectionView?.addZoomedImages(
                 uiState.photoPairs,
                 this@CaptureItemMeasurePhotoFragment.requireActivity()
             )

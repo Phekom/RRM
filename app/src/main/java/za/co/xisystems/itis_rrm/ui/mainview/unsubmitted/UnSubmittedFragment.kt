@@ -92,7 +92,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
 
     private fun fetchUnsubmitted() {
         groupAdapter = GroupAdapter()
-        ui.group12Loading.visibility = View.VISIBLE
+        _ui?.group12Loading?.visibility = View.VISIBLE
 
         Coroutines.main {
             try {
@@ -105,11 +105,11 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                 measurements.observe(viewLifecycleOwner, { jobList ->
                     if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
-                        ui.noData.visibility = View.VISIBLE
-                        ui.incompleteJobListView.visibility = View.GONE
+                        _ui?.noData?.visibility = View.VISIBLE
+                        _ui?.incompleteJobListView?.visibility = View.GONE
                     } else {
-                        ui.noData.visibility = View.GONE
-                        ui.incompleteJobListView.visibility = View.VISIBLE
+                        _ui?.noData?.visibility = View.GONE
+                        _ui?.incompleteJobListView?.visibility = View.VISIBLE
                         initRecyclerView(jobList.toApproveListItems())
                     }
                 })
@@ -122,7 +122,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                     refreshAction = { this@UnSubmittedFragment.retryUnsubmitted() }
                 )
             } finally {
-                ui.group12Loading.visibility = View.GONE
+                _ui?.group12Loading?.visibility = View.GONE
             }
         }
     }
@@ -148,14 +148,14 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         groupAdapter = GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>().apply {
             update(items)
         }
-        ui.incompleteJobListView.apply {
+        _ui?.incompleteJobListView?.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
     }
 
     override fun onDestroyView() {
-        ui.incompleteJobListView.adapter = null
+        _ui?.incompleteJobListView?.adapter = null
         _ui = null
         super.onDestroyView()
     }

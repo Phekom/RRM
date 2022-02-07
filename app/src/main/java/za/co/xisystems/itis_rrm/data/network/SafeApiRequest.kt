@@ -10,13 +10,14 @@ import za.co.xisystems.itis_rrm.custom.errors.RestException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.data.network.responses.ErrorResponse
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
 open class SafeApiRequest(
-    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
     @Suppress("TooGenericExceptionCaught")
     suspend fun <T : Any> apiRequest(call: suspend () -> Response<T>): T = withContext(dispatchers.io()) {

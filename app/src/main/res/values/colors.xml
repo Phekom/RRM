@@ -12,20 +12,17 @@
     <color name="itis_burnt_orange">#de4f32</color>
     <color name="sanral_burnt_green">#00887a</color>
     <color name="itis_divider">#b9b9b9</color>
-
     <color name="sanral_dark_green">#007562</color>
     <color name="sanral_orange_red">#db5134</color>
-
-    <color name="transparent">#00000000</color>
-
-
     <color name="sanral_dark_red">#941212</color>
 
+    <color name="transparent">#00000000</color>
+    <color name="black_alpha_30">#4D000000</color>
+    <color name="_dark">#323232</color>
     <color name="colorPrimary">#de4f32</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#A8260B</color>
     <color name="colorPrimaryYellow">#F7982E</color>
-
     <color name="white">#FFFFFF</color>
     <color name="cornsilk">#FFF8DC</color>
     <color name="red">#FF0000</color>
@@ -38,17 +35,8 @@
     <color name="dark_green">#006400</color>
     <color name="black">#000000</color>
 
-
     <color name="shimmerBase0">#c2c2c2</color>
     <color name="shimmerHighlight0">#ffffff</color>
-
-
-    <!--Color surface (light), color on error (light), -->
-    <!--color on surface (dark), color on surface (dark)-->
-
-    <!--Color surface (dark)-->
-    <!--Color on secondary (light), color on background (light),-->
-    <!--color on surface (light)-->
 
     <color name="primaryColor">#d84315</color>
     <color name="primaryLightColor">#ff7543</color>
@@ -57,7 +45,6 @@
     <color name="secondaryLightColor">#80e27e</color>
     <color name="secondaryDarkColor">#087f23</color>
     <color name="primaryTextColor">#000000</color>
-    <color name="progressTextColor">#fefefe</color>
     <color name="secondaryTextColor">#000000</color>
 
 </resources>

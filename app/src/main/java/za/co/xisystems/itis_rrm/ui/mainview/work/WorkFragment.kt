@@ -107,13 +107,13 @@ class WorkFragment : LocationFragment() {
     private fun refreshEstimateJobsFromLocal() = uiScope.launch(dispatchers.ui()) {
         val localJobs = workViewModel.getAllWork()
         localJobs?.observe(viewLifecycleOwner, { jobsList ->
-            ui.group7Loading.visibility = View.GONE
+            _ui?.group7Loading?.visibility = View.GONE
             if (jobsList.isNullOrEmpty()) {
-                ui.veiledWorkListView.visibility = View.GONE
-                ui.noData.visibility = View.VISIBLE
+                _ui?.veiledWorkListView?.visibility = View.GONE
+                _ui?.noData?.visibility = View.VISIBLE
             } else {
-                ui.veiledWorkListView.visibility = View.VISIBLE
-                ui.noData.visibility = View.GONE
+                _ui?.veiledWorkListView?.visibility = View.VISIBLE
+                _ui?.noData?.visibility = View.GONE
                 val headerItems = jobsList.distinctBy {
                     it.jobId
                 }
@@ -134,8 +134,8 @@ class WorkFragment : LocationFragment() {
     }
 
     private fun initVeiledRecycler() {
-        ui.veiledWorkListView.veil()
-        ui.veiledWorkListView.run {
+        _ui?.veiledWorkListView?.veil()
+        _ui?.veiledWorkListView?.run {
             setVeilLayout(R.layout.item_velied_slug) {
                 Toast.makeText(
                     this@WorkFragment.requireContext(),
@@ -150,16 +150,16 @@ class WorkFragment : LocationFragment() {
 
     private fun initSwipeToRefresh() {
 
-        ui.worksSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        _ui?.worksSwipeToRefresh?.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        ui.worksSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        _ui?.worksSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
-        ui.worksSwipeToRefresh.setOnRefreshListener {
+        _ui?.worksSwipeToRefresh?.setOnRefreshListener {
             fetchJobsFromService()
         }
     }
@@ -167,7 +167,7 @@ class WorkFragment : LocationFragment() {
     private fun fetchJobsFromService() = uiScope.launch(uiScope.coroutineContext) {
         try {
             toggleLongRunning(true)
-            ui.veiledWorkListView.veil()
+            _ui?.veiledWorkListView?.veil()
             refreshUserTaskListFromApi()
             refreshEstimateJobsFromLocal()
         } catch (t: Throwable) {
@@ -178,7 +178,7 @@ class WorkFragment : LocationFragment() {
                 refreshAction = { this@WorkFragment.retryFetchingJobs() }
             )
         } finally {
-            ui.worksSwipeToRefresh.isRefreshing = false
+            _ui?.worksSwipeToRefresh?.isRefreshing = false
             toggleLongRunning(false)
         }
     }
@@ -189,7 +189,6 @@ class WorkFragment : LocationFragment() {
     }
 
     private suspend fun refreshUserTaskListFromApi() {
-
         withContext(uiScope.coroutineContext) {
             try {
                 val jobs = workViewModel.offlineUserTaskList.await()
@@ -208,12 +207,13 @@ class WorkFragment : LocationFragment() {
         val groupAdapter = GroupAdapter<GroupieViewHolder<ItemExpandableHeaderBinding>>().apply {
             clear()
             addAll(workListItems)
+            toggleLongRunning(false)
         }
 
         val layoutManager = LinearLayoutManager(this.requireContext())
-        ui.veiledWorkListView.setLayoutManager(layoutManager)
-        ui.veiledWorkListView.setAdapter(groupAdapter)
-        ui.veiledWorkListView.doOnNextLayout { ui.veiledWorkListView.unVeil() }
+        _ui?.veiledWorkListView?.setLayoutManager(layoutManager)
+        _ui?.veiledWorkListView?.setAdapter(groupAdapter)
+        _ui?.veiledWorkListView?.doOnNextLayout { _ui?.veiledWorkListView?.unVeil() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -228,12 +228,12 @@ class WorkFragment : LocationFragment() {
         val searchQuery = workViewModel.getSearchResults()
         searchQuery.observe(viewLifecycleOwner, { searchResults ->
             if (searchResults.isNullOrEmpty()) {
-                ui.veiledWorkListView.visibility = View.GONE
-                ui.noData.visibility = View.VISIBLE
+                _ui?.veiledWorkListView?.visibility = View.GONE
+                _ui?.noData?.visibility = View.VISIBLE
             } else {
                 Coroutines.main {
-                    ui.veiledWorkListView.visibility = View.VISIBLE
-                    ui.noData.visibility = View.GONE
+                    _ui?.veiledWorkListView?.visibility = View.VISIBLE
+                    _ui?.noData?.visibility = View.GONE
                     val headerItems = searchResults.distinctBy {
                         it.jobId
                     }
@@ -327,7 +327,7 @@ class WorkFragment : LocationFragment() {
     }
 
     override fun onDestroyView() {
-        ui.veiledWorkListView.getRecyclerView().adapter = null
+        _ui?.veiledWorkListView?.getRecyclerView()?.adapter = null
         groupAdapter = null
         _ui = null
         super.onDestroyView()
@@ -398,7 +398,7 @@ class WorkFragment : LocationFragment() {
                 val cardItem = CardItem(
                     activity = activity,
                     desc = desc,
-                    qty = "$qty @ ${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
+                    qty = "$qty $friendlyUOM",// @ ${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
                     rate = DecimalFormat("#0.00").format(rate * qty.toDouble()),
                     estimateId = estimateId,
                     workViewModel = workViewModel,
@@ -437,7 +437,7 @@ class WorkFragment : LocationFragment() {
 
     private fun scrollToTop(expandableGroups: MutableList<ExpandableGroup>, toggledGroup: ExpandableGroup) {
         val groupPosition = expandableGroups.indexOf(toggledGroup)
-        (ui.veiledWorkListView.getRecyclerView().layoutManager as LinearLayoutManager)
+        (_ui?.veiledWorkListView?.getRecyclerView()?.layoutManager as LinearLayoutManager)
             .scrollToPositionWithOffset(groupPosition, -20)
     }
 }

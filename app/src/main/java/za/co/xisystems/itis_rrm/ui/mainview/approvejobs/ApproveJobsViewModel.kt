@@ -23,9 +23,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobApprovalDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
@@ -125,33 +125,29 @@ class ApproveJobsViewModel(
         jobId: String
     ) = viewModelScope.launch(mainContext) {
         try {
-            withContext(mainContext) {
-                workflowState.postValue(XIResult.Progress(true))
-            }
+            workflowState.postValue(XIResult.Progress(true))
 
-            jobApprovalDataRepository.processWorkflowMove(
-                userId,
-                jobId,
-                trackRouteId,
-                description,
-                direction
-            )
-            if (direction == WorkflowDirection.NEXT.value) {
-                jobApprovalDataRepository.updateApprovalInfo(
-                    userId = userId,
-                    jobId = jobId,
-                    remarks = description ?: "Job approved."
+            withContext(ioContext) {
+                jobApprovalDataRepository.processWorkflowMove(
+                    userId,
+                    jobId,
+                    trackRouteId,
+                    description,
+                    direction
                 )
+                if (direction == WorkflowDirection.NEXT.value) {
+                    jobApprovalDataRepository.updateApprovalInfo(
+                        userId = userId,
+                        jobId = jobId,
+                        remarks = description ?: "Job approved."
+                    )
+                }
             }
         } catch (t: Throwable) {
-            withContext(mainContext) {
-                val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                workflowState.postValue(XIResult.Error(t.cause ?: t, message))
-            }
+            val message = "Failed to process workflow: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            workflowState.postValue(XIResult.Error(t.cause ?: t, message))
         } finally {
-            withContext(mainContext) {
-                workflowState.postValue(XIResult.Progress(false))
-            }
+            workflowState.postValue(XIResult.Progress(false))
         }
     }
 

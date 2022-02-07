@@ -10,8 +10,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import kotlin.coroutines.CoroutineContext
 
 class ArmouryScope(

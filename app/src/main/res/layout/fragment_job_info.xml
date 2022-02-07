@@ -228,15 +228,15 @@
                 android:id="@+id/workflow_comments_editText"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="25dp"
+                android:layout_marginEnd="25dp"
                 android:backgroundTint="@color/itis_burnt_orange"
+                android:importantForAutofill="no"
+                android:inputType="textAutoCorrect"
                 android:maxLength="80"
                 android:singleLine="true"
-                android:textColor="@color/itis_gray"
-                android:importantForAutofill="no"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:inputType="textAutoCorrect"
-                android:layout_marginStart="25dp"
-                android:layout_marginEnd="25dp"/>
+                android:textColor="@color/itis_gray" />
 
             <LinearLayout
                 android:layout_width="match_parent"

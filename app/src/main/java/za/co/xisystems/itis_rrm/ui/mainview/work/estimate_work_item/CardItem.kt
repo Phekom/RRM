@@ -195,14 +195,15 @@ open class CardItem(
             if (straightDistanceBetweenDeviceAndTarget.isEmpty()) {
                 ToastUtils().toastLong(activity, activity?.getString(R.string.distance_misiing))
             } else {
+                val distance = straightDistanceBetweenDeviceAndTarget
                 val drive =
                     activity?.getString(R.string.action_not_permitted).plus(System.lineSeparator())
-                        .plus("Please drive $straightDistanceBetweenDeviceAndTarget KM to the location first.")
+                        .plus("Please drive $distance KM to the location first.")
                 selectedLocationPoint = Point.fromLngLat(
                     estimatePhotoStart?.photoLongitude!!, estimatePhotoStart?.photoLatitude!!
                 )
 
-                if (straightDistanceBetweenDeviceAndTarget.toDouble() <= 1.0) {
+                if (distance.toDouble() <= 1.0) {
                     sendJobToWork(workViewModel, jobItemEstimate, root, job)
                 } else {
                     alertdialog(

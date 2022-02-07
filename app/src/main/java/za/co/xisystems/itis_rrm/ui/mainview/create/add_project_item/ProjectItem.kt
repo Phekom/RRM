@@ -182,7 +182,7 @@ open class ProjectItem(
                 val jobItemEstimate = getJobItemEstimate(itemDesc.itemId, job!!.jobId)
 
                 // Delete the project item.
-                createViewModel.deleteItemFromList(itemDesc.id, estimateId = jobItemEstimate?.estimateId)
+                createViewModel.deleteItemFromList(itemDesc.itemId, estimateId = jobItemEstimate?.estimateId)
 
                 // Set updated job and recalculate costs if applicable
                 job?.let {

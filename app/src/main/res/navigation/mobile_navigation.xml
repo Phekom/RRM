@@ -121,7 +121,8 @@
             app:enterAnim="@anim/animate_in_out_enter"
             app:exitAnim="@anim/animate_in_out_exit"
             app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:popExitAnim="@anim/animate_fade_exit"
+            app:popUpTo="@id/nav_work" />
         <argument
             android:name="jobId"
             app:argType="string"
@@ -160,7 +161,6 @@
         <action
             android:id="@+id/action_nav_approveJbs_to_jobInfoFragment"
             app:destination="@id/jobInfoFragment"
-            app:popUpTo="@id/nav_approveJobs"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
@@ -194,12 +194,7 @@
         <action
             android:id="@+id/action_selectItemFragment_to_addProjectFragment2"
             app:destination="@id/addProjectFragment"
-            app:popUpTo="@id/addProjectFragment"
-            app:popUpToInclusive="true"
-            app:enterAnim="@anim/animate_slide_down_enter"
-            app:exitAnim="@anim/animate_slide_up_exit"
-            app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:popUpTo="@id/addProjectFragment" />
     </fragment>
     <fragment
         android:id="@+id/estimatePhotoFragment"
@@ -229,8 +224,7 @@
             app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpTo="@id/addProjectFragment"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_estimatePhotoFragment_to_nav_capture"
             app:destination="@id/nav_capture"
@@ -256,7 +250,6 @@
         <action
             android:id="@+id/action_addProjectFragment_to_selectItemFragment"
             app:destination="@id/selectItemFragment"
-            app:popUpTo="@id/addProjectFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
@@ -304,8 +297,7 @@
             app:enterAnim="@anim/animate_slide_up_enter"
             app:exitAnim="@anim/animate_slide_up_exit"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"
-            app:popUpTo="@id/measureApprovalFragment" />
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <argument
             android:name="jobId"
             app:argType="string"
@@ -323,9 +315,8 @@
             app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
-            tools:layout="@layout/fragment_capture_item_measure_photo"
-            app:popUpTo="@id/submitMeasureFragment"
-            app:popUpToInclusive="false" />
+            app:popUpToInclusive="false"
+            tools:layout="@layout/fragment_capture_item_measure_photo" />
         <argument
             android:name="jobId"
             app:argType="string"
@@ -336,32 +327,27 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.capture_work.CaptureWorkFragment"
         android:label="fragment_capture_work"
         tools:layout="@layout/fragment_capture_work">
-        <argument
-            android:name="jobId"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="estimateId"
-            app:argType="string"
-            app:nullable="true" />
-        <action
-            android:id="@+id/action_captureWorkFragment_pop"
-            app:popUpTo="@id/captureWorkFragment"
-            app:popUpToInclusive="true" />
+
         <action
             android:id="@+id/action_captureWorkFragment_self"
             app:destination="@id/captureWorkFragment"
             app:popUpTo="@id/captureWorkFragment"
             app:popUpToInclusive="true" />
+
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
+
+        <argument
+            android:name="estimateId"
+            app:argType="string"
+            app:nullable="true" />
+
         <action
             android:id="@+id/action_captureWorkFragment_to_nav_work"
-            app:destination="@id/nav_work"
-            app:enterAnim="@anim/animate_slide_in_left"
-            app:exitAnim="@anim/animate_slide_out_right"
-            app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpTo="@id/nav_work"
-            app:popUpToInclusive="true" />
+            app:destination="@id/nav_work" />
+
     </fragment>
     <fragment
         android:id="@+id/captureItemMeasurePhotoFragment"
@@ -379,7 +365,6 @@
             app:exitAnim="@anim/animate_slide_out_right"
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_exit"
-            app:popUpTo="@id/nav_estMeasure"
             app:popUpToInclusive="false" />
     </fragment>
 
@@ -414,11 +399,7 @@
             app:nullable="true" />
         <action
             android:id="@+id/action_work_location_to_captureWorkFragment"
-            app:destination="@id/captureWorkFragment"
-            app:enterAnim="@anim/animate_slide_left_enter"
-            app:exitAnim="@anim/animate_slide_out_right"
-            app:popEnterAnim="@anim/animate_fade_enter"
-            app:popExitAnim="@anim/animate_fade_exit" />
+            app:destination="@id/captureWorkFragment" />
     </fragment>
 
     <fragment

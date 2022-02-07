@@ -140,8 +140,7 @@ class MainActivity :
             RaygunClient.enableCrashReporting()
         }
 
-        this.mainActivityViewModel =
-            ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
+        this.mainActivityViewModel = ViewModelProvider(this, factory)[MainActivityViewModel::class.java]
 
         initializeCountDrawer()
 
@@ -176,11 +175,6 @@ class MainActivity :
             navigationView.menu.findItem(R.id.nav_approveMeasure).actionView as TextView
         badgeEstMeasure =
             navigationView.menu.findItem(R.id.nav_estMeasure).actionView as TextView
-
-        if (savedInstanceState == null) {
-            val home = HomeFragmentDirections.actionGlobalNavHome()
-            navController.navigate(home)
-        }
     }
 
     private fun displayPromptForEnablingGPS(
@@ -292,10 +286,7 @@ class MainActivity :
 
     override fun onSupportNavigateUp(): Boolean {
 
-        return NavigationUI.navigateUp(
-            navController,
-            binding.drawerLayout
-        ) || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(navController, binding.drawerLayout) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -310,17 +301,15 @@ class MainActivity :
             }
             R.id.nav_create -> {
                 val createDirections = HomeFragmentDirections.actionNavHomeToNavCreate()
-                navController.navigate(home).also {
-                    navController.navigate(createDirections)
-                }
+                navController.navigate(home)
+                navController.navigate(createDirections)
                 toggle?.syncState()
             }
 
             R.id.nav_unSubmitted -> {
                 val unsubDirections = HomeFragmentDirections.actionNavHomeToNavUnSubmitted()
-                navController.navigate(home).also {
-                    navController.navigate(unsubDirections)
-                }
+                navController.navigate(home)
+                navController.navigate(unsubDirections)
                 toggle?.syncState()
             }
             R.id.nav_correction -> {
@@ -329,32 +318,26 @@ class MainActivity :
             }
             R.id.nav_work -> {
                 val workDirections = HomeFragmentDirections.actionNavHomeToNavWork(jobId = null)
-                navController.navigate(home).also {
-                    navController.navigate(workDirections)
-                }
+                navController.navigate(home)
+                navController.navigate(workDirections)
                 toggle?.syncState()
             }
             R.id.nav_estMeasure -> {
                 val estMeasureDirections = HomeFragmentDirections.actionNavHomeToNavEstMeasure()
-                navController.navigate(home).also {
-                    navController.navigate(estMeasureDirections)
-                }
+                navController.navigate(home)
+                navController.navigate(estMeasureDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveJobs -> {
                 val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
-                navController.navigate(home).also {
-                    navController.navigate(approveDirections)
-                }
+                navController.navigate(home)
+                navController.navigate(approveDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {
-                val approveMeasureDirections =
-                    HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
-                navController.navigate(home).also {
-                    navController.navigate(approveMeasureDirections)
-                }
-
+                val approveMeasureDirections = HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
+                navController.navigate(home)
+                navController.navigate(approveMeasureDirections)
                 toggle?.syncState()
             }
         }
@@ -402,10 +385,7 @@ class MainActivity :
                             navUnsubmitted.isEnabled = true
                         }
 
-                        roleID.equals(
-                            PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER,
-                            ignoreCase = true
-                        ) -> {
+                        roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
 
                             navWork.isEnabled = true
                         }

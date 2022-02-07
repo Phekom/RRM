@@ -91,7 +91,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun initVeiledRecyclerView() {
-        binding.approveMeasurementsList.run {
+        _binding?.approveMeasurementsList?.run {
             setVeilLayout(R.layout.item_velied_slug) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
@@ -101,7 +101,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     private fun retryFetchMeasurements() {
         IndefiniteSnackbar.hide()
-        binding.approveMeasurementsList.veil()
+        _binding?.approveMeasurementsList?.veil()
         fetchJobsFromService()
     }
 
@@ -109,20 +109,20 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
         Coroutines.main {
             try {
-                binding.approveMeasurementsList.visibility = View.VISIBLE
-                binding.approveMeasurementsList.veil()
+                _binding?.approveMeasurementsList?.visibility = View.VISIBLE
+                _binding?.approveMeasurementsList?.veil()
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
                 measurementsSubscription.distinctUntilChanged().observeOnce(viewLifecycleOwner, { measurementData ->
 
                     if (measurementData.isNullOrEmpty()) {
-                        binding.noData.visibility = View.VISIBLE
-                        binding.approveMeasurementsList.visibility = View.GONE
-                        binding.approveMeasurementsList.unVeil()
+                        _binding?.noData?.visibility = View.VISIBLE
+                        _binding?.approveMeasurementsList?.visibility = View.GONE
+                        _binding?.approveMeasurementsList?.unVeil()
                     } else {
-                        binding.noData.visibility = View.GONE
-                        binding.approveMeasurementsList.visibility = View.VISIBLE
+                        _binding?.noData?.visibility = View.GONE
+                        _binding?.approveMeasurementsList?.visibility = View.VISIBLE
 
                         val jobHeaders = measurementData.distinctBy {
                             it.jobId
@@ -134,7 +134,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                 toggleLongRunning(false)
-                binding.approveMeasurementsList.unVeil()
+                _binding?.approveMeasurementsList?.unVeil()
                 crashGuard(
                     throwable = measureErr,
                     refreshAction = { this.retryFetchMeasurements() }
@@ -144,17 +144,17 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun swipeToRefreshInit() {
-        binding.approvemSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        _binding?.approvemSwipeToRefresh?.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        binding.approvemSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        _binding?.approvemSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
-        binding.approvemSwipeToRefresh.setOnRefreshListener {
-            binding.approveMeasurementsList.veil()
+        _binding?.approvemSwipeToRefresh?.setOnRefreshListener {
+            _binding?.approveMeasurementsList?.veil()
             fetchJobsFromService()
         }
     }
@@ -166,8 +166,8 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
                     if (it.isNullOrEmpty()) {
 
-                        binding.noData.visibility = View.VISIBLE
-                        binding.approveMeasurementsList.visibility = View.GONE
+                        _binding?.noData?.visibility = View.VISIBLE
+                        _binding?.approveMeasurementsList?.visibility = View.GONE
                     } else {
                         loadJobHeaders()
                     }
@@ -180,7 +180,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                     refreshAction = { this.retryFetchMeasurements() }
                 )
             } finally {
-                binding.approvemSwipeToRefresh.isRefreshing = false
+                _binding?.approvemSwipeToRefresh?.isRefreshing = false
             }
         }
     }
@@ -193,10 +193,10 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
             notifyItemRangeChanged(0, approveMeasureListItems.size)
         }
 
-        binding.approveMeasurementsList.run {
+        _binding?.approveMeasurementsList?.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(adapter = groupAdapter)
-            doOnNextLayout { binding.approveMeasurementsList.unVeil() }
+            doOnNextLayout { _binding?.approveMeasurementsList?.unVeil() }
         }
 
         groupAdapter.setOnItemClickListener { item, view ->
@@ -210,7 +210,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding.approveMeasurementsList.setAdapter(null)
+        _binding?.approveMeasurementsList?.setAdapter(null)
         _binding = null
     }
 

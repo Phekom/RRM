@@ -14,6 +14,8 @@ plugins {
     id "androidx.navigation.safeargs.kotlin"
     id "deploygate"
     id "eu.davidea.grabver"
+    id "org.sonarqube"
+
 }
 
 versioning {
@@ -55,10 +57,7 @@ android {
         buildConfig true
     }
 
-    // def versionLabel = "${versioning.name}.${versioning.build}"
-    def versionLabel = "${versioning.name}.${versioning.build}"
-    // def versionLabel = "1.6.0.26"
-
+    def versionLabel =  '1.6.0.28' //"${versioning.name}.${versioning.build}"
     def versionBuild = 1
     def versionBuildDate = getDate()
     def appId = "za.co.xisystems.itismaintenance"
@@ -251,9 +250,9 @@ dependencies {
 
     // LeakCanary
     // debugImplementation because LeakCanary should only run in debug builds.
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.8.1'
-    implementation 'com.squareup.leakcanary:plumber-android:2.8.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-object-watcher-android-androidx:2.7'
+    implementation 'com.squareup.leakcanary:plumber-android:2.7'
 
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
@@ -289,7 +288,7 @@ dependencies {
     implementation 'androidx.security:security-crypto:1.1.0-alpha03'
 
     // Material
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'com.google.android.material:material:1.5.0'
 
     // Testing
     // Core library
@@ -312,7 +311,7 @@ dependencies {
 
     // Layouts
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
-    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
 
     // Navigation
     def nav_version = '2.3.5'
@@ -392,7 +391,7 @@ dependencies {
     implementation 'com.github.takusemba:cropme:2.0.8'
 
     //Location
-    implementation 'com.google.android.gms:play-services-location:19.0.1'
+    implementation 'com.google.android.gms:play-services-location:19.0.0'
 
     def coroutine_version = '1.6.0'
     //Kotlin Coroutines
@@ -510,8 +509,8 @@ dependencies {
     implementation 'com.github.haroldadmin:NetworkResponseAdapter:4.0.1'
 
     //Mapbox
-    implementation "com.mapbox.navigation:android:2.1.1"
-    implementation 'androidx.car.app:app:1.1.0'
+    implementation "com.mapbox.navigation:android:2.1.2"
+    implementation("androidx.car.app:app:1.1.0")
 
 }
 

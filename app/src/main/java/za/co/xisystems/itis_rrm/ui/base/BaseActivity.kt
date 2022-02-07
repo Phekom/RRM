@@ -59,11 +59,14 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
             !sharedViewModel.takingPhotos
         ) {
             Coroutines.main {
-                val user = sharedViewModel.currentUser.await().value!!
-                when (user.authd) {
-                    true -> logoutApplication()
-                    else -> exitApplication()
-                }
+                val user = sharedViewModel.currentUser.await()
+                user.observe(this, { user ->
+                    when (user.authd) {
+                        true -> logoutApplication()
+                        else -> exitApplication()
+                    }
+                })
+
             }
         }
     }

@@ -30,7 +30,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import com.skydoves.progressview.ProgressView
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,6 +55,7 @@ import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment() {
 
@@ -65,7 +65,7 @@ class HomeFragment : BaseFragment() {
     private var gpsEnabled: Boolean = false
     private var networkEnabled: Boolean = false
     private var userDTO: UserDTO? = null
-    private lateinit var syncJob: Job
+    private lateinit var synchJob: Job
     private val colorConnected: Int
         get() = Color.parseColor("#55A359")
     private val colorNotConnected: Int
@@ -92,7 +92,7 @@ class HomeFragment : BaseFragment() {
         if (requireContext().isConnected) {
             uiScope.launch(uiScope.coroutineContext) {
                 try {
-                    ui.group2Loading.visibility = View.VISIBLE
+                    _ui?.group2Loading?.visibility = View.VISIBLE
                     acquireUser()
                     getOfflineSectionItems()
                 } catch (t: Throwable) {
@@ -103,7 +103,7 @@ class HomeFragment : BaseFragment() {
                         refreshAction = { this@HomeFragment.retrySections() }
                     )
                 } finally {
-                    ui.group2Loading.visibility = View.GONE
+                    _ui?.group2Loading?.visibility = View.GONE
                 }
             }
         } else {
@@ -125,7 +125,7 @@ class HomeFragment : BaseFragment() {
         sectionQuery.observe(viewLifecycleOwner, { mSectionItem ->
             val allData = mSectionItem.count()
             if (mSectionItem.size == allData) {
-                ui.group2Loading.visibility = View.GONE
+                _ui?.group2Loading?.visibility = View.GONE
             }
         })
     }
@@ -133,12 +133,11 @@ class HomeFragment : BaseFragment() {
     private suspend fun acquireUser() {
         try {
             val userJob = uiScope.launch(uiScope.coroutineContext) {
-
                 val user = homeViewModel.user.await()
                 user.observe(viewLifecycleOwner, { userInstance ->
                     userInstance.let {
                         userDTO = it
-                        ui.welcome.text = getString(R.string.welcome_greeting, it.userName)
+                        _ui?.welcome?.text = getString(R.string.welcome_greeting, it.userName)
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()
@@ -200,6 +199,8 @@ class HomeFragment : BaseFragment() {
     override fun onStart() {
 
         super.onStart()
+        checkConnectivity()
+        homeDiagnostic()
 
         // Configure progressView
         initProgressViews()
@@ -207,17 +208,19 @@ class HomeFragment : BaseFragment() {
         // Configure SwipeToRefresh
         initSwipeToRefresh()
 
-        ui.serverTextView.setOnClickListener {
+        isAppDbSynched()
+
+        _ui?.serverTextView?.setOnClickListener {
             ToastUtils().toastServerAddress(requireContext())
         }
 
-        ui.imageView7.setOnClickListener {
+        _ui?.imageView7?.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
         }
 
-        ui.unallocatedPhotoAdd.setOnClickListener {
+        _ui?.unallocatedPhotoAdd?.setOnClickListener {
             val directions = HomeFragmentDirections.actionNavHomeToNavUnallocated()
-            Navigation.findNavController(this@HomeFragment.requireView())
+            Navigation.findNavController(it)
                 .navigate(directions)
         }
     }
@@ -238,27 +241,20 @@ class HomeFragment : BaseFragment() {
         homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 
-    override fun onResume() {
-        super.onResume()
-        checkConnectivity()
-        homeDiagnostic()
-        isAppDbSynced()
-    }
-
     private fun initProgressViews() {
-        ui.pvContracts.setOnProgressChangeListener {
-            progressListener(it, ui.pvContracts, "projects")
+        _ui?.pvContracts?.setOnProgressChangeListener {
+            progressListener(it, _ui?.pvContracts!!, "projects")
         }
-        ui.pvTasks.setOnProgressChangeListener {
-            progressListener(it, ui.pvTasks, "tasks")
+        _ui?.pvTasks?.setOnProgressChangeListener {
+            progressListener(it, _ui?.pvTasks!!, "tasks")
         }
-        ui.pvSections.setOnProgressChangeListener {
-            progressListener(it, ui.pvSections, "sections")
+        _ui?.pvSections?.setOnProgressChangeListener {
+            progressListener(it, _ui?.pvSections!!, "sections")
         }
     }
 
     private fun progressListener(it: Float, progressView: ProgressView, label: String) {
-        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synced") }
+        pvComplete[label] = Runnable { maxOutPv(progressView, "$label synched") }
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed(
             {
@@ -287,12 +283,12 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun resetProgressViews() {
-        ui.pvContracts.progress = 0.0f
-        ui.pvTasks.progress = 0.0f
-        ui.pvSections.progress = 0.0f
+        _ui?.pvContracts?.progress = 0.0f
+        _ui?.pvTasks?.progress = 0.0f
+        _ui?.pvSections?.progress = 0.0f
     }
 
-    private fun isAppDbSynced() {
+    private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
             homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
                 Timber.d("Synced: $it")
@@ -305,16 +301,16 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun initSwipeToRefresh() {
-        ui.itemsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        _ui?.itemsSwipeToRefresh?.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        ui.itemsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        _ui?.itemsSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
-        ui.itemsSwipeToRefresh.setOnRefreshListener {
+        _ui?.itemsSwipeToRefresh?.setOnRefreshListener {
             Coroutines.main {
                 bigSync()
             }
@@ -328,8 +324,8 @@ class HomeFragment : BaseFragment() {
         networkEnabled = this.requireContext().isConnected
         //  Check if Network Enabled
         if (!networkEnabled) {
-            ui.dataEnabled.setText(R.string.mobile_data_not_connected)
-            ui.ivConnection.setImageDrawable(
+            _ui?.dataEnabled?.setText(R.string.mobile_data_not_connected)
+            _ui?.ivConnection?.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_signal_cellular_connected_no_internet_32
@@ -339,8 +335,8 @@ class HomeFragment : BaseFragment() {
             )
             result = false
         } else {
-            ui.dataEnabled.setText(R.string.mobile_data_connected)
-            ui.ivConnection.setImageDrawable(
+            _ui?.dataEnabled?.setText(R.string.mobile_data_connected)
+            _ui?.ivConnection?.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_signal_cellular_connected_32
@@ -352,8 +348,8 @@ class HomeFragment : BaseFragment() {
 
         // Check if GPS connected
         if (!gpsEnabled) {
-            ui.locationEnabled.text = requireActivity().getString(R.string.gps_not_connected)
-            ui.ivLocation.setImageDrawable(
+            _ui?.locationEnabled?.text = requireActivity().getString(R.string.gps_not_connected)
+            _ui?.ivLocation?.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_location_off_24
@@ -362,8 +358,8 @@ class HomeFragment : BaseFragment() {
                 }
             )
         } else {
-            ui.locationEnabled.text = requireActivity().getString(R.string.gps_connected)
-            ui.ivLocation.setImageDrawable(
+            _ui?.locationEnabled?.text = requireActivity().getString(R.string.gps_connected)
+            _ui?.ivLocation?.setImageDrawable(
                 ContextCompat.getDrawable(
                     this.requireContext(),
                     R.drawable.ic_baseline_location_on_24
@@ -387,7 +383,7 @@ class HomeFragment : BaseFragment() {
                 if (networkEnabled) {
                     acquireUser()
                 } else {
-                    syncJob.cancel(CancellationException("Connectivity lost ... please try again later"))
+                    synchJob.cancel(CancellationException("Connectivity lost ... please try again later"))
                 }
             } catch (t: Throwable) {
                 val pingEx = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -413,14 +409,10 @@ class HomeFragment : BaseFragment() {
                     )
                 }
                 is XIResult.Status -> {
-                    this@HomeFragment.extensionToast(
-                        message = result.message,
-                        style = ToastStyle.INFO,
-                        position = BOTTOM
-                    )
+                    extensionToast(message = result.message, style = ToastStyle.INFO, position = BOTTOM)
                 }
                 is XIResult.Error -> {
-                    syncJob.cancel(CancellationException(result.message))
+                    synchJob.cancel(CancellationException(result.message))
                     showProgress()
 
                     extensionToast(
@@ -451,13 +443,13 @@ class HomeFragment : BaseFragment() {
         isLoading: Boolean = false
     ) {
         toggleLongRunning(isLoading)
-        ui.itemsSwipeToRefresh.isRefreshing = isLoading
+        _ui?.itemsSwipeToRefresh?.isRefreshing = isLoading
         when (isLoading) {
             true -> {
-                ui.bigSyncProgressLayout.visibility = View.VISIBLE
+                _ui?.bigSyncProgressLayout?.visibility = View.VISIBLE
             }
             else -> {
-                ui.bigSyncProgressLayout.visibility = View.GONE
+                _ui?.bigSyncProgressLayout?.visibility = View.GONE
             }
         }
     }
@@ -465,13 +457,13 @@ class HomeFragment : BaseFragment() {
     private fun handleProgressUpdate(update: XIResult.ProgressUpdate) {
         when (update.key) {
             "projects" -> {
-                updateProgress(update, ui.pvContracts)
+                updateProgress(update, _ui?.pvContracts!!)
             }
             "tasks" -> {
-                updateProgress(update, ui.pvTasks)
+                updateProgress(update, _ui?.pvTasks!!)
             }
             "sections" -> {
-                updateProgress(update, ui.pvSections)
+                updateProgress(update, _ui?.pvSections!!)
             }
         }
     }
@@ -486,13 +478,13 @@ class HomeFragment : BaseFragment() {
     private fun bigSync() = uiScope.launch(uiScope.coroutineContext) {
         if (networkEnabled) {
             try {
-                ui.unallocatedPhotoAdd.visibility = View.GONE
+                _ui?.unallocatedPhotoAdd?.visibility = View.GONE
                 toast("Data Loading")
                 resetProgressViews()
                 showProgress(true)
                 homeViewModel.databaseState.observe(viewLifecycleOwner, bigSyncObserver)
-                syncJob = homeViewModel.fetchAllData(userDTO!!.userId)
-                syncJob.join()
+                synchJob = homeViewModel.fetchAllData(userDTO!!.userId)
+                synchJob.join()
                 ping()
             } catch (t: Throwable) {
                 val errorMessage = "Failed to download remote data: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -504,7 +496,7 @@ class HomeFragment : BaseFragment() {
             } finally {
                 homeViewModel.resetSyncStatus()
                 // Gallery is deferred until the new year
-                ui.unallocatedPhotoAdd.visibility = View.GONE
+                _ui?.unallocatedPhotoAdd?.visibility = View.VISIBLE
             }
         } else {
             noInternetWarning()
@@ -567,8 +559,8 @@ class HomeFragment : BaseFragment() {
     private fun updateServiceHealth(serviceHealthy: Boolean) {
         when (serviceHealthy) {
             true -> {
-                ui.connectedTo.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-                ui.ivCloud.setImageDrawable(
+                _ui?.connectedTo?.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                _ui?.ivCloud?.setImageDrawable(
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
                         R.drawable.ic_baseline_services_up
@@ -578,8 +570,8 @@ class HomeFragment : BaseFragment() {
                 )
             }
             else -> {
-                ui.connectedTo.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
-                ui.ivCloud.setImageDrawable(
+                _ui?.connectedTo?.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
+                _ui?.ivCloud?.setImageDrawable(
                     ContextCompat.getDrawable(
                         this@HomeFragment.requireContext(),
                         R.drawable.ic_baseline_services_down
@@ -589,10 +581,5 @@ class HomeFragment : BaseFragment() {
                 )
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        homeViewModel.databaseState.removeObservers(viewLifecycleOwner)
     }
 }

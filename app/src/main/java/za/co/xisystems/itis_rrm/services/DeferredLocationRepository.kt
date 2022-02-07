@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.services
 
-import kotlin.math.abs
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocationException
@@ -12,9 +11,10 @@ import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
 import za.co.xisystems.itis_rrm.domain.SectionBorder
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Utils.round
+import kotlin.math.abs
 
 class DeferredLocationRepository(
     private val api: BaseConnectionApi,

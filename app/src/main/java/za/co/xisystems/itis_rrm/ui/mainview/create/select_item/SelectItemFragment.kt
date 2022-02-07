@@ -15,7 +15,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
 import androidx.lifecycle.whenStarted
 import androidx.navigation.Navigation
@@ -77,9 +76,6 @@ class SelectItemFragment : BaseFragment(), DIAware {
     init {
 
         lifecycleScope.launch {
-            whenCreated {
-                uiScope.create()
-            }
             whenStarted {
                 initUI()
             }
@@ -119,8 +115,6 @@ class SelectItemFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createViewModel = ViewModelProvider(this.requireActivity(), factory)[CreateViewModel::class.java]
-        itemSections = ArrayList()
-        newJobItemEstimatesList = ArrayList()
     }
 
     override fun onCreateView(
@@ -135,6 +129,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        itemSections = ArrayList()
+        newJobItemEstimatesList = ArrayList()
 
         val args by navArgs<SelectItemFragmentArgs>()
 
@@ -265,7 +261,7 @@ class SelectItemFragment : BaseFragment(), DIAware {
 
             (item as? SectionProjectItem)?.let {
 
-                val tempItem = createItem(it.itemDTO, itemSections)
+                val tempItem = createItemList(it.itemDTO, itemSections)
                 saveNewItem(tempItem)
                 sendSelectedItem(tempItem, view)
             }
@@ -278,11 +274,11 @@ class SelectItemFragment : BaseFragment(), DIAware {
         }
     }
 
-    private fun createItem(
+    private fun createItemList(
         itemDTO: ProjectItemDTO,
         itemSections: ArrayList<ItemSectionDTO>
     ): ItemDTOTemp {
-        return ItemDTOTemp(
+        val newItem = ItemDTOTemp(
             id = 0,
             itemId = itemDTO.itemId,
             descr = itemDTO.descr,
@@ -297,6 +293,8 @@ class SelectItemFragment : BaseFragment(), DIAware {
             projectId = itemDTO.projectId!!,
             jobId = editJob.jobId
         )
+        items.add(newItem)
+        return newItem
     }
 
     private fun sendSelectedItem(

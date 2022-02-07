@@ -23,7 +23,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -35,7 +36,7 @@ import za.co.xisystems.itis_rrm.utils.DataConversion
 class MeasureApprovalDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
-    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureApprovalDataRepository::class.java.simpleName

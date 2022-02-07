@@ -9,6 +9,4 @@ import com.bumptech.glide.module.AppGlideModule
  */
 
 @GlideModule
-class RRMGlideModule : AppGlideModule() {
-    // This intentionally blank
-}
+class RRMGlideModule : AppGlideModule()

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "3c2fdf386ca97f08a89cb7269f187b49",
+    "identityHash": "d11d035e13c1639701853d4754fbfa9c",
     "entities": [
       {
         "tableName": "JOB_TABLE",
@@ -329,7 +329,6 @@
               "projectId",
               "jobId"
             ],
-            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `idxJobIdByProject` ON `${TABLE_NAME}` (`projectId`, `jobId`)"
           }
         ],
@@ -437,7 +436,7 @@
       },
       {
         "tableName": "PROJECT_ITEM_TABLE",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT NOT NULL, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT, FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `itemId` TEXT NOT NULL, `descr` TEXT, `itemCode` TEXT, `itemSections` TEXT NOT NULL, `tenderRate` REAL NOT NULL, `uom` TEXT, `workflowId` INTEGER, `sectionItemId` TEXT, `quantity` REAL NOT NULL, `estimateId` TEXT, `projectId` TEXT, FOREIGN KEY(`projectId`) REFERENCES `PROJECT_TABLE`(`projectId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -479,7 +478,7 @@
             "fieldPath": "uom",
             "columnName": "uom",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "workflowId",
@@ -525,7 +524,6 @@
             "columnNames": [
               "projectId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_ITEM_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
           }
         ],
@@ -639,7 +637,6 @@
             "columnNames": [
               "itemId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_ITEM_TABLE_TEMP_itemId` ON `${TABLE_NAME}` (`itemId`)"
           },
           {
@@ -648,7 +645,6 @@
             "columnNames": [
               "projectId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_ITEM_TABLE_TEMP_projectId` ON `${TABLE_NAME}` (`projectId`)"
           }
         ],
@@ -1054,7 +1050,6 @@
             "columnNames": [
               "projectId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_TABLE_JOB_VO_ITEM_projectId` ON `${TABLE_NAME}` (`projectId`)"
           }
         ],
@@ -1156,7 +1151,6 @@
             "columnNames": [
               "projectId"
             ],
-            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_PROJECT_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
           },
           {
@@ -1165,7 +1159,6 @@
             "columnNames": [
               "contractId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_TABLE_contractId` ON `${TABLE_NAME}` (`contractId`)"
           }
         ],
@@ -1275,7 +1268,6 @@
             "columnNames": [
               "projectId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_PROJECT_SECTION_TABLE_projectId` ON `${TABLE_NAME}` (`projectId`)"
           }
         ],
@@ -1397,7 +1389,6 @@
             "columnNames": [
               "lookupName"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_LOOKUP_OPTION_TABLE_lookupName` ON `${TABLE_NAME}` (`lookupName`)"
           }
         ],
@@ -1681,7 +1672,6 @@
             "columnNames": [
               "workflowId"
             ],
-            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_WORKFLOW_ROUTE_TABLE_workflowId` ON `${TABLE_NAME}` (`workflowId`)"
           }
         ],
@@ -2695,7 +2685,6 @@
             "columnNames": [
               "itemCode"
             ],
-            "orders": [],
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_SECTION_ITEM_TABLE_itemCode` ON `${TABLE_NAME}` (`itemCode`)"
           }
         ],
@@ -2884,7 +2873,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3c2fdf386ca97f08a89cb7269f187b49')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd11d035e13c1639701853d4754fbfa9c')"
     ]
   }
 }

@@ -8,6 +8,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create.add_project_item
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -71,10 +72,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SwipeTouchCallback
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DateUtil
-import za.co.xisystems.itis_rrm.utils.JobUtils
+import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
+import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -89,6 +89,9 @@ class AddProjectFragment : BaseFragment() {
     private val unsubFactory: UnSubmittedViewModelFactory by instance()
     private val createFactory: CreateViewModelFactory by instance()
     private val deferredLocationFactory: DeferredLocationViewModelFactory by instance()
+    private lateinit var viewModel: ImagePickerViewModel
+    private val captureFactory: ImagePickerViewModelFactory by instance()
+    private val photoUtil: PhotoUtil by instance()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
@@ -132,11 +135,9 @@ class AddProjectFragment : BaseFragment() {
     init {
         lifecycleScope.launch {
             whenCreated {
-                uiScope.create()
                 initViewModels()
             }
             whenStarted {
-                viewLifecycleOwner.lifecycle.addObserver(uiScope)
                 requireActivity().hideKeyboard()
                 uiUpdate()
             }
@@ -163,6 +164,9 @@ class AddProjectFragment : BaseFragment() {
 
         deferredLocationViewModel =
             ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
+
+        viewModel =
+            ViewModelProvider(this.requireActivity(), captureFactory)[ImagePickerViewModel::class.java]
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -421,7 +425,7 @@ class AddProjectFragment : BaseFragment() {
             update(projectListItems)
         }
 
-        ui.projectRecyclerView.apply {
+        _ui?.projectRecyclerView?.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
@@ -476,12 +480,12 @@ class AddProjectFragment : BaseFragment() {
             }
         }
 
-        ui.addItemButton.setOnClickListener(myClickListener)
-        ui.resetButton.setOnClickListener(myClickListener)
-        ui.startDateCardView.setOnClickListener(myClickListener)
-        ui.dueDateCardView.setOnClickListener(myClickListener)
-        ui.submitButton.setOnClickListener(myClickListener)
-        ui.infoTextView.setOnClickListener(myClickListener)
+        _ui?.addItemButton?.setOnClickListener(myClickListener)
+        _ui?.resetButton?.setOnClickListener(myClickListener)
+        _ui?.startDateCardView?.setOnClickListener(myClickListener)
+        _ui?.dueDateCardView?.setOnClickListener(myClickListener)
+        _ui?.submitButton?.setOnClickListener(myClickListener)
+        _ui?.infoTextView?.setOnClickListener(myClickListener)
     }
 
     private suspend fun executeWorkflow() {
@@ -491,8 +495,8 @@ class AddProjectFragment : BaseFragment() {
                 initReUploadListener()
                 createViewModel.setJobForReUpload(job.jobId)
                 toggleLongRunning(true)
-                ui.submitButton.initProgress(viewLifecycleOwner)
-                ui.submitButton.startProgress("Uploading job ...")
+                _ui?.submitButton?.initProgress(viewLifecycleOwner)
+                _ui?.submitButton?.startProgress("Uploading job ...")
             }
             else -> {
                 resetValidationListener()
@@ -535,7 +539,7 @@ class AddProjectFragment : BaseFragment() {
                         message = "Error: incomplete estimates.\n Quantity can't be zero!",
                         style = ToastStyle.WARNING
                     )
-                    ui.itemsCardView.startAnimation(shake_long)
+                    _ui?.itemsCardView?.startAnimation(shake_long)
                 } else {
                     if (!invalidJob.isGeoCoded()) {
                         validateLocations(invalidJob)
@@ -582,9 +586,9 @@ class AddProjectFragment : BaseFragment() {
     }
 
     private suspend fun geoLocationFailed() = withContext(Dispatchers.Main.immediate) {
-        ui.submitButton.failProgress("Locations not verified ...")
+        _ui?.submitButton?.failProgress("Locations not verified ...")
         toggleLongRunning(false)
-        ui.itemsCardView.startAnimation(shake_long)
+        _ui?.itemsCardView?.startAnimation(shake_long)
         onGeoLocationFailed()
     }
 
@@ -592,8 +596,8 @@ class AddProjectFragment : BaseFragment() {
         createViewModel.backupJob(job)
         withContext(dispatchers.ui()) {
             toggleLongRunning(true)
-            ui.submitButton.initProgress(viewLifecycleOwner)
-            ui.submitButton.startProgress("Checking locations ...")
+            _ui?.submitButton?.initProgress(viewLifecycleOwner)
+            _ui?.submitButton?.startProgress("Checking locations ...")
         }
         deferredLocationViewModel.checkLocations(job.jobId)
     }
@@ -637,34 +641,34 @@ class AddProjectFragment : BaseFragment() {
             if (dueDate < startDate || dueDate < yesterday || dueDate == yesterday
             ) {
                 extensionToast(message = "Please select a valid due date", style = ToastStyle.WARNING)
-                ui.dueDateCardView.startAnimation(shake_long)
+                _ui?.dueDateCardView?.startAnimation(shake_long)
             } else {
                 job.dueDate
                 dueResult = true
             }
         } else {
             extensionToast(message = "Please select a Due Date", style = ToastStyle.WARNING)
-            ui.dueDateCardView.startAnimation(shake_long)
+            _ui?.dueDateCardView?.startAnimation(shake_long)
         }
         if (job.startDate != null) {
             if (startDate < yesterday || dueDate == yesterday
             ) {
                 extensionToast(message = "Please select a valid Start Date", style = ToastStyle.WARNING)
-                ui.dueDateCardView.startAnimation(shake_long)
+                _ui?.dueDateCardView?.startAnimation(shake_long)
             } else {
                 job.startDate
                 startResult = true
             }
         } else {
             extensionToast(message = "Please select Start Date", style = ToastStyle.WARNING)
-            ui.startDateCardView.startAnimation(shake_long)
+            _ui?.startDateCardView?.startAnimation(shake_long)
         }
 
         return startResult && dueResult
     }
 
     private fun selectDueDate() {
-        ui.dueDateCardView.startAnimation(click) // Get Current Date
+        _ui?.dueDateCardView?.startAnimation(click) // Get Current Date
         val c = Calendar.getInstance()
         val year = c[Calendar.YEAR]
         val month = c[Calendar.MONTH]
@@ -683,7 +687,7 @@ class AddProjectFragment : BaseFragment() {
     }
 
     private fun selectStartDate() {
-        ui.startDateCardView.startAnimation(click)
+        _ui?.startDateCardView?.startAnimation(click)
         // Get Current Date
         val startDateCalender = Calendar.getInstance()
         val startYear = startDateCalender[Calendar.YEAR]
@@ -705,8 +709,8 @@ class AddProjectFragment : BaseFragment() {
         job: JobDTO
     ) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
-        ui.submitButton.initProgress(viewLifecycleOwner)
-        ui.submitButton.startProgress("Submitting Job ...")
+        _ui?.submitButton?.initProgress(viewLifecycleOwner)
+        _ui?.submitButton?.startProgress("Submitting Job ...")
         val jobTemp = jobDataController.setJobLittleEndianGuids(job)
         saveRrmJob(job.userId, jobTemp)
     }
@@ -724,6 +728,19 @@ class AddProjectFragment : BaseFragment() {
             is XIResult.Success -> {
                 toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
+                    createViewModel.eraseUsedAndExpiredPhotos(job)
+                    val images = viewModel.fetchImagesFromExternalStorage()
+                    job.jobItemEstimates.forEach { estimate ->
+                        estimate.jobItemEstimatePhotos.forEach { image ->
+                            images.forEach {
+                                if (image.filename == it.name){
+                                    deleteFileFromUri(requireContext(), it.uri)
+                                }
+                            }
+                            photoUtil.deleteImageFile(image.photoPath)
+                        }
+                    }
+
                     this@AddProjectFragment.requireActivity().extensionToast(
                         message = getString(R.string.job_submitted),
                         style = ToastStyle.SUCCESS
@@ -734,7 +751,7 @@ class AddProjectFragment : BaseFragment() {
             is XIResult.Error -> {
                 withContext(Dispatchers.Main.immediate) {
                     toggleLongRunning(false)
-                    ui.submitButton.failProgress("Submission Failed")
+                    _ui?.submitButton?.failProgress("Submission Failed")
                     crashGuard(
                         throwable = result,
                         refreshAction = { this@AddProjectFragment.resubmitJob() }
@@ -745,6 +762,10 @@ class AddProjectFragment : BaseFragment() {
                 Timber.d("x -> $result")
             }
         }
+    }
+
+    private fun deleteFileFromUri(context: Context, uri: Uri) {
+        context.contentResolver.delete(uri, null, null)
     }
 
     private fun initReUploadListener() {
@@ -765,7 +786,7 @@ class AddProjectFragment : BaseFragment() {
         toggleLongRunning(false)
         when (result) {
             is XIResult.Success -> {
-                ui.submitButton.doneProgress("Uploaded!")
+                _ui?.submitButton?.doneProgress("Uploaded!")
                 extensionToast(
                     message = "Job: ${job.descr} uploaded successfully",
                     style = ToastStyle.SUCCESS
@@ -781,7 +802,7 @@ class AddProjectFragment : BaseFragment() {
                     message = "${result.message} - please retry again later.",
                     style = ToastStyle.ERROR
                 )
-                ui.submitButton.failProgress("Retry Upload?")
+                _ui?.submitButton?.failProgress("Retry Upload?")
                 createViewModel.resetUploadState()
             }
             else -> {
@@ -803,8 +824,8 @@ class AddProjectFragment : BaseFragment() {
     }
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
-        ui.dueDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        ui.dueDateCardView.startAnimation(bounce_500)
+        _ui?.dueDateTextView?.text = DateUtil.toStringReadable(year, month, dayOfMonth)
+        _ui?.dueDateCardView?.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job.dueDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
@@ -812,8 +833,8 @@ class AddProjectFragment : BaseFragment() {
     }
 
     private fun setStartDateTextView(year: Int, month: Int, dayOfMonth: Int) {
-        ui.startDateTextView.text = DateUtil.toStringReadable(year, month, dayOfMonth)
-        ui.startDateCardView.startAnimation(bounce_500)
+        _ui?.startDateTextView?.text = DateUtil.toStringReadable(year, month, dayOfMonth)
+        _ui?.startDateCardView?.startAnimation(bounce_500)
         val calendar = Calendar.getInstance()
         calendar[year, month] = dayOfMonth
         job.startDate = DateUtil.dateToString(Date.from(calendar.toInstant()))
@@ -845,14 +866,14 @@ class AddProjectFragment : BaseFragment() {
 
     private fun resetContractAndProjectSelection(view: View) {
         Navigation.findNavController(view).popBackStack(R.id.nav_create, false)
-        ui.infoTextView.text = null
+        _ui?.infoTextView?.text = null
     }
 
     private fun onInvalidJob() {
         toggleLongRunning(false)
-        ui.submitButton.failProgress("Submit")
+        _ui?.submitButton?.failProgress("Submit")
         extensionToast(message = "Incomplete estimates!", style = ToastStyle.ERROR)
-        ui.itemsCardView.startAnimation(shake_long)
+        _ui?.itemsCardView?.startAnimation(shake_long)
     }
 
     override fun onDestroyView() {
@@ -863,7 +884,7 @@ class AddProjectFragment : BaseFragment() {
         createViewModel.jobForValidation.removeObservers(viewLifecycleOwner)
         createViewModel.jobForSubmission.removeObservers(viewLifecycleOwner)
         createViewModel.jobForReUpload.removeObservers(viewLifecycleOwner)
-        ui.projectRecyclerView.adapter = null
+        _ui?.projectRecyclerView?.adapter = null
         _ui = null
     }
 

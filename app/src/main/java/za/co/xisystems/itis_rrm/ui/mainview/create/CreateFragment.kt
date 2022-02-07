@@ -14,6 +14,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.create
 
 import android.content.Context
 import android.os.Bundle
+import android.text.InputFilter
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
@@ -56,6 +57,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.SpinnerHelper.s
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.utils.ValidateInputs.EMOJI_FILTER
+import za.co.xisystems.itis_rrm.utils.ValidateInputs.isValidInput
 import za.co.xisystems.itis_rrm.utils.hide
 import za.co.xisystems.itis_rrm.utils.show
 import java.util.ArrayList
@@ -140,6 +143,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Coroutines.main {
+            _ui?.descriptionEditText?.filters = arrayOf(EMOJI_FILTER)
             val user = createViewModel.user.await()
             user.observe(viewLifecycleOwner, { userDTO ->
                 useR = userDTO
@@ -148,11 +152,19 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
         val myClickListener = View.OnClickListener { clickedView ->
             when (clickedView) {
-                ui.selectContractProjectContinueButton -> {
-                    val description = ui.descriptionEditText.text!!.toString().trim { it <= ' ' }
+                _ui?.selectContractProjectContinueButton -> {
+                    var description = ""
+                    if (!isValidInput(_ui?.descriptionEditText?.text.toString())) {
+                        _ui?.descriptionEditText?.error = getString(R.string.invalid_char)
+                        false
+                    } else {
+                        description = _ui?.descriptionEditText?.text!!.toString().trim { it <= ' ' }
+                        true
+                    }
+
                     if (description.isEmpty()) {
                         extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
-                        ui.descriptionEditText.startAnimation(shake)
+                        _ui?.descriptionEditText?.startAnimation(shake)
                     } else {
                         activity?.hideKeyboard()
                         createNewJob()
@@ -164,13 +176,8 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
             }
         }
 
-        ui.selectContractProjectContinueButton.setOnClickListener(myClickListener)
+        _ui?.selectContractProjectContinueButton?.setOnClickListener(myClickListener)
 
-
-    }
-
-    override fun onResume() {
-        super.onResume()
         try {
             setContract()
         } catch (t: Throwable) {
@@ -302,7 +309,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
     private fun setContract() {
         try {
             Coroutines.main {
-                ui.dataLoading.show()
+                _ui?.dataLoading?.show()
 
                 val contractData = createViewModel.getContractSelectors()
 
@@ -317,7 +324,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                         Timber.d("Thread completed.")
                         setSpinner(
                             requireContext().applicationContext,
-                            ui.contractSpinner,
+                            _ui?.contractSpinner!!,
                             contractList,
                             contractIndices,
                             object : SpinnerHelper.SelectionListener<ContractSelector> {
@@ -331,7 +338,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                             }
                         )
                     }
-                    ui.dataLoading.hide()
+                    _ui?.dataLoading?.hide()
                 })
             }
         } catch (t: Throwable) {
@@ -341,7 +348,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                 refreshAction = { this.retryContracts() }
             )
         } finally {
-            ui.dataLoading.hide()
+            _ui?.dataLoading?.hide()
         }
     }
 
@@ -354,7 +361,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
 
         Coroutines.main {
             val projects = createViewModel.getProjectSelectors(contractId!!)
-            ui.dataLoading.show()
+            _ui?.dataLoading?.show()
             projects.observe(viewLifecycleOwner, { projectList ->
                 val allData = projectList.count()
                 if (projectList.size == allData) {
@@ -365,7 +372,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                     }
                     setSpinner(
                         requireContext().applicationContext,
-                        ui.projectSpinner,
+                        _ui?.projectSpinner!!,
                         projectList,
                         projectNmbr, // null)
                         object : SpinnerHelper.SelectionListener<ProjectSelector> {
@@ -378,7 +385,7 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
                         }
                     )
 
-                    ui.dataLoading.hide()
+                    _ui?.dataLoading?.hide()
                 }
             })
         }
@@ -401,15 +408,15 @@ class CreateFragment : BaseFragment(), OfflineListener, DIAware {
     }
 
     override fun onStarted() {
-        ui.dataLoading.show()
+        _ui?.dataLoading?.show()
     }
 
     override fun onSuccess() {
-        ui.dataLoading.hide()
+        _ui?.dataLoading?.hide()
     }
 
     override fun onFailure(message: String?) {
-        ui.dataLoading.hide()
+        _ui?.dataLoading?.hide()
     }
 
     companion object {

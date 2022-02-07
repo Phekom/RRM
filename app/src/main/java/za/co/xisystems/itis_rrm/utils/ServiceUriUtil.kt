@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.BuildConfig
 class ServiceUriUtil {
     var webServiceUri: String? = null
     var webServiceHost: String? = null
-    var urlToCheck: String? = null
+
     companion object {
         private val TAG = ServiceUriUtil::class.java.simpleName
         private var instance: ServiceUriUtil? = null
@@ -26,7 +26,6 @@ class ServiceUriUtil {
             instance = ServiceUriUtil()
             instance!!.webServiceUri = webServiceRootUri
             instance!!.webServiceHost = serverUriFriendlyString
-            instance!!.urlToCheck = "https://$serverUriFriendlyString/portal/"
         }
 
         fun getInstance(): ServiceUriUtil? {
@@ -40,11 +39,11 @@ class ServiceUriUtil {
         private val webServiceRootUri: String
             get() = BuildConfig.API_HOST
 
-        val serverUriFriendlyString: String
+        private val serverUriFriendlyString: String
             get() {
-                var url = BuildConfig.API_HOST
-                url = url.replace("https://", "")
-                val x = url.indexOf("/")
+                val url = BuildConfig.API_HOST
+                // url = url.replace("https://", "")
+                val x = url.indexOf("/api")
                 return if (x > -1) url.substring(0, x) else url
             }
     }

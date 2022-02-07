@@ -34,16 +34,15 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.utils.DateUtil
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.JobUtils
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -57,7 +56,6 @@ import kotlin.coroutines.CoroutineContext
  */
 
 class CreateViewModel(
-    private val capturedPictureRepository: CapturedPictureRepository,
     private val jobCreationDataRepository: JobCreationDataRepository,
     private val userRepository: UserRepository,
     application: Application,
@@ -251,7 +249,7 @@ class CreateViewModel(
         jobCreationDataRepository.deleteItemList(jobId)
     }
 
-    fun deleteItemFromList(itemId: Long, estimateId: String?) = viewModelScope.launch(ioContext) {
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext) {
         val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
         Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
@@ -306,7 +304,7 @@ class CreateViewModel(
         }
     }
 
-    fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> = liveData {
+    suspend fun getProjectSelectors(contractId: String): LiveData<List<ProjectSelector>> = liveData {
         withContext(ioContext) {
             val data = jobCreationDataRepository.getProjectSelectors(contractId)
             withContext(mainContext) {
@@ -517,19 +515,15 @@ class CreateViewModel(
         return@withContext jobCreationDataRepository.backupProjectItem(item)
     }
 
-    fun setJobForSubmission(inJobId: String) = viewModelScope.launch(ioContext) {
+    fun setJobForSubmission(inJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(inJobId).also {
-            withContext(mainContext) {
-                jobForSubmission.value = XIEvent(it)
-            }
+            jobForSubmission.value = XIEvent(it)
         }
     }
 
-    fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(ioContext) {
+    fun setJobToValidate(geoCodedJobId: String) = viewModelScope.launch(mainContext) {
         jobCreationDataRepository.getUpdatedJob(geoCodedJobId).also {
-            withContext(mainContext) {
-                jobForValidation.value = XIEvent(it)
-            }
+            jobForValidation.value = XIEvent(it)
         }
     }
 
@@ -579,5 +573,40 @@ class CreateViewModel(
         jobForValidation = MutableLiveData()
         jobForSubmission = MutableLiveData()
     }
+
+
+
+
+
+
+
+
+    fun eraseUsedAndExpiredPhotos(job: JobDTO) {
+        job.jobItemEstimates.forEach { estimate ->
+            estimate.jobItemEstimatePhotos.forEach { image ->
+                eraseUsedAndExpiredPhotos(image.filename, image.photoPath)
+            }
+        }
+    }
+
+
+    @Transaction
+    private fun eraseUsedAndExpiredPhotos(fileName: String, photoPath: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            if (photoUtil.photoExist(fileName)) {
+                photoUtil.deleteImageFile(photoPath)
+            }
+            jobCreationDataRepository.eraseUsedAndExpiredPhoto(fileName)
+        }
+
+    suspend fun checkIfPhotoExists(imageFileName: String) = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.checkIfPhotoExists(imageFileName)
+    }
+
+
+    suspend fun getEstimatePhotoByName(imageFileName: String): JobItemEstimatesPhotoDTO? = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.getEstimatePhotoByName(imageFileName)
+    }
+
 
 }
