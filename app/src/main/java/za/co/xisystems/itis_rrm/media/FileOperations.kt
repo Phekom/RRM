@@ -23,8 +23,8 @@ import androidx.annotation.RequiresApi
 import java.io.File
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 
 private const val QUALITY = 100
 
@@ -271,12 +271,13 @@ object FileOperations {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     suspend fun saveImage(context: Context, bitmap: Bitmap, format: CompressFormat) {
         withContext(dispatchers.io()) {
             val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             } else {
-                TODO("VERSION.SDK_INT < Q")
+                    null
             }
             val dirDest = File(Environment.DIRECTORY_PICTURES, context.getString(R.string.app_name))
             val date = System.currentTimeMillis()
@@ -294,7 +295,7 @@ object FileOperations {
                 put(MediaStore.Images.Media.IS_PENDING, 1)
             }
 
-            val newImageUri = context.contentResolver.insert(collection, newImage)
+            val newImageUri = context.contentResolver.insert(collection!!, newImage)
 
             context.contentResolver.openOutputStream(newImageUri!!, "w").use {
                 bitmap.compress(format, QUALITY, it)

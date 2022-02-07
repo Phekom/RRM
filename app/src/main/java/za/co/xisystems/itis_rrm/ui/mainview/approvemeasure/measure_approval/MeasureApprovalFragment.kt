@@ -169,7 +169,7 @@ class MeasureApprovalFragment : BaseFragment() {
     ): View {
         // Inflate the layout for this fragment
         _ui = FragmentMeasureApprovalBinding.inflate(inflater, container, false)
-        return ui.root
+        return ui?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -178,7 +178,7 @@ class MeasureApprovalFragment : BaseFragment() {
 
             initVeiledRecycler()
 
-            ui.viewMeasuredItems.veil()
+            _ui?.viewMeasuredItems?.veil()
             approveViewModel.jobIdForApproval.observe(viewLifecycleOwner, { jobId ->
                 jobId?.let {
                     selectedJobId = it
@@ -186,7 +186,7 @@ class MeasureApprovalFragment : BaseFragment() {
                 }
             })
 
-            ui.approveMeasureButton.setOnClickListener {
+            _ui?.approveMeasureButton?.setOnClickListener {
                 val approveBuilder = AlertDialog.Builder(
                     requireActivity()
                 )
@@ -197,7 +197,7 @@ class MeasureApprovalFragment : BaseFragment() {
                 approveBuilder.setPositiveButton(
                     R.string.yes
                 ) { _, _ ->
-                    progressButton = ui.approveMeasureButton
+                    progressButton = _ui?.approveMeasureButton!!
                     progressButton.initProgress(viewLifecycleOwner)
                     processMeasurementWorkflow(NEXT)
                 }
@@ -216,7 +216,7 @@ class MeasureApprovalFragment : BaseFragment() {
     }
 
     private fun initVeiledRecycler() {
-        ui.viewMeasuredItems.run {
+        _ui?.viewMeasuredItems?.run {
             setVeilLayout(R.layout.measurements_item) { toast("Loading ...") }
             setAdapter(groupAdapter)
             setLayoutManager(LinearLayoutManager(this.context))
@@ -329,12 +329,12 @@ class MeasureApprovalFragment : BaseFragment() {
             update(measureListItems)
             notifyItemRangeChanged(0, measureListItems.size)
         }
-        ui.viewMeasuredItems.getRecyclerView().run {
+        _ui?.viewMeasuredItems?.getRecyclerView()?.run {
             adapter = groupAdapter
             layoutManager = LinearLayoutManager(
                 this@MeasureApprovalFragment.requireContext()
             )
-            doOnNextLayout { ui.viewMeasuredItems.unVeil() }
+            doOnNextLayout { _ui?.viewMeasuredItems?.unVeil() }
         }
     }
 
@@ -342,7 +342,7 @@ class MeasureApprovalFragment : BaseFragment() {
         super.onDestroyView()
         // clear out all the leakers
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        ui.viewMeasuredItems.setAdapter(null)
+        _ui?.viewMeasuredItems?.setAdapter(null)
         _ui = null
     }
 

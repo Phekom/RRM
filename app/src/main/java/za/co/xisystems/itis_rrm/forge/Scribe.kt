@@ -23,8 +23,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 
 /**
  * Create, read and write Encrypted shared preferences.
@@ -145,6 +143,8 @@ class Scribe private constructor(
             putString(USER_KEY, userObject).apply()
         }
     }
+
+
 
     suspend fun readUserObject(): SecureString = withContext(dispatchers.io()) {
         val nakedObject = securedPrefs.getString(USER_KEY, "")!!

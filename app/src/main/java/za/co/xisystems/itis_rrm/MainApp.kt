@@ -52,6 +52,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
@@ -61,6 +62,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
 import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -104,7 +106,6 @@ open class MainApp : Application(), DIAware {
         bind {
             provider {
                 CreateViewModelFactory(
-                    capturedPictureRepository = instance(),
                     jobCreationDataRepository = instance(),
                     userRepository = instance(),
                     application = this@MainApp,
@@ -133,12 +134,13 @@ open class MainApp : Application(), DIAware {
                 )
             }
         }
-
+        bind { provider { ImagePickerViewModelFactory(instance(),this@MainApp, photoUtil = instance()) } }
         bind { provider { DeferredLocationViewModelFactory(instance(), instance(), this@MainApp) } }
         bind { provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) } }
         bind { provider { UnSubmittedViewModelFactory(instance()) } }
         bind { provider { WorkViewModelFactory(instance(), instance(), this@MainApp) } }
         bind { provider { CorrectionsViewModelFactory(instance()) } }
+        bind { provider { CaptureViewModelFactory(instance(), instance(), this@MainApp) } }
         bind { provider { SettingsViewModelFactory(instance()) } }
         bind { provider { MainActivityViewModelFactory(instance()) } }
         bind { provider { LocationViewModelFactory(this@MainApp) } }

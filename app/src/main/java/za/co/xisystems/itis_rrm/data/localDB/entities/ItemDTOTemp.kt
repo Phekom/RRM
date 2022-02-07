@@ -50,7 +50,7 @@ data class ItemDTOTemp(
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.toDouble(),
     @SerializedName("Uom")
-    val uom: String? = "None",
+    val uom: String?,
     @SerializedName("WorkflowId")
     val workflowId: Int?,
 
@@ -76,7 +76,7 @@ data class ItemDTOTemp(
             parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
         },
         tenderRate = parcel.readDouble(),
-        uom = parcel.readString()!!,
+        uom = parcel.readString(),
         workflowId = parcel.readValue(Int::class.java.classLoader) as? Int,
         sectionItemId = parcel.readString(),
         quantity = parcel.readDouble(),

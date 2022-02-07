@@ -113,33 +113,33 @@ class MeasureFragment : BaseFragment(), DIAware {
         itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
 
             if (itemEstimateList.isNullOrEmpty()) {
-                ui.noData.visibility = View.VISIBLE
-                ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                _ui?.noData?.visibility = View.VISIBLE
+                _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
                 fetchJobMeasures()
             } else {
                 val jobHeaders = itemEstimateList.distinctBy { item ->
                     item.jobId
                 }
                 Timber.d("Estimate measures detected: ${jobHeaders.size}")
-                ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
-                ui.noData.visibility = View.GONE
+                _ui?.estimationsToBeMeasuredListView?.visibility = View.VISIBLE
+                _ui?.noData?.visibility = View.GONE
                 initRecyclerView(jobHeaders.toMeasureListItems())
             }
         })
     }
 
     private fun swipeToRefreshInit() {
-        ui.estimationsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        _ui?.estimationsSwipeToRefresh?.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
-        ui.estimationsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        _ui?.estimationsSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
-        ui.estimationsSwipeToRefresh.setOnRefreshListener {
-            Coroutines.main {
-                ui.estimationsToBeMeasuredListView.veil()
+        _ui?.estimationsSwipeToRefresh?.setOnRefreshListener {
+            Coroutines.default {
+                _ui?.estimationsToBeMeasuredListView?.veil()
                 fetchRemoteJobs()
             }
         }
@@ -151,13 +151,13 @@ class MeasureFragment : BaseFragment(), DIAware {
             jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
                 if (works.isNullOrEmpty()) {
                     Coroutines.ui {
-                        ui.noData.visibility = View.VISIBLE
-                        ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                        _ui?.noData?.visibility = View.VISIBLE
+                        _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
                     }
                 } else {
                     Coroutines.ui {
-                        ui.noData.visibility = View.GONE
-                        ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                        _ui?.noData?.visibility = View.GONE
+                        _ui?.estimationsToBeMeasuredListView?.visibility = View.VISIBLE
                         fetchEstimateMeasures()
                     }
                 }
@@ -169,7 +169,7 @@ class MeasureFragment : BaseFragment(), DIAware {
                 refreshAction = { this@MeasureFragment.retryFetchingJobs() }
             )
         } finally {
-            ui.estimationsSwipeToRefresh.isRefreshing = false
+            _ui?.estimationsSwipeToRefresh?.isRefreshing = false
         }
     }
 
@@ -190,11 +190,11 @@ class MeasureFragment : BaseFragment(), DIAware {
 
             jobEstimateData.distinctUntilChanged().observeOnce(viewLifecycleOwner, { jos ->
                 if (jos.isNullOrEmpty()) {
-                    ui.noData.visibility = View.VISIBLE
-                    ui.estimationsToBeMeasuredListView.visibility = View.GONE
+                    _ui?.noData?.visibility = View.VISIBLE
+                    _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
                 } else {
-                    ui.noData.visibility = View.GONE
-                    ui.estimationsToBeMeasuredListView.visibility = View.VISIBLE
+                    _ui?.noData?.visibility = View.GONE
+                    _ui?.estimationsToBeMeasuredListView?.visibility = View.VISIBLE
                     val measureItems = jos.distinctBy {
                         it.jobId
                     }
@@ -211,7 +211,7 @@ class MeasureFragment : BaseFragment(), DIAware {
             update(measureList)
             notifyItemRangeChanged(0, measureList.size)
         }
-        ui.estimationsToBeMeasuredListView.run {
+        _ui?.estimationsToBeMeasuredListView?.run {
             setAdapter(adapter = groupAdapter, layoutManager = LinearLayoutManager(this.context))
             doOnNextLayout { unVeil() }
         }
@@ -245,7 +245,7 @@ class MeasureFragment : BaseFragment(), DIAware {
     }
 
     private fun initVeiledRecycler() {
-        ui.estimationsToBeMeasuredListView.run {
+        _ui?.estimationsToBeMeasuredListView?.run {
             setVeilLayout(R.layout.item_velied_slug) {
                 Toast.makeText(
                     this@MeasureFragment.requireContext(),
@@ -261,7 +261,7 @@ class MeasureFragment : BaseFragment(), DIAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        ui.estimationsToBeMeasuredListView.setAdapter(null)
+        _ui?.estimationsToBeMeasuredListView?.setAdapter(null)
         _ui = null
     }
 }

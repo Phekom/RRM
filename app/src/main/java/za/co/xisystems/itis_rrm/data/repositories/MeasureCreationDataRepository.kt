@@ -36,7 +36,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -52,7 +53,7 @@ class MeasureCreationDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
     private val photoUtil: PhotoUtil,
-    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
     companion object {
         val TAG: String = MeasureCreationDataRepository::class.java.simpleName
@@ -320,6 +321,15 @@ class MeasureCreationDataRepository(
         }
     }
 
+    suspend fun getContractIdForProjectId(
+        projectId: String?
+    ): String {
+        return withContext(dispatchers.io()) {
+            appDb.getProjectDao().getContractIdForProjectId(projectId!!)
+        }
+    }
+
+
     suspend fun getSingleJobFromJobId(
         jobId: String?
     ): LiveData<JobDTO> {
@@ -327,6 +337,7 @@ class MeasureCreationDataRepository(
             appDb.getJobDao().getJobFromJobId(jobId!!)
         }
     }
+
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId2(
         jobId: String?,

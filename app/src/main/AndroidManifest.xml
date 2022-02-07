@@ -48,7 +48,7 @@
         </provider>
 
         <provider
-            android:name=".ui.mainview.create.edit_estimates.capture_utils.ImagePickerFileProvider"
+            android:name=".utils.image_capture.provider.ImagePickerFileProvider"
             android:authorities="${applicationId}.imagepicker.provider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -79,12 +79,12 @@
             </intent-filter>
         </activity>
 
+
         <activity
-            android:name=".ui.mainview.create.edit_estimates.capture_utils.ImagePickerActivity"
-            android:screenOrientation="unspecified"
-            android:theme="@style/Theme.Transparent.ImagePicker" />
-
-
+            android:name=".utils.image_capture.ImagePickerActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".ui.auth.Exiter"

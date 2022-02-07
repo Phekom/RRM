@@ -54,7 +54,7 @@ data class ContractDTO(
         shortDescr = parcel.readString(),
         contractNo = parcel.readString(),
         projects = arrayListOf<ProjectDTO>().apply {
-            parcel.readList(this.toList(), ProjectDTO::class.java.classLoader)
+            parcel.writeList(this.toList())
         }
     )
     override fun writeToParcel(parcel: Parcel, flags: Int) {

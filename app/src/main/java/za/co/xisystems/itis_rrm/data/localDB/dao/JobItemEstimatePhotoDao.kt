@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -37,6 +38,9 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
     fun getJobItemEstimatePhotoForEstimateId(estimateId: String): LiveData<List<JobItemEstimatesPhotoDTO>>
 
+    @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename")
+    fun deletePhotoByNAme(filename: String)
+
     @Query("DELETE FROM JOB_ITEM_ESTIMATE_PHOTO")
     fun deleteAll()
 
@@ -52,6 +56,17 @@ interface JobItemEstimatePhotoDao {
         insertJobItemEstimatePhoto(estimatePhoto)
     }
 
+//    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE (routeMarker LIKE :criteria OR descr LIKE :criteria) AND datetime(photoDate) >= datetime('now','-1 day')")
+//    fun searchUnallocatedPhotos(criteria: String): List<UnallocatedPhotoDTO>?
+
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
     fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO
+
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :imageFileName")
+    fun getEstimatePhotoByName(imageFileName: String): JobItemEstimatesPhotoDTO
+
+    @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename)")
+    fun checkIfJobItemEstimatePhotoExistsByName(filename: String): Boolean
+
 }

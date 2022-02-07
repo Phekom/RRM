@@ -15,6 +15,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -49,7 +50,8 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
@@ -67,7 +69,7 @@ class OfflineDataRepository(
     private val api: BaseConnectionApi,
     private val appDb: AppDatabase,
     private val photoUtil: PhotoUtil,
-    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
     private var entitiesFetched = false
@@ -162,6 +164,12 @@ class OfflineDataRepository(
     suspend fun getRoles(): LiveData<List<UserRoleDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getUserRoleDao().getRoles()
+        }
+    }
+
+    suspend fun getRolesList(): List<UserRoleDTO> {
+        return withContext(dispatchers.io()) {
+            appDb.getUserRoleDao().getRolesList()
         }
     }
 
@@ -303,6 +311,7 @@ class OfflineDataRepository(
                 if (matcher.find() && section.isNotBlank()) {
                     val itemCode = matcher.group(1)?.replace("\\s+".toRegex(), "")
                     itemCode?.let {
+//                  "ItemCode": "M020.01(a)"
                         if (!appDb.getSectionItemDao().checkIfSectionItemsExist(it)) {
                             appDb.getSectionItemDao().insertSectionItem(
                                 description = section,
@@ -731,17 +740,20 @@ class OfflineDataRepository(
 
                 appDb.getJobItemEstimateDao().insertJobItemEstimate(jobItemEstimate)
                 appDb.getJobDao().setEstimateActId(jobItemEstimate.actId, job.jobId)
-                saveJobItemEstimatePhotos(jobItemEstimate)
+                val roleList = getRolesList()
+
+                saveJobItemEstimatePhotos(jobItemEstimate,roleList )
 
                 saveJobItemEstimateWorks(jobItemEstimate, job)
 
-                saveJobItemMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job)
+                saveJobItemMeasuresForEstimate(jobItemEstimate.jobItemMeasure, job,roleList )
             }
         }
     }
 
     private suspend fun saveJobItemEstimatePhotos(
         jobItemEstimate: JobItemEstimateDTO,
+        roleList: List<UserRoleDTO>,
     ) {
         jobItemEstimate.jobItemEstimatePhotos.forEach { jobItemEstimatePhoto ->
             if (!appDb.getJobItemEstimatePhotoDao()
@@ -772,13 +784,46 @@ class OfflineDataRepository(
             appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(
                 jobItemEstimatePhoto
             )
-            if (!photoUtil.photoExist(jobItemEstimatePhoto.filename)) {
-                getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
+
+            for (role in roleList) {
+                val roleID = role.roleDescription
+                // Only enable what is needed for each role description.
+                // Users with multiple roles get 'best permissions'
+                when {
+//                            roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+//
+//
+//                            }
+//
+//                            roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+//
+//
+//                            }
+//
+//                            roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+//
+//
+//                            }
+//
+//                            roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+//
+//
+//                            }
+
+                    roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                        if (!photoUtil.photoExist(jobItemEstimatePhoto.filename)) {
+                            getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
+                        }
+                    }
+
+                }
             }
+
+
         }
     }
 
-    private suspend fun saveJobItemEstimateWorks(
+    private fun saveJobItemEstimateWorks(
         jobItemEstimate: JobItemEstimateDTO,
         job: JobDTO
     ) {
@@ -839,7 +884,8 @@ class OfflineDataRepository(
 
     private suspend fun saveJobItemMeasuresForEstimate(
         jobItemMeasures: java.util.ArrayList<JobItemMeasureDTO>,
-        job: JobDTO
+        job: JobDTO,
+        roleList: List<UserRoleDTO>
     ) {
         for (jobItemMeasure in jobItemMeasures) {
             if (!appDb.getJobItemMeasureDao().checkIfJobItemMeasureExists(
@@ -901,7 +947,18 @@ class OfflineDataRepository(
                 )
 
                 if (jobItemMeasure.jobItemMeasurePhotos.isNotEmpty()) {
-                    saveJobItemMeasurePhotos(jobItemMeasure)
+                    for (role in roleList) {
+                        val roleID = role.roleDescription
+                        // Only enable what is needed for each role description.
+                        // Users with multiple roles get 'best permissions'
+                        when {
+                             roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                                 saveJobItemMeasurePhotos(jobItemMeasure)
+                            }
+
+                        }
+                    }
+
                 }
             }
         }
@@ -1077,8 +1134,7 @@ class OfflineDataRepository(
 
     suspend fun loadActivitySections(userId: String) {
         postStatus("Fetching Activity Sections")
-        val activitySectionsResponse =
-            apiRequest { api.activitySectionsRefresh(userId) }
+        val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
         saveSectionsItems(activitySectionsResponse.activitySections)
     }
 

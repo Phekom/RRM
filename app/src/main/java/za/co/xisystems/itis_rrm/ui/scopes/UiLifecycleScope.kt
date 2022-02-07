@@ -32,7 +32,7 @@ class UiLifecycleScope : CoroutineScope, DefaultLifecycleObserver {
         // Cancellation exceptions are par for the course when leaving the scope
         when (throwable) {
             is CancellationException -> {
-                Timber.d("Cancellation exception thrown: ${throwable.message}")
+                // No-op
             }
             else -> {
                 Timber.e(throwable)
@@ -47,21 +47,14 @@ class UiLifecycleScope : CoroutineScope, DefaultLifecycleObserver {
     override val coroutineContext: CoroutineContext
         get() = job.plus(Dispatchers.Main).plus(handler)
 
-    fun create() {
+    override fun onCreate(owner: LifecycleOwner) {
+        super.onCreate(owner)
         superJob = SupervisorJob()
         job = Job(superJob)
     }
 
-    override fun onCreate(owner: LifecycleOwner) {
-        super.onCreate(owner)
-        create()
-    }
-
-    fun destroy() {
-        superJob.cancelChildren()
-    }
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
-        destroy()
+        superJob.cancelChildren()
     }
 }

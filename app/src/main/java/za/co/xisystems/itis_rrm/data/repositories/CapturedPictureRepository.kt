@@ -7,13 +7,15 @@ import kotlinx.coroutines.*
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 
 class CapturedPictureRepository(
     private val appDb: AppDatabase,
-    private val dispatchers: za.co.xisystems.itis_rrm.utils.DispatcherProvider = za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider()
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
-    val capturedPhotos: LiveData<List<UnallocatedPhotoDTO>>?
+
+    val capturedPhotos : LiveData<List<UnallocatedPhotoDTO>>?
 
     val searchResults = MutableLiveData<List<UnallocatedPhotoDTO>>()
 
@@ -55,14 +57,23 @@ class CapturedPictureRepository(
     }
 
     // searchUnallocatedPhotos
-    fun searchUnallocatedPhotos(criteria: String) {
+    fun searchUnallocatedPhotos(criteria: String?) {
         coroutineScope.launch(dispatchers.main()) {
-            searchResults.value = searchUnallocatedPhotoAsync(criteria.toRoomSearchString()).await()
+            searchResults.value = searchUnallocatedPhotoAsync(criteria?.toRoomSearchString()!!).await()
         }
     }
 
     @Transaction
-    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO) {
+    suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
+            JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
+        if (appDb.getJobItemEstimatePhotoDao()
+                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
+        ) {
+            appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
+        } else {
+            appDb.getJobItemEstimatePhotoDao().insertJobItemEstimatePhoto(photoDTO)
+        }
+        return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
     }
 
     private fun searchUnallocatedPhotoAsync(criteria: String): Deferred<List<UnallocatedPhotoDTO>?> = coroutineScope.async(dispatchers.io()) {

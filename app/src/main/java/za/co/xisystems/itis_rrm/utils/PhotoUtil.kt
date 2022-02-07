@@ -6,6 +6,8 @@
 
 package za.co.xisystems.itis_rrm.utils
 
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
@@ -13,9 +15,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
@@ -32,9 +36,13 @@ import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.constants.Constants.NINETY_DAYS
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_DAYS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import za.co.xisystems.itis_rrm.utils.image_capture.camera.OnImageReadyListener
+import za.co.xisystems.itis_rrm.utils.image_capture.helper.DeviceHelper
+import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
+import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -295,7 +303,7 @@ class PhotoUtil private constructor(
                             }
                         }
                     } catch (e: Exception) {
-                        Timber.e(e, "Error loading photo $scaledUri")
+                        Timber.e(e, "Ërror loading photo $scaledUri")
                     } finally {
                         cursor.close()
                     }
@@ -587,4 +595,133 @@ class PhotoUtil private constructor(
             null
         }
     }
+
+    internal fun saveUnAllocatedImage(context: Context, config: ImagePickerConfig, currentFileName: String, rrmFileUri : Uri, imageReadyListener: OnImageReadyListener) {
+        val contentResolver = context.contentResolver
+        var newFileUri: Uri? = null
+        val currentFilePath = rrmFileUri.path
+        try {
+            if (DeviceHelper.isMinSdk29) {
+                val relativePath = config.rootDirectory.toString() + File.separator + config.subDirectory
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, currentFileName)
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, relativePath)
+                }
+
+                val bitmap = getBitmapFromUri(contentResolver, rrmFileUri)
+                contentResolver.run {
+                    val url = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    newFileUri = contentResolver.insert(url, values)
+                    if (newFileUri != null) {
+                        val imageOutputStream = openOutputStream(newFileUri!!)
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, imageOutputStream)
+
+                        val images = arrayListOf(
+                            Image(newFileUri!!, currentFileName, 0, config.subDirectory!!)
+                        )
+                        imageReadyListener.onImageReady(images)
+                    } else {
+                        imageReadyListener.onImageNotReady()
+                    }
+                    reset(context)
+                }
+            } else {
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(currentFilePath),
+                    null
+                ) { _, _ ->
+                    val images = arrayListOf(
+                        Image(rrmFileUri!!, currentFileName, 0, config.subDirectory!!)
+                    )
+                    imageReadyListener.onImageReady(images)
+                    reset(context)
+                }
+            }
+        } catch (e: Exception) {
+            newFileUri?.let {
+                contentResolver.delete(it, null, null)
+            }
+            imageReadyListener.onImageNotReady()
+            reset(context)
+        }
+    }
+
+    private fun getBitmapFromUri(contentResolver: ContentResolver, uri: Uri): Bitmap {
+        val inputStream = contentResolver.openInputStream(uri)
+        val bitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+        return bitmap
+    }
+
+    private fun reset(context: Context) {
+     //        if (DeviceHelper.isMinSdk29) {
+      //            //deleteFileFromUri(context, rrmFileUri!!)
+     //        }
+      //        revokeAppPermission(context, rrmFileUri!!)
+//        currentFileUri = null
+//        currentFilePath = null
+//        currentFileName = null
+    }
+
+    suspend fun createUnAllocatedUri(imageFileName: UUID): Uri? = withContext(dispatchers.io()) {
+        try {
+            return@withContext FileProvider.getUriForFile(
+                appContext,
+                authority,
+                createUnAllocatedImageFile(imageFileName)!!
+                //createUnAllocatedImageFile(imageFileName)!! imageFileName : String?
+            )
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e, "Failed to create URI: ${e.message}")
+            return@withContext null
+        }
+    }
+
+//    @Throws(IOException::class)
+//    internal suspend fun createImageFile(): File? = withContext(dispatchers.io()) {
+//        val imageFileName = UUID.randomUUID()
+//        return@withContext try {
+//            File(pictureFolder, "$imageFileName.jpg")
+//        } catch (ex: IOException) {
+//            Timber.e(ex, "Failed to create image file $imageFileName.jpg")
+//            null
+//        }
+//    }
+
+
+    @Throws(IOException::class)
+    internal suspend fun createUnAllocatedImageFile(imageFileName: UUID): File? = withContext(dispatchers.io()) {
+        return@withContext try {
+            File(pictureFolder, "$imageFileName.jpg")
+        } catch (ex: IOException) {
+            Timber.e(ex, "Failed to create image file $imageFileName.jpg")
+            null
+        }
+
+    }
+
+    suspend fun getUnAllocatedUri(pictureFolder: File): Uri? = withContext(dispatchers.io()) {
+        try {
+            return@withContext FileProvider.getUriForFile(
+                appContext,
+                authority,
+                pictureFolder
+            )
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e, "Failed to create URI: ${e.message}")
+            return@withContext null
+        }
+    }
+
+
+
+
+
+
+
+
+
+
 }

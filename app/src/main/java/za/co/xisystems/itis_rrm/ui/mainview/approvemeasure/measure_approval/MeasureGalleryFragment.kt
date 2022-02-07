@@ -101,10 +101,10 @@ class MeasureGalleryFragment : BaseFragment() {
                     shouldShowSnackBar = true,
                     refreshAction = { retryGallery() }
                 )
-            is XIResult.Progress -> TODO()
-            is XIResult.ProgressUpdate -> TODO()
-            is XIResult.RestException -> TODO()
-            is XIResult.Status -> TODO()
+//            is XIResult.Progress -> TODO()
+//            is XIResult.ProgressUpdate -> TODO()
+//            is XIResult.RestException -> TODO()
+//            is XIResult.Status -> TODO()
         }
     }
 

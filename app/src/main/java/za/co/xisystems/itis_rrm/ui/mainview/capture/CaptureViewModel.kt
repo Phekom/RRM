@@ -13,13 +13,14 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.utils.DateUtil
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
@@ -58,41 +59,73 @@ class CaptureViewModel(
         return searchResults
     }
 
-    fun createUnallocatedPhoto(
+
+    suspend fun createUnallocatedPhoto(
         filenamePath: Map<String, String>,
         currentLocation: LocationModel,
-        pointLocation: Double
-    ) = viewModelScope.launch(ioContext) {
-
+        pointLocation: Double,
+        itemidPhototype: Map<String, String>
+    ): JobItemEstimatesPhotoDTO = withContext(ioContext) {
+        val isPhotoStart = itemidPhototype["type"] == "UnAllocated"
         val photoId = SqlLitUtils.generateUuid()
-        val bitmap = photoUtil.getPhotoBitmapFromFile(
-            Uri.fromFile(File(filenamePath["path"]!!)),
-            PhotoQuality.ORIGINAL
-        )
-        val newPhoto = UnallocatedPhotoDTO(
-            id = 0,
-            descr = "Watch this space for TFLite predictions",
-            filename = filenamePath["filename"]!!,
+
+        return@withContext JobItemEstimatesPhotoDTO(
+            descr = itemidPhototype["type"]!!,
+            estimateId = "",
+            filename = filenamePath["filename"] ?: error(""),
             photoDate = DateUtil.dateToString(Date())!!,
             photoId = photoId,
+            photoStart = null,
+            photoEnd = null,
+            startKm = pointLocation,
+            endKm = pointLocation,
             photoLatitude = currentLocation.latitude,
             photoLongitude = currentLocation.longitude,
-            kmMarker = 0.0,
-            photoPath = filenamePath["path"]!!,
+            photoLatitudeEnd = currentLocation.latitude,
+            photoLongitudeEnd = currentLocation.longitude,
+            photoPath = filenamePath["path"] ?: error(""),
             recordSynchStateId = 0,
             recordVersion = 0,
-            routeMarker = currentLocation.toString(),
-            allocated = false,
-            pxHeight = bitmap?.height ?: -1,
-            pxWidth = bitmap?.width ?: -1
+            isPhotostart = false,
+            sectionMarker = currentLocation.toString()
         )
-
-        capturedPicsRepository.insertUnallocatedPhoto(newPhoto)
-        bitmap?.recycle()
-        withContext(mainContext) {
-            lastPhoto.value = XIEvent(newPhoto)
-        }
     }
+
+//    fun createUnallocatedPhoto(
+//        filenamePath: Map<String, String>,
+//        currentLocation: LocationModel,
+//        pointLocation: Double
+//    ) = viewModelScope.launch(ioContext) {
+//
+//        val photoId = SqlLitUtils.generateUuid()
+//        val bitmap = photoUtil.getPhotoBitmapFromFile(
+//            Uri.fromFile(File(filenamePath["path"]!!)),
+//            PhotoQuality.ORIGINAL
+//        )
+//        val newPhoto = UnallocatedPhotoDTO(
+//            id = 0,
+//            descr = "Watch this space for TFLite predictions",
+//            filename = filenamePath["filename"]!!,
+//            photoDate = DateUtil.dateToString(Date())!!,
+//            photoId = photoId,
+//            photoLatitude = currentLocation.latitude,
+//            photoLongitude = currentLocation.longitude,
+//            kmMarker = 0.0,
+//            photoPath = filenamePath["path"]!!,
+//            recordSynchStateId = 0,
+//            recordVersion = 0,
+//            routeMarker = currentLocation.toString(),
+//            allocated = false,
+//            pxHeight = bitmap?.height ?: -1,
+//            pxWidth = bitmap?.width ?: -1
+//        )
+//
+//        capturedPicsRepository.insertUnallocatedPhoto(newPhoto)
+//        bitmap?.recycle()
+//        withContext(mainContext) {
+//            lastPhoto.value = XIEvent(newPhoto)
+//        }
+//    }
 
     @Transaction
     private fun eraseExistingPhoto(photoId: String, fileName: String, photoPath: String) =
@@ -103,7 +136,7 @@ class CaptureViewModel(
             }
         }
 
-    fun saveUnallocatedPhoto(photo: UnallocatedPhotoDTO) = viewModelScope.launch(ioContext) {
-        capturedPicsRepository.insertUnallocatedPhoto(photo)
+    suspend fun saveUnallocatedPhoto(photo: JobItemEstimatesPhotoDTO) = withContext(ioContext) {
+        return@withContext capturedPicsRepository.backupEstimatePhoto(photo)
     }
 }

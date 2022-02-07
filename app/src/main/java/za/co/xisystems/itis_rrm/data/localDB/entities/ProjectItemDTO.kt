@@ -1,3 +1,15 @@
+/**
+ * Updated by Shaun McDonald on 2021/05/15
+ * Last modified on 2021/05/14, 20:32
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
+/**
+ * Updated by Shaun McDonald on 2021/05/14
+ * Last modified on 2021/05/14, 19:43
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ **/
+
 package za.co.xisystems.itis_rrm.data.localDB.entities
 
 import android.os.Parcel
@@ -45,7 +57,7 @@ data class ProjectItemDTO(
     @SerializedName("TenderRate")
     val tenderRate: Double = 0.0,
     @SerializedName("Uom")
-    var uom: String = "None",
+    val uom: String?,
     @SerializedName("WorkflowId")
     val workflowId: Int?,
 
@@ -70,7 +82,7 @@ data class ProjectItemDTO(
             parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
         },
         tenderRate = parcel.readDouble(),
-        uom = parcel.readString()!!,
+        uom = parcel.readString(),
         workflowId = parcel.readValue(Int::class.java.classLoader) as? Int,
         sectionItemId = parcel.readString(),
         quantity = parcel.readDouble(),

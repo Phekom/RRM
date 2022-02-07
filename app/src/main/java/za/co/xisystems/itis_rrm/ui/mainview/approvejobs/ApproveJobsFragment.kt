@@ -72,7 +72,7 @@ class ApproveJobsFragment : BaseFragment() {
             when (result) {
                 is XIResult.Error -> {
                     toggleLongRunning(false)
-                    ui.approveJobVeiledRecycler.unVeil()
+                    _ui?.approveJobVeiledRecycler?.unVeil()
                     crashGuard(
                         throwable = result,
                         refreshAction = { retryFetchRemoteJobs() }
@@ -120,7 +120,7 @@ class ApproveJobsFragment : BaseFragment() {
     }
 
     private fun initVeiledRecyclerView() {
-        ui.approveJobVeiledRecycler.run {
+        _ui?.approveJobVeiledRecycler?.run {
             setVeilLayout(R.layout.item_velied_slug) {
                 Toast.makeText(
                     this@ApproveJobsFragment.requireContext(),
@@ -140,7 +140,7 @@ class ApproveJobsFragment : BaseFragment() {
     ) = uiScope.launch(uiScope.coroutineContext) {
         try {
             if (veiled) {
-                ui.approveJobVeiledRecycler.veil()
+                _ui?.approveJobVeiledRecycler?.veil()
                 toggleLongRunning(true)
             }
             approveViewModel.workflowState.observe(viewLifecycleOwner, queryObserver)
@@ -154,7 +154,7 @@ class ApproveJobsFragment : BaseFragment() {
         } finally {
             approveViewModel.workflowState.removeObserver(queryObserver)
             toggleLongRunning(false)
-            ui.approveJobVeiledRecycler.unVeil()
+            _ui?.approveJobVeiledRecycler?.unVeil()
         }
     }
 
@@ -164,12 +164,12 @@ class ApproveJobsFragment : BaseFragment() {
         jobs.observeOnce(viewLifecycleOwner, { jobList ->
 
             if (jobList.isNullOrEmpty()) {
-                ui.approveJobVeiledRecycler.unVeil()
-                ui.approveJobVeiledRecycler.visibility = View.GONE
-                ui.noData.visibility = View.VISIBLE
+                _ui?.approveJobVeiledRecycler?.unVeil()
+                _ui?.approveJobVeiledRecycler?.visibility = View.GONE
+                _ui?.noData?.visibility = View.VISIBLE
             } else {
-                ui.noData.visibility = View.GONE
-                ui.approveJobVeiledRecycler.visibility = View.VISIBLE
+                _ui?.noData?.visibility = View.GONE
+                _ui?.approveJobVeiledRecycler?.visibility = View.VISIBLE
                 val jItems = jobList.distinctBy {
                     it.jobId
                 }
@@ -179,16 +179,16 @@ class ApproveJobsFragment : BaseFragment() {
     }
 
     private fun swipeToRefreshInit() {
-        ui.jobsSwipeToRefresh.setProgressBackgroundColorSchemeColor(
+        _ui?.jobsSwipeToRefresh?.setProgressBackgroundColorSchemeColor(
             ContextCompat.getColor(
                 requireContext().applicationContext,
                 R.color.colorPrimary
             )
         )
 
-        ui.jobsSwipeToRefresh.setColorSchemeColors(Color.WHITE)
+        _ui?.jobsSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
-        ui.jobsSwipeToRefresh.setOnRefreshListener {
+        _ui?.jobsSwipeToRefresh?.setOnRefreshListener {
             uiScope.launch(uiScope.coroutineContext) {
                 protectedFetch(
                     veiled = true, { fetchJobsFromServices() },
@@ -202,7 +202,7 @@ class ApproveJobsFragment : BaseFragment() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
             freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
-                ui.jobsSwipeToRefresh.isRefreshing = false
+                _ui?.jobsSwipeToRefresh?.isRefreshing = false
                 protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
             })
         } catch (throwable: Throwable) {
@@ -210,7 +210,7 @@ class ApproveJobsFragment : BaseFragment() {
             Timber.e(throwable, message)
             val xiFail = XIResult.Error(throwable, message)
             toggleLongRunning(false)
-            ui.approveJobVeiledRecycler.unVeil()
+            _ui?.approveJobVeiledRecycler?.unVeil()
             val xiAction = XIErrorAction(
                 fragmentReference = WeakReference(this),
                 view = this.requireView(),
@@ -236,10 +236,10 @@ class ApproveJobsFragment : BaseFragment() {
             notifyItemRangeChanged(0, approveJobListItems.size)
         }
 
-        ui.approveJobVeiledRecycler.setLayoutManager(LinearLayoutManager(this.context))
-        ui.approveJobVeiledRecycler.setAdapter(groupAdapter)
-        ui.approveJobVeiledRecycler.doOnNextLayout {
-            ui.approveJobVeiledRecycler.unVeil()
+        _ui?.approveJobVeiledRecycler?.setLayoutManager(LinearLayoutManager(this.context))
+        _ui?.approveJobVeiledRecycler?.setAdapter(groupAdapter)
+        _ui?.approveJobVeiledRecycler?.doOnNextLayout {
+            _ui?.approveJobVeiledRecycler?.unVeil()
             toggleLongRunning(false)
         }
 
@@ -275,7 +275,7 @@ class ApproveJobsFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        ui.approveJobVeiledRecycler.setAdapter(null)
+        _ui?.approveJobVeiledRecycler?.setAdapter(null)
         _ui = null
     }
 

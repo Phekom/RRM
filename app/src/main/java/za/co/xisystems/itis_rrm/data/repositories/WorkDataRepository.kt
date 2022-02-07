@@ -40,9 +40,9 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
@@ -72,9 +72,9 @@ class WorkDataRepository(
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    fun jobSearch(criteria: String) {
+    fun jobSearch(criteria: String?) {
         coroutineScope.launch(dispatchers.main()) {
-            searchResults.value = jobSearchAsync(criteria).await()
+            searchResults.value = jobSearchAsync(criteria!!).await()
         }
     }
 
@@ -175,7 +175,8 @@ class WorkDataRepository(
         } catch (t: Throwable) {
             val message = "Failed to upload job ${estimateJob.jiNo}: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(t, message)
-            throw TransmissionException(message, t)
+            val uploadException = XIResult.Error(t, message)
+            postWorkStatus(uploadException)
         }
     }
 
@@ -191,7 +192,7 @@ class WorkDataRepository(
         } catch (ex: Exception) {
             val message = "Failed to upload works estimate: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(ex, message)
-            throw TransmissionException(message, ex)
+            postWorkStatus(XIResult.Error(ex, message))
         }
     }
 
@@ -229,7 +230,7 @@ class WorkDataRepository(
         } catch (throwable: Throwable) {
             val errMessage = "Failed to stage image: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, errMessage)
-            throw TransmissionException(errMessage, throwable)
+            postWorkStatus(XIResult.Error(throwable, errMessage))
         }
     }
 
@@ -327,7 +328,7 @@ class WorkDataRepository(
                 }
             }
 
-            // postWorkStatus(XIResult.Success(jobEstimateWorks.worksId))
+            postWorkStatus(XIResult.Success(jobEstimateWorks.worksId))
         } catch (exception: Exception) {
             val message = "Failed to update workflow: ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(exception, message)
@@ -373,21 +374,19 @@ class WorkDataRepository(
             .getJobItemsEstimatesDoneForJobId(jobId, estimateWorkPartComplete, estWorksComplete)
     }
 
-    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?):
-        LiveData<JobEstimateWorksDTO> = withContext(dispatchers.io()) {
+    suspend fun getLiveJobEstimateWorksByEstimateId(estimateId: String?): LiveData<JobEstimateWorksDTO> = withContext(dispatchers.io()) {
         return@withContext appDb.getEstimateWorkDao().getLiveJobEstimateWorksForEstimateId(estimateId)
     }
 
     suspend fun getJobItemEstimateForEstimateId(estimateId: String):
         JobItemEstimateDTO = withContext(dispatchers.io()) {
-        return@withContext appDb.getJobItemEstimateDao()
-            .getJobItemEstimateForEstimateId(estimateId)
+        return@withContext appDb.getJobItemEstimateDao().getJobItemEstimateForEstimateId(estimateId)
     }
 
     private fun saveWorkflowJob(workflowj: WorkflowJobDTO, inWorkflow: Boolean = false) = coroutineScope.launch(dispatchers.io()) {
         try {
             val job = setWorkflowJobBigEndianGuids(workflowj)
-            if (job.jobId != null) {
+            if (job != null) {
                 updateWorkflowJobValuesAndInsertWhenNeeded(job, inWorkflow)
             } else {
                 throw NullPointerException("Workflow job is undefined!")
@@ -578,10 +577,8 @@ class WorkDataRepository(
         return@withContext appDb.getJobDao().getJobForJobId(job.jobId)
     }
 
-    suspend fun getEstimateStartPhotoForId(estimateId: String):
-        JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
-        return@withContext appDb.getJobItemEstimatePhotoDao()
-            .getEstimateStartPhotoForId(estimateId)
+    suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobItemEstimatePhotoDao().getEstimateStartPhotoForId(estimateId)
     }
 
     suspend fun updateWorkStateInfo(

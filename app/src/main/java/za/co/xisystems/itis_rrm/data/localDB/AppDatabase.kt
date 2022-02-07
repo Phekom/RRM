@@ -107,7 +107,7 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 28
+    version = 29
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -117,7 +117,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
-
+        private const val DB_NAME = "myRRM_Release.db"
         @Volatile
         internal var instance: AppDatabase? = null
         private val LOCK = Any()
@@ -125,6 +125,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         @JvmStatic
         operator fun invoke(context: Context, armoury: XIArmoury) = instance ?: synchronized(LOCK) {
+//            val  state=  SQLCipherUtils.getDatabaseState(context,
+//                DB_NAME)
             secretphrase = armoury.readPassphrase()
             instance ?: buildDatabase(context).also {
                 instance = it
@@ -153,7 +155,7 @@ abstract class AppDatabase : RoomDatabase() {
                     Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
-                        "myRRM_Release.db"
+                        DB_NAME
                     ).openHelperFactory(factory)
                         .addMigrations(*AppDatabase_Migrations.build())
                         .fallbackToDestructiveMigrationFrom(MAX_DB_VERSIONS).build()

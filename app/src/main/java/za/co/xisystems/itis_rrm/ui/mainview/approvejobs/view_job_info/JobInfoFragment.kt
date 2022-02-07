@@ -54,10 +54,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.startProgress
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.approve_job_item.ApproveJobItem
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.DateUtil
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
+import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
@@ -169,7 +166,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = getString(R.string.jobinfo_item_title)
-
+        _ui?.workflowCommentsEditText?.filters = arrayOf(ValidateInputs.EMOJI_FILTER)
         approveViewModel =
             ViewModelProvider(this.requireActivity(), factory)
                 .get(ApproveJobsViewModel::class.java)
@@ -199,7 +196,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun buildDeclineDialog() {
-        ui.declineJobButton.setOnClickListener {
+        _ui?.declineJobButton?.setOnClickListener {
             val declineBuilder =
                 Builder(
                     activity // , android.R.style.Theme_DeviceDefault_Dialog
@@ -212,7 +209,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 R.string.yes
             ) { _, _ ->
                 if (this.requireActivity().isConnected) {
-                    progressButton = ui.declineJobButton
+                    progressButton = _ui?.declineJobButton!!
                     moveJobToNextWorkflow(FAIL)
                 } else {
                     extensionToast(
@@ -234,7 +231,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun buildApprovalDialog() {
-        ui.approveJobButton.setOnClickListener {
+        _ui?.approveJobButton?.setOnClickListener {
             val approvalBuilder = Builder(
                 activity // ,android.R.style.Theme_DeviceDefault_Dialog
             )
@@ -247,7 +244,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 R.string.yes
             ) { _, _ ->
                 if (ServiceUtil.isNetworkAvailable(requireContext().applicationContext)) {
-                    progressButton = ui.approveJobButton
+                    progressButton = _ui?.approveJobButton!!
                     progressButton.initProgress(viewLifecycleOwner)
                     moveJobToNextWorkflow(NEXT)
                 } else {
@@ -279,16 +276,16 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 val route = approveViewModel.getRouteForProjectSectionId(sectionId)
                 val section = approveViewModel.getSectionForProjectSectionId(sectionId)
 
-                ui.projectDescriptionTextView.text = description
-                ui.sectionDescriptionTextView.text = ("$route/ $section")
-                ui.startKmDescriptionTextView.text = (job.jobDTO.startKm.toString())
-                ui.endKmDescriptionTextView.text = (job.jobDTO.endKm.toString())
+                _ui?.projectDescriptionTextView?.text = description
+                _ui?.sectionDescriptionTextView?.text = ("$route/ $section")
+                _ui?.startKmDescriptionTextView?.text = (job.jobDTO.startKm.toString())
+                _ui?.endKmDescriptionTextView?.text = (job.jobDTO.endKm.toString())
             }
         })
     }
 
     private fun initVeiledRecyclerView() {
-        ui.viewEstimationItemsListView.run {
+        _ui?.viewEstimationItemsListView?.run {
             setVeilLayout(R.layout.estimates_item) {
                 Toast.makeText(
                     this@JobInfoFragment.requireContext(),
@@ -304,22 +301,22 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun resetButtons() {
-        ui.approveJobButton.visibility = View.VISIBLE
-        ui.declineJobButton.visibility = View.VISIBLE
+        _ui?.approveJobButton?.visibility = View.VISIBLE
+        _ui?.declineJobButton?.visibility = View.VISIBLE
     }
 
     private fun moveJobToNextWorkflow(workflowDirection: WorkflowDirection) {
         Coroutines.main {
             flowDirection = workflowDirection
 
-            when (progressButton == ui.approveJobButton) {
+            when (progressButton == _ui?.approveJobButton) {
                 true -> {
                     progressButton.text = getString(R.string.approve_job_in_progress)
-                    ui.declineJobButton.visibility = View.GONE
+                    _ui?.declineJobButton?.visibility = View.GONE
                 }
                 else -> {
                     progressButton.text = getString(R.string.decline_job_in_progress)
-                    ui.approveJobButton.visibility = View.GONE
+                    _ui?.approveJobButton?.visibility = View.GONE
                 }
             }
             progressButton.initProgress(viewLifecycleOwner)
@@ -348,8 +345,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             )
                             progressButton.failProgress("Invalid Job")
                         }
-                        workflowDirection == FAIL &&
-                            ui.workflowCommentsEditText.text.trim().isBlank() -> {
+                        workflowDirection == FAIL && _ui?.workflowCommentsEditText?.text?.trim()!!.isBlank() -> {
                             extensionToast(
                                 message = "Please provide a comment / reason for declining this job",
                                 style = ToastStyle.WARNING,
@@ -359,7 +355,16 @@ class JobInfoFragment : BaseFragment(), DIAware {
                             progressButton.failProgress(getString(R.string.decline_job))
                         }
                         else -> {
-                            approveJobItem.jobDTO.remarks = ui.workflowCommentsEditText.text.trim().toString()
+
+                            var comments = ""
+                            if (!ValidateInputs.isValidInput(_ui?.workflowCommentsEditText?.text.toString())) {
+                                _ui?.workflowCommentsEditText?.error = getString(R.string.invalid_char)
+                                false
+                            } else {
+                                comments = _ui?.workflowCommentsEditText?.text!!.toString().trim { it <= ' ' }
+                                true
+                            }
+                            approveJobItem.jobDTO.remarks = comments //_ui?.workflowCommentsEditText.text.trim().toString()
                             approveJobItem.jobDTO.approvalDate = DateUtil.dateToString(Date())
                             approveViewModel.backupJobInProgress(approveJobItem.jobDTO)
                             initJobWorkflow(approveJobItem, workflowDirection, userDTO)
@@ -382,8 +387,8 @@ class JobInfoFragment : BaseFragment(), DIAware {
         val direction: Int = workflowDirection.value
 
         var description: String? = ""
-        if (ui.workflowCommentsEditText.text != null) {
-            description = ui.workflowCommentsEditText.text.toString()
+        if (_ui?.workflowCommentsEditText?.text != null) {
+            description = _ui?.workflowCommentsEditText?.text.toString()
         }
         Coroutines.main {
             try {
@@ -446,7 +451,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
             addAll(estimatesListItems)
             notifyItemRangeChanged(0, estimatesListItems.size)
         }
-        ui.viewEstimationItemsListView.run {
+        _ui?.viewEstimationItemsListView?.run {
             setLayoutManager(LinearLayoutManager(this.context))
             setAdapter(groupAdapter)
             doOnNextLayout { unVeil() }
@@ -461,7 +466,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        ui.viewEstimationItemsListView.setAdapter(null)
+        _ui?.viewEstimationItemsListView?.setAdapter(null)
         approveViewModel.workflowState.removeObservers(viewLifecycleOwner)
         approveViewModel.updateState.removeObservers(viewLifecycleOwner)
         _ui = null

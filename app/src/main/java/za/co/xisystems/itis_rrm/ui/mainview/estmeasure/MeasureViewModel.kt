@@ -285,6 +285,12 @@ class MeasureViewModel(
         return@withContext measureCreationDataRepository.getItemForItemId(projectItemId)
     }
 
+    suspend fun getContractIdForProjectId(projectId: String?): String {
+        return withContext(Dispatchers.IO) {
+            measureCreationDataRepository.getContractIdForProjectId(projectId)
+        }
+    }
+
     suspend fun getJobFromJobId(jobId: String?): LiveData<JobDTO> {
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getSingleJobFromJobId(jobId)

@@ -425,6 +425,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
                 }
             }
         )
+
     }
 
     @SuppressLint("MagicNumber")
@@ -653,7 +654,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         mapboxNavigation.setRoutes(routes)
 
         // start location simulation along the primary route
-        startSimulation(routes.first())
+         startSimulation(routes.first())
 
         // show UI elements
         binding.soundButton.visibility = View.VISIBLE

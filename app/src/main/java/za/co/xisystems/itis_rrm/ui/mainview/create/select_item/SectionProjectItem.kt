@@ -25,7 +25,7 @@ class SectionProjectItem(
             itemCode.text = itemDTO.itemCode
             projectDescrTextView.text = itemDTO.descr
             unitofMTextView.text = ""
-            when (itemDTO.uom.isBlank()) {
+            when (itemDTO.uom.isNullOrBlank()) {
                 true -> {
                     val defaultUOM = root.context.resources.getString(R.string.default_uom)
                     unitofMTextView.text = root.context.resources.getString(

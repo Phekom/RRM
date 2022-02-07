@@ -166,8 +166,8 @@ interface JobDao {
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobForJobId(jobId: String): JobDTO
 
-    @Query("SELECT jobId FROM JOB_TABLE WHERE activityId = :actId AND deleted = 0")
-    fun getJobIds(actId: Int): LiveData<List<String>>
+//    @Query("SELECT jobId FROM JOB_TABLE WHERE activityId = :actId AND deleted = 0")
+//    fun getJobIds(actId: Int): LiveData<List<String>>
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobFromJobId(jobId: String): LiveData<JobDTO>
@@ -181,8 +181,8 @@ interface JobDao {
     @Query("UPDATE JOB_TABLE SET deleted = 1 WHERE jobId = :jobId AND deleted = 0")
     fun softDeleteJobForJobId(jobId: String)
 
-    @Query("UPDATE JOB_TABLE SET deleted = 0 WHERE jobId = :jobId AND deleted = 1")
-    fun unDeleteJobForJobId(jobId: String)
+//    @Query("UPDATE JOB_TABLE SET deleted = 0 WHERE jobId = :jobId AND deleted = 1")
+//    fun unDeleteJobForJobId(jobId: String)
 
     fun getAllWork(): LiveData<List<JobDTO>>? =
         getJobsByJobAndEstimateActivityIds(

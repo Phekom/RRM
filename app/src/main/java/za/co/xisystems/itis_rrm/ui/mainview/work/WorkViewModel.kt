@@ -21,10 +21,8 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import com.mapbox.geojson.Point
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,16 +38,16 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
-import za.co.xisystems.itis_rrm.utils.DispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class WorkViewModel(
     application: Application,
     private val workDataRepository: WorkDataRepository,
     private val offlineDataRepository: OfflineDataRepository,
-    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
+    dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
 
     val user by lazyDeferred {
@@ -212,8 +210,7 @@ class WorkViewModel(
 
     ) = viewModelScope.launch(ioContext) {
         try {
-            initializeTransmission()
-
+            workDataRepository.clearErrors()
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
 
             val systemJobId = DataConversion.toLittleEndian(itemEstiJob.jobId)!!
@@ -253,17 +250,6 @@ class WorkViewModel(
             viewModelScope.launch(mainContext) {
                 workflowState.postValue(workFailReason)
             }
-        } finally {
-            viewModelScope.launch(mainContext) {
-                workflowState.postValue(XIResult.Progress(false))
-            }
-        }
-    }
-
-    private suspend fun initializeTransmission() {
-        withContext(mainContext) {
-            workDataRepository.clearErrors()
-            workflowState.postValue(XIResult.Progress(true))
         }
     }
 
@@ -283,7 +269,7 @@ class WorkViewModel(
     ) = viewModelScope.launch(ioContext) {
 
         try {
-            initializeTransmission()
+            workDataRepository.clearErrors()
             val updatedJob = offlineDataRepository.getUpdatedJob(jobId)
             val systemJobId = DataConversion.toLittleEndian(updatedJob.jobId)!!
 
@@ -299,23 +285,15 @@ class WorkViewModel(
                 )
             }
 
-            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction).also {
-                withContext(mainContext) {
-                    workflowState.postValue(XIResult.Success("JOB_COMPLETE"))
-                }
-            }
+            workDataRepository.processWorkflowMove(userId, trackRouteId, description, direction)
         } catch (t: Throwable) {
             val message = "Job submission failed -"
             val workFailReason = XIResult.Error(
                 t.cause ?: t,
                 "$message: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             )
-            withContext(mainContext) {
+            viewModelScope.launch(mainContext) {
                 workflowState.postValue(workFailReason)
-            }
-        } finally {
-            withContext(mainContext) {
-                workflowState.postValue(XIResult.Progress(false))
             }
         }
     }
@@ -324,8 +302,8 @@ class WorkViewModel(
         jobId: String?,
         estimateWorkPartComplete: Int,
         estWorksComplete: Int
-    ): Deferred<Int> = viewModelScope.async(dispatchers.io()) {
-        return@async workDataRepository.getJobItemsEstimatesDoneForJobId(
+    ): Int = withContext(ioContext) {
+        return@withContext workDataRepository.getJobItemsEstimatesDoneForJobId(
             jobId,
             estimateWorkPartComplete,
             estWorksComplete

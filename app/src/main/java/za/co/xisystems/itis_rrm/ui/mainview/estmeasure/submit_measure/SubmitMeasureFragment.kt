@@ -306,10 +306,21 @@ class SubmitMeasureFragment : BaseFragment() {
         itemMeasureJob: JobDTO,
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
-        Coroutines.main {
+//         if(itemMeasureJob.contractVoId.isNullOrEmpty()){
+//            extensionToast(
+//                title = "Estimate Measurements",
+//                message = "Contract ID Missing Please Contact ITIS Support",
+//                style = ToastStyle.ERROR,
+//                position = ToastGravity.CENTER
+//            )
+//             toggleLongRunning(false)
+//             progressButton.failProgress(originalCaption)
+//             popViewBck()
+//        }else{
+              Coroutines.main {
             val estimateIds = itemMeasureJob.jobItemEstimates.map { it.estimateId }
             val measureEstimateIds = mSures.map { it.estimateId }.distinct()
-            val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds.toSet()).map { it }.toList()
+            val missingEstimateIds = estimateIds.asSequence().minus(measureEstimateIds).map { it }.toList()
 
             val user = measureViewModel.user.await()
 
@@ -329,7 +340,14 @@ class SubmitMeasureFragment : BaseFragment() {
                     }
                 }
             })
+//        }
         }
+
+    }
+
+    private fun popViewBck() {
+        Navigation.findNavController(this@SubmitMeasureFragment.requireView())
+            .navigate(R.id.nav_estMeasure)
     }
 
     private fun prepareMeasurementWorkflow(
@@ -338,24 +356,24 @@ class SubmitMeasureFragment : BaseFragment() {
         mSures: ArrayList<JobItemMeasureDTO>
     ) {
         // littleEndian conversion for transport to backend
-        val contractVoId: String =
-            DataConversion.toLittleEndian(itemMeasureJob.contractVoId)!!
-        val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
-
         Coroutines.main {
+            val contractId = measureViewModel.getContractIdForProjectId(itemMeasureJob.projectId)
+            val contractVoId: String =
+                DataConversion.toLittleEndian(contractId)!!
+            val jobId: String = DataConversion.toLittleEndian(itemMeasureJob.jobId)!!
 
-            activity?.let {
-
-                processMeasurementWorkflow(
-                    userDTO,
-                    jobId,
-                    itemMeasureJob,
-                    contractVoId,
-                    mSures,
-                    it
-                )
-            }
+                activity?.let {
+                    processMeasurementWorkflow(
+                        userDTO,
+                        jobId,
+                        itemMeasureJob,
+                        contractVoId,
+                        mSures,
+                        it
+                    )
+                }
         }
+
     }
 
     private fun showSubmissionError(errorMessage: String) {
@@ -536,7 +554,7 @@ class SubmitMeasureFragment : BaseFragment() {
                                                     CardMeasureItem(
                                                         activity = activity,
                                                         itemMeasureId = itemMeasureId,
-                                                        qty = "$qty x $rate",
+                                                        qty = "$qty", // x $rate",
                                                         rate = "${qty.toBigDecimal() * rate.toBigDecimal()}",
                                                         text = jNo,
                                                         measureViewModel = measureViewModel,

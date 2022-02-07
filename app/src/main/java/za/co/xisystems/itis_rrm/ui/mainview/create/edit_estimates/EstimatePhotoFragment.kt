@@ -1,9 +1,3 @@
-/**
- * Updated by Shaun McDonald on 2021/05/18
- * Last modified on 2021/05/18, 10:26
- * Copyright (c) 2021.  XI Systems  - All rights reserved
- **/
-
 package za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates
 
 import android.Manifest
@@ -45,8 +39,10 @@ import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.observable.eventdata.MapLoadingErrorEventData
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
+import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadErrorListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
@@ -73,6 +69,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
@@ -88,11 +85,24 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
+import za.co.xisystems.itis_rrm.utils.image_capture.helper.DialogHelper
+import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageProvider
+import za.co.xisystems.itis_rrm.utils.image_capture.listener.DismissListener
+import za.co.xisystems.itis_rrm.utils.image_capture.listener.ResultListener
+import za.co.xisystems.itis_rrm.utils.image_capture.model.GridCount
+import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
+import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
+import za.co.xisystems.itis_rrm.utils.image_capture.model.RootDirectory
+import za.co.xisystems.itis_rrm.utils.image_capture.registerImagePicker
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
- * Updated by Francis Mahlava on 2021/11/23
+ * Updated by Shaun McDonald on 2021/05/18
+ * Last modified on 2021/05/18, 10:26
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ *
+ * Updated by Francis Mahlava on 2022/01/23
  */
 
 class EstimatePhotoFragment : LocationFragment() {
@@ -131,6 +141,7 @@ class EstimatePhotoFragment : LocationFragment() {
     private var tenderRate: Double? = null
     private val navigationLocationProvider = NavigationLocationProvider()
 
+
     private val locationObserver = object : LocationObserver {
         override fun onNewRawLocation(rawLocation: Location) {
             // You're going to need this when you
@@ -148,11 +159,21 @@ class EstimatePhotoFragment : LocationFragment() {
             updateCamera(enhancedLocation)
         }
     }
-
+    private var images = ArrayList<Image>()
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
-    private var _binding: FragmentPhotoEstimateBinding? = null
-    private val binding get() = _binding!!
+    private var _ui : FragmentPhotoEstimateBinding? = null
+    private val ui get() = _ui!!
+    private var imageProvider = ImageProvider.CAMERA
+    private var imageProviderInterceptor: ((ImageProvider) -> Unit)? = null
+    private var dismissListener: DismissListener? = null
+    private val launcher = registerImagePicker {
+        uiScope.launch(dispatchers.io()) {
+            images = it
+            val uri = photoUtil.getPhotoPathFromExternalDirectory(images[0].name)
+            processAndSetImage(uri, "GALLERY")
+        }
+    }
 
     /**
      * ActivityResultContract for taking a photograph
@@ -163,7 +184,7 @@ class EstimatePhotoFragment : LocationFragment() {
         if (isSaved) {
             uiScope.launch(dispatchers.io()) {
                 imageUri?.let { realUri ->
-                    processAndSetImage(realUri)
+                    processAndSetImage(realUri, "CAMERA")
                 }
             }
         } else {
@@ -173,8 +194,8 @@ class EstimatePhotoFragment : LocationFragment() {
                     photoUtil.deleteImageFile(filenamePath.toString())
                     withContext(Dispatchers.Main.immediate) {
                         haltAnimation()
-                        binding.startImageView.visibility = View.VISIBLE
-                        binding.endImageView.visibility = View.VISIBLE
+                        _ui?.startImageView?.visibility = View.VISIBLE
+                        _ui?.endImageView?.visibility = View.VISIBLE
                     }
                 }
             }
@@ -202,6 +223,9 @@ class EstimatePhotoFragment : LocationFragment() {
     companion object {
         private const val REQUEST_STORAGE_PERMISSION = 505
         private const val IMAGE_REQ_CODE = 101
+        private const val GALLERY_INTENT_REQ_CODE = 4261
+        private const val CAMERA_INTENT_REQ_CODE = 4281
+
         private const val GEOJSON_SOURCE_ID = "GEOJSON_SOURCE_ID"
         private const val ICON_LAYER_ID = "ICON_LAYER_ID"
         private const val ICON_SOURCE_ID = "ICON_SOURCE_ID"
@@ -211,14 +235,27 @@ class EstimatePhotoFragment : LocationFragment() {
         private const val DEFAULT_MAX_WAIT_TIME = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
+    val config = ImagePickerConfig(
+        isMultipleMode = true,
+        // isCameraOnly = false,
+        isShowCamera = false,
+        rootDirectory = RootDirectory.DCIM,
+        subDirectory = "RRM App Photos",
+        selectedImages = images,
+        statusBarColor = "#000000",
+        isLightStatusBar = false,
+        backgroundColor = "#FFFFFF",
+        imageGridCount = GridCount(3, 5),
+        limitMessage = "You could only select up to 10 photos",
+    )
 
-        return binding.root
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _ui = FragmentPhotoEstimateBinding.inflate(inflater, container, false)
+        return ui.root
     }
 
     private fun setJobType(jobType: String) {
-        binding.apply {
+        _ui?.apply {
             when (jobType) {
                 "Point" -> {
                     point.isChecked = true
@@ -237,32 +274,41 @@ class EstimatePhotoFragment : LocationFragment() {
                 selectedJobType = "${radio.text}"
                 when {
                     selectedJobType!!.contains("Point") -> {
-                        binding.secondImage.visibility = View.GONE
-                        binding.startPhotoButton.visibility = View.VISIBLE
-                        binding.startPhotoButton.text = getString(R.string.capture_photo)
+                        _ui?.secondImage?.visibility = View.GONE
+                        _ui?.startPhotoButton?.visibility = View.VISIBLE
+                        _ui?.startPhotoButton?.text = getString(R.string.capture_photo)
                     }
                     selectedJobType!!.contains("Line") -> {
-                        binding.secondImage.visibility = View.VISIBLE
-                        binding.startPhotoButton.visibility = View.VISIBLE
-                        binding.startPhotoButton.text = getString(R.string.capture_start)
+                        _ui?.secondImage?.visibility = View.VISIBLE
+                        _ui?.startPhotoButton?.visibility = View.VISIBLE
+                        _ui?.startPhotoButton?.text = getString(R.string.capture_start)
                     }
                     else -> {
-                        binding.secondImage.visibility = View.GONE
-                        binding.startPhotoButton.visibility = View.GONE
+                        _ui?.secondImage?.visibility = View.GONE
+                        _ui?.startPhotoButton?.visibility = View.GONE
                     }
                 }
             }
         }
     }
 
-    private fun init() {
+    private fun initMap() {
         initStyle()
         initNavigation()
     }
 
     private fun initStyle() {
-        mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
+        mapboxMap.loadStyleUri(
+            Style.MAPBOX_STREETS, {},
+            object : OnMapLoadErrorListener {
+                override fun onMapLoadError(eventData: MapLoadingErrorEventData) {
+                    Timber.e("${eventData.type.name} - ${eventData.message}")
+                }
+            }
+        )
+        //mapboxMap.loadStyleUri(Style.MAPBOX_STREETS)
     }
+
 
     @SuppressLint("MissingPermission")
     private fun initNavigation() {
@@ -330,15 +376,15 @@ class EstimatePhotoFragment : LocationFragment() {
             setJobType("")
         }
 
-        mapboxMap = binding.estimatemapview.getMapboxMap()
-        binding.estimatemapview.location.apply {
+        mapboxMap = _ui?.estimatemapview?.getMapboxMap()!!
+        _ui?.estimatemapview?.location?.apply {
             setLocationProvider(navigationLocationProvider)
             enabled = true
         }
-        binding.secondImage.visibility = View.GONE
-        binding.startPhotoButton.visibility = View.GONE
+        _ui?.secondImage?.visibility = View.GONE
+        _ui?.startPhotoButton?.visibility = View.GONE
 
-        init()
+        initMap()
 
         pullData()
     }
@@ -346,7 +392,7 @@ class EstimatePhotoFragment : LocationFragment() {
     @Suppress("MagicNumber")
     private fun updateCamera(location: Location) {
         val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
-        binding.estimatemapview.camera.easeTo(
+        _ui?.estimatemapview?.camera?.easeTo(
             CameraOptions.Builder()
                 // Centers the camera to the lng/lat specified.
                 .center(Point.fromLngLat(location.longitude, location.latitude))
@@ -365,7 +411,7 @@ class EstimatePhotoFragment : LocationFragment() {
             var myUserId: Int?
             createViewModel.loggedUser.distinctUntilChanged().observe(
                 viewLifecycleOwner,
-                { user ->
+                { user ->0
                     user?.let {
                         myUserId = it
                         onUserFound(myUserId)
@@ -454,7 +500,7 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         if (itemDTO != null) {
             item = itemDTO
-            binding.titleTextView.text =
+            _ui?.titleTextView?.text =
                 getString(R.string.pair, item!!.itemCode, item!!.descr)
             tenderRate = item!!.tenderRate
         } else {
@@ -501,7 +547,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
     override fun onStart() {
         super.onStart()
-        binding.group13Loading.visibility = View.GONE
+        _ui?.group13Loading?.visibility = View.GONE
         mAppExecutor = AppExecutor()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -520,7 +566,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
         setValueEditText(getStoredValue())
 
-        binding.valueEditText.doOnTextChanged { text, _, _, _ ->
+        _ui?.valueEditText?.doOnTextChanged { text, _, _, _ ->
             try {
                 setEstimateQty(text)
             } catch (ex: java.lang.NumberFormatException) {
@@ -548,78 +594,48 @@ class EstimatePhotoFragment : LocationFragment() {
 
         val myClickListener = View.OnClickListener { view ->
             when (view?.id) {
-
-//                 R.id.startPhotoButton -> {
-//                     photoType = PhotoType.START
-//                      if (item != null) {
-//                          itemIdPhotoType["itemId"] = item!!.itemId
-//                          itemIdPhotoType["type"] = photoType.name
-//                      }
-//
-//                     ImagePicker.with(this)
-//                         .saveDir(photoUtil.pictureFolder)
-// //                        .cropSquare()
-//                         .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
-//                             Timber.d("ImagePicker", "Selected ImageProvider: + ${ imageProvider.name} ")
-//                         }
-//                         .setDismissListener {
-//                             Timber.d("Dialog Dismiss")
-//                         }
-//                         // Image resolution will be less than 512 x 512
-//                         .maxResultSize(200, 200)
-//                         .start(IMAGE_REQ_CODE)
-//
-//                     // binding.startPhotoButton.visibility = View.GONE
-//                     // binding.originStart.visibility = View.VISIBLE
-//                 }
-//
-//                 R.id.endPhotoButton -> {
-//                     photoType = PhotoType.END
-//                     if (item != null) {
-//                         itemIdPhotoType["itemId"] = item!!.itemId
-//                         itemIdPhotoType["type"] = photoType.name
-//                     }
-//
-//                     ImagePicker.with(this)
-//                         .saveDir(photoUtil.pictureFolder)
-// //                        .cropSquare()
-//                         .setImageProviderInterceptor { imageProvider -> // Intercept ImageProvider
-//                             Timber.d("ImagePicker", "Selected ImageProvider: + ${ imageProvider.name} ")
-//                         }
-//                         .setDismissListener {
-//                             Timber.d("Dialog Dismiss")
-//                         }
-//                         // Image resolution will be less than 512 x 512
-//                         .maxResultSize(200, 200)
-//                         .start(IMAGE_REQ_CODE)
-//
-//                     // binding.endPhotoButton.visibility = View.GONE
-//                     //  binding.originEnd.visibility = View.VISIBLE
-//                 }
-
                 R.id.startPhotoButton -> {
-                    locationWarning = false
-                    binding.startImageView.visibility = View.GONE
-                    binding.startAnimationView.visibility = View.VISIBLE
+                    photoType = PhotoType.START
                     if (item != null) {
                         itemIdPhotoType["itemId"] = item!!.itemId
                         itemIdPhotoType["type"] = photoType.name
                     }
-                    takePhoto(PhotoType.START)
-                    this@EstimatePhotoFragment.takingPhotos()
+                    showImageProviderDialog(IMAGE_REQ_CODE, photoType)
+
                 }
 
                 R.id.endPhotoButton -> {
-                    locationWarning = false
-                    binding.endImageView.visibility = View.GONE
-                    binding.endAnimationView.visibility = View.VISIBLE
+                    photoType = PhotoType.END
                     if (item != null) {
                         itemIdPhotoType["itemId"] = item!!.itemId
                         itemIdPhotoType["type"] = photoType.name
                     }
-                    takePhoto(PhotoType.END)
-                    this@EstimatePhotoFragment.takingPhotos()
+                    showImageProviderDialog(IMAGE_REQ_CODE, photoType)
                 }
+
+//                R.id.startPhotoButton -> {
+//                    locationWarning = false
+//                    _ui?.startImageView.visibility = View.GONE
+//                    _ui?.startAnimationView.visibility = View.VISIBLE
+//                    if (item != null) {
+//                        itemIdPhotoType["itemId"] = item!!.itemId
+//                        itemIdPhotoType["type"] = photoType.name
+//                    }
+//                    takePhoto(PhotoType.START)
+//                    this@EstimatePhotoFragment.takingPhotos()
+//                }
+//
+//                R.id.endPhotoButton -> {
+//                    locationWarning = false
+//                    _ui?.endImageView.visibility = View.GONE
+//                    _ui?.endAnimationView.visibility = View.VISIBLE
+//                    if (item != null) {
+//                        itemIdPhotoType["itemId"] = item!!.itemId
+//                        itemIdPhotoType["type"] = photoType.name
+//                    }
+//                    takePhoto(PhotoType.END)
+//                    this@EstimatePhotoFragment.takingPhotos()
+//                }
 
                 R.id.cancelButton -> {
                     Coroutines.main {
@@ -633,15 +649,15 @@ class EstimatePhotoFragment : LocationFragment() {
             }
         }
 
-        binding.startPhotoButton.setOnClickListener(myClickListener)
-        binding.endPhotoButton.setOnClickListener(myClickListener)
-        binding.cancelButton.setOnClickListener(myClickListener)
-        binding.updateButton.setOnClickListener(myClickListener)
+        _ui?.startPhotoButton?.setOnClickListener(myClickListener)
+        _ui?.endPhotoButton?.setOnClickListener(myClickListener)
+        _ui?.cancelButton?.setOnClickListener(myClickListener)
+        _ui?.updateButton?.setOnClickListener(myClickListener)
 
         // If the user hits the enter key on the costing field,
         // hide the keypad.
 
-        binding.valueEditText.setOnEditorActionListener { _, _, event ->
+        _ui?.valueEditText?.setOnEditorActionListener { _, _, event ->
             if (event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 requireActivity().hideKeyboard()
                 true
@@ -675,6 +691,79 @@ class EstimatePhotoFragment : LocationFragment() {
     //     }
     // }
 
+    private fun showImageProviderDialog(reqCode: Int, photoType: PhotoType) {
+        DialogHelper.showChooseAppDialog(
+            requireActivity(),
+            object : ResultListener<ImageProvider> {
+                override fun onResult(t: ImageProvider?) {
+                    t?.let {
+                        imageProvider = it
+                        imageProviderInterceptor?.invoke(imageProvider)
+                        if (it.equals(ImageProvider.CAMERA)) {
+                            startMyActivity(CAMERA_INTENT_REQ_CODE, photoType)
+                        } else {
+                            startMyActivity(GALLERY_INTENT_REQ_CODE, photoType)
+                        }
+
+                    }
+                }
+            },
+            dismissListener
+        )
+    }
+
+
+    private fun startMyActivity(reqCode: Int, photoType: PhotoType) {
+
+        when (imageProvider) {
+            ImageProvider.GALLERY -> {
+                launcher.launch(config)
+            }
+
+            ImageProvider.CAMERA -> {
+                takePhoto(photoType)
+                this@EstimatePhotoFragment.takingPhotos()
+            }
+            else -> {
+                // Something went Wrong! This case should never happen
+                Timber.e("Image provider can not be null")
+                //setError(getString(R.string.error_task_cancelled))
+            }
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private fun validateAndUpdateEstimate(view: View) {
 
         if (selectedJobType == JobItemEstimateSize.POINT.getValue()) {
@@ -686,13 +775,13 @@ class EstimatePhotoFragment : LocationFragment() {
 
     private fun validateEstimateBySize(view: View, jobSize: String, minimumPhotoCount: Int) {
         newJobItemEstimate?.jobItemEstimateSize = jobSize
-        if (binding.costTextView.text.isNullOrEmpty() || newJobItemEstimate!!.size() < minimumPhotoCount) {
+        if (_ui?.costTextView?.text.isNullOrEmpty() || newJobItemEstimate!!.size() < minimumPhotoCount) {
             extensionToast(
                 message = "Please capture at least $minimumPhotoCount photograph(s)...",
                 style = ToastStyle.INFO,
                 position = ToastGravity.BOTTOM
             )
-            binding.labelTextView.startAnimation(animations!!.shake_long)
+            _ui?.labelTextView?.startAnimation(animations!!.shake_long)
         } else {
             saveCheckedEstimate(view)
         }
@@ -719,7 +808,7 @@ class EstimatePhotoFragment : LocationFragment() {
     }
 
     private suspend fun saveValidEstimate(view: View) = uiScope.launch(uiScope.coroutineContext) {
-        setEstimateQty(binding.valueEditText.text as CharSequence)
+        setEstimateQty(_ui?.valueEditText?.text as CharSequence)
 
         if (newJobItemEstimate!!.qty > 0 && newJobItemEstimate!!.lineRate > 0.0 && changesToPreserve) {
 
@@ -813,12 +902,12 @@ class EstimatePhotoFragment : LocationFragment() {
         animate: Boolean = false
     ) = Coroutines.main {
 
-        var targetImageView = binding.startImageView
-        var targetTextView = binding.startSectionTextView
+        var targetImageView = _ui?.startImageView
+        var targetTextView = _ui?.startSectionTextView
 
         if (!photo.isPhotostart) {
-            targetImageView = binding.endImageView
-            targetTextView = binding.endSectionTextView
+            targetImageView = _ui?.endImageView
+            targetTextView = _ui?.endSectionTextView
         }
 
         val targetUri = null ?: extractImageUri(photo)
@@ -835,9 +924,9 @@ class EstimatePhotoFragment : LocationFragment() {
         }
         if (targetUri != null) {
             photo.sectionMarker?.let { mark ->
-                targetTextView.text = mark
+                targetTextView?.text = mark
             }
-            loadEstimateItemPhoto(targetUri, targetImageView, animate)
+            loadEstimateItemPhoto(targetUri, targetImageView!!, animate)
         }
     }
 
@@ -857,43 +946,89 @@ class EstimatePhotoFragment : LocationFragment() {
         return@withContext null
     }
 
+
     @SuppressLint("RestrictedApi")
     private suspend fun processAndSetImage(
-        imageUri: Uri
-    ) = uiScope.launch(uiScope.coroutineContext) {
-        try {
-            // Location of picture
-            val estimateLocation: LocationModel? = this@EstimatePhotoFragment.getCurrentLocation()
-            Timber.d("x -> $estimateLocation")
-            if (estimateLocation != null) {
+        imageUri: Uri, provider: String
 
-                //  Save Image to Internal Storage
-                withContext(dispatchers.io()) {
-                    filenamePath = photoUtil.saveImageToInternalStorage(
-                        imageUri
-                    )!! // as HashMap<String, String>
+    ) = withContext(uiScope.coroutineContext) {
+
+        if (provider == "CAMERA") {
+            try { //  Location of picture
+                val estimateLocation: LocationModel? = this@EstimatePhotoFragment.getCurrentLocation()
+                Timber.d("x -> $estimateLocation")
+                if (estimateLocation != null) {
+                    val imageFileName = ""
+                    //  Save Image to Internal Storage
+                    withContext(dispatchers.io()) {
+                        filenamePath = photoUtil.saveImageToInternalStorage(
+                            imageUri
+                        )!! // as HashMap<String, String>
+                    }
+
+                    processPhotoEstimate(
+                        estimateLocation = estimateLocation,
+                        filePath = filenamePath,
+                        itemidPhototype = itemIdPhotoType,
+                        imageFileName
+                    )
+                } else {
+                    resetPhotos()
+                    displayPromptForEnablingGPS(this@EstimatePhotoFragment.requireActivity())
+                }
+            } catch (e: Exception) {
+                toast(R.string.error_getting_image)
+                Timber.e(e)
+                throw e
+            }
+        } else {
+
+            try { //  Location of picture
+
+                val estimatephotodata = createViewModel.getEstimatePhotoByName(images[0].name)
+                if (estimatephotodata != null) {
+
+                    val estimateLocation = LocationModel(
+                        latitude = estimatephotodata.photoLatitude!!,
+                        longitude = estimatephotodata.photoLongitude!!,
+                        accuracy = 0F,
+                        bearing = 0F
+                    )
+                    val imageFileName = estimatephotodata.filename!!
+                    val path = estimatephotodata.photoPath
+                    val map: HashMap<String, String> =
+                        HashMap()
+                    map["filename"] = imageFileName
+                    map["path"] = path
+                    filenamePath = map
+
+                    //ToastUtils().toastShort(requireContext(), "$estimatephotodata")
+                    processPhotoEstimate(
+                        estimateLocation = estimateLocation,
+                        filePath = filenamePath,
+                        itemidPhototype = itemIdPhotoType,
+                        imageFileName
+                    )
+
+                }else{
+                    resetPhotos()
+                    ToastUtils().toastShort(requireContext(), "Image Selected Has Already Been Used OR It Was Not Captured Using the RRM App")
                 }
 
-                processPhotoEstimate(
-                    estimateLocation = estimateLocation,
-                    filePath = filenamePath,
-                    itemidPhototype = itemIdPhotoType
-                )
-            } else {
-                resetPhotos()
-                displayPromptForEnablingGPS(this@EstimatePhotoFragment.requireActivity())
+            } catch (e: Exception) {
+                toast(R.string.error_getting_image)
+                Timber.e(e)
+                throw e
             }
-        } catch (e: Exception) {
-            toast(R.string.error_getting_image)
-            Timber.e(e)
-            throw e
         }
+
     }
 
     private suspend fun processPhotoEstimate(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
-        itemidPhototype: Map<String, String>
+        itemidPhototype: Map<String, String>,
+        imageFileName : String
     ) = withContext(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
@@ -917,11 +1052,12 @@ class EstimatePhotoFragment : LocationFragment() {
             }
 
             newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
+
         }
 
         newJobItemEstimate?.let {
             uiScope.launch(context = uiScope.coroutineContext) {
-                processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+                processPhotoLocation(estimateLocation, filePath, itemidPhototype, imageFileName)
             }
         }
     }
@@ -929,7 +1065,8 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun processPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
-        itemidPhototype: Map<String, String>
+        itemidPhototype: Map<String, String>,
+        imageFileName: String
     ) {
         try {
             toggleLongRunning(true)
@@ -937,7 +1074,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 placeProvisionalPhoto(
                     filePath,
                     estimateLocation,
-                    itemidPhototype
+                    itemidPhototype,imageFileName
                 )
             }
         } catch (t: Throwable) {
@@ -951,7 +1088,7 @@ class EstimatePhotoFragment : LocationFragment() {
                     this.retryProcessPhotoLocation(
                         estimateLocation,
                         filePath,
-                        itemidPhototype
+                        itemidPhototype,imageFileName
                     )
                 }
             )
@@ -961,37 +1098,30 @@ class EstimatePhotoFragment : LocationFragment() {
         }
     }
 
+
     private fun retryProcessPhotoLocation(
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
-        itemidPhototype: Map<String, String>
+        itemidPhototype: Map<String, String>,
+        imageFileName: String
     ) {
         IndefiniteSnackbar.hide()
         Coroutines.main {
             disableGlide = false
-            processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+            processPhotoLocation(estimateLocation, filePath, itemidPhototype, imageFileName)
         }
     }
 
-    private fun resetPhotos() {
-        haltAnimation()
-        binding.startImageView.visibility = View.VISIBLE
-        binding.endImageView.visibility = View.VISIBLE
-        disableGlide = false
-    }
 
     private fun placeProvisionalPhoto(
         filePath: Map<String, String>,
         currentLocation: LocationModel,
-        itemidPhototype: Map<String, String>
+        itemidPhototype: Map<String, String>,
+        imageFileName: String
     ) = uiScope.launch(uiScope.coroutineContext) {
-        val photo = createViewModel.createItemEstimatePhoto(
-            itemEst = newJobItemEstimate!!,
-            filePath = filePath,
-            currentLocation = currentLocation,
-            itemIdPhotoType = itemidPhototype,
-            pointLocation = -1.0
-        )
+
+
+        val photo = checkIfPhotoExists(filePath, currentLocation, itemidPhototype,imageFileName)
 
         val savedPhoto = createViewModel.backupEstimatePhoto(photo)
 
@@ -1008,14 +1138,214 @@ class EstimatePhotoFragment : LocationFragment() {
         this@EstimatePhotoFragment.disableGlide = false
 
         val targetAnimation: LottieAnimationView = when (photo.isPhotostart) {
-            true -> binding.startAnimationView
-            else -> binding.endAnimationView
+            true -> _ui?.startAnimationView!!
+            else -> _ui?.endAnimationView!!
         }
 
         targetAnimation.cancelAnimation()
         targetAnimation.visibility = View.GONE
         restoreEstimatePhoto(savedPhoto, true)
     }
+
+    private suspend fun checkIfPhotoExists(
+        filePath: Map<String, String>, currentLocation: LocationModel,
+        itemidPhototype: Map<String, String>,
+        imageFileName: String
+    ) : JobItemEstimatesPhotoDTO {
+        var photo : JobItemEstimatesPhotoDTO? = null
+        val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
+        val newpic = createViewModel.checkIfPhotoExists(imageFileName)
+        if (newpic){
+            if (PhotoType.START.name == "END"){
+                photo = createViewModel.createItemEstimatePhoto(
+                    itemEst = newJobItemEstimate!!,
+                    filePath = filePath,
+                    currentLocation = currentLocation,
+                    itemIdPhotoType = itemidPhototype,
+                    pointLocation = -1.0
+                )
+            }else {
+                photo = createViewModel.getEstimatePhotoByName(imageFileName)
+                photo?.descr =  "" //" Used as ${ itemIdPhotoType["type"]} photo"
+                photo?.estimateId = newJobItemEstimate?.estimateId!!
+                photo?.isPhotostart = isPhotoStart
+
+                createViewModel.backupEstimatePhoto(photo!!)
+            }
+
+        }else {
+            photo = createViewModel.createItemEstimatePhoto(
+                itemEst = newJobItemEstimate!!,
+                filePath = filePath,
+                currentLocation = currentLocation,
+                itemIdPhotoType = itemidPhototype,
+                pointLocation = -1.0
+            )
+        }
+        return photo
+    }
+
+
+
+//    @SuppressLint("RestrictedApi")
+//    private suspend fun processAndSetImage(
+//        imageUri: Uri
+//    ) = uiScope.launch(uiScope.coroutineContext) {
+//        try {
+//            // Location of picture
+//            val estimateLocation: LocationModel? = this@EstimatePhotoFragment.getCurrentLocation()
+//            Timber.d("x -> $estimateLocation")
+//            if (estimateLocation != null) {
+//
+//                //  Save Image to Internal Storage
+//                withContext(dispatchers.io()) {
+//                    filenamePath = photoUtil.saveImageToInternalStorage(
+//                        imageUri
+//                    )!! // as HashMap<String, String>
+//                }
+//
+//                processPhotoEstimate(
+//                    estimateLocation = estimateLocation,
+//                    filePath = filenamePath,
+//                    itemidPhototype = itemIdPhotoType
+//                )
+//            } else {
+//                resetPhotos()
+//                displayPromptForEnablingGPS(this@EstimatePhotoFragment.requireActivity())
+//            }
+//        } catch (e: Exception) {
+//            toast(R.string.error_getting_image)
+//            Timber.e(e)
+//            throw e
+//        }
+//    }
+
+//    private suspend fun processPhotoEstimate(
+//        estimateLocation: LocationModel,
+//        filePath: Map<String, String>,
+//        itemidPhototype: Map<String, String>
+//    ) = withContext(uiScope.coroutineContext) {
+//
+//        val itemId = item?.itemId ?: itemidPhototype["itemId"]
+//
+//        if (newJobItemEstimate == null) {
+//            newJobItemEstimate = newJob?.getJobEstimateByItemId(itemId)
+//        }
+//
+//        if (newJobItemEstimate == null) {
+//            newJobItemEstimate = createViewModel.createItemEstimate(
+//                itemId = itemId,
+//                newJob = newJob,
+//                item = item,
+//                estimateSize = selectedJobType
+//            )
+//
+//            item = item!!.copy(estimateId = newJobItemEstimate!!.estimateId)
+//
+//            if (newJob?.jobItemEstimates == null) {
+//                newJob?.jobItemEstimates = ArrayList()
+//            }
+//
+//            newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
+//        }
+//
+//        newJobItemEstimate?.let {
+//            uiScope.launch(context = uiScope.coroutineContext) {
+//                processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+//            }
+//        }
+//    }
+
+//    private fun processPhotoLocation(
+//        estimateLocation: LocationModel,
+//        filePath: Map<String, String>,
+//        itemidPhototype: Map<String, String>
+//    ) {
+//        try {
+//            toggleLongRunning(true)
+//            if (!this@EstimatePhotoFragment.disableGlide) {
+//                placeProvisionalPhoto(
+//                    filePath,
+//                    estimateLocation,
+//                    itemidPhototype
+//                )
+//            }
+//        } catch (t: Throwable) {
+//            disableGlide = true
+//            val message = "Failed to capture photo: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+//            Timber.e(t, message)
+//            val xiErr = XIResult.Error(t, message)
+//            crashGuard(
+//                throwable = xiErr,
+//                refreshAction = {
+//                    this.retryProcessPhotoLocation(
+//                        estimateLocation,
+//                        filePath,
+//                        itemidPhototype
+//                    )
+//                }
+//            )
+//        } finally {
+//            toggleLongRunning(false)
+//            resetPhotos()
+//        }
+//    }
+
+//    private fun retryProcessPhotoLocation(
+//        estimateLocation: LocationModel,
+//        filePath: Map<String, String>,
+//        itemidPhototype: Map<String, String>
+//    ) {
+//        IndefiniteSnackbar.hide()
+//        Coroutines.main {
+//            disableGlide = false
+//            processPhotoLocation(estimateLocation, filePath, itemidPhototype)
+//        }
+//    }
+
+    private fun resetPhotos() {
+        haltAnimation()
+        _ui?.startImageView?.visibility = View.VISIBLE
+        _ui?.endImageView?.visibility = View.VISIBLE
+        disableGlide = false
+    }
+
+//    private fun placeProvisionalPhoto(
+//        filePath: Map<String, String>,
+//        currentLocation: LocationModel,
+//        itemidPhototype: Map<String, String>
+//    ) = uiScope.launch(uiScope.coroutineContext) {
+//        val photo = createViewModel.createItemEstimatePhoto(
+//            itemEst = newJobItemEstimate!!,
+//            filePath = filePath,
+//            currentLocation = currentLocation,
+//            itemIdPhotoType = itemidPhototype,
+//            pointLocation = -1.0
+//        )
+//
+//        val savedPhoto = createViewModel.backupEstimatePhoto(photo)
+//
+//        this@EstimatePhotoFragment.newJobItemEstimate!!.setJobItemEstimatePhoto(
+//            savedPhoto
+//        )
+//        createViewModel.backupEstimate(newJobItemEstimate!!)
+//        newJobItemEstimate = createViewModel.updateEstimatePhotos(
+//            newJobItemEstimate!!.estimateId,
+//            newJobItemEstimate!!.jobItemEstimatePhotos
+//        )
+//        newJob?.insertOrUpdateJobItemEstimate(newJobItemEstimate!!)
+//
+//        this@EstimatePhotoFragment.disableGlide = false
+//
+//        val targetAnimation: LottieAnimationView = when (photo.isPhotostart) {
+//            true -> _ui?.startAnimationView
+//            else -> _ui?.endAnimationView
+//        }
+//
+//        targetAnimation.cancelAnimation()
+//        targetAnimation.visibility = View.GONE
+//        restoreEstimatePhoto(savedPhoto, true)
+//    }
 
     private fun showZoomedImage(imageUrl: Uri?) {
         val dialog = Dialog(requireContext(), R.style.dialog_full_screen)
@@ -1061,8 +1391,8 @@ class EstimatePhotoFragment : LocationFragment() {
                 createViewModel.estimateComplete(newJobItemEstimate)
             withContext(dispatchers.ui()) {
                 if (isEstimateDone) {
-                    binding.costCard.visibility = View.VISIBLE
-                    binding.updateButton.visibility = View.VISIBLE
+                    _ui?.costCard?.visibility = View.VISIBLE
+                    _ui?.updateButton?.visibility = View.VISIBLE
                     setCost()
                 } else {
                     hideCostCard()
@@ -1075,11 +1405,11 @@ class EstimatePhotoFragment : LocationFragment() {
         when (item?.uom) {
             "M2", "M3", "M" -> {
                 val decQty = "" + qty
-                binding.valueEditText.setText(decQty)
+                _ui?.valueEditText?.setText(decQty)
             }
             else -> {
                 val intQty: String = "" + qty.toInt()
-                binding.valueEditText.setText(intQty)
+                _ui?.valueEditText?.setText(intQty)
             }
         }
     }
@@ -1104,33 +1434,33 @@ class EstimatePhotoFragment : LocationFragment() {
     }
 
     private fun incompleteEstimateNotice() {
-        binding.labelTextView.text = getString(R.string.warning_estimate_incomplete)
-        binding.labelTextView.startAnimation(animations!!.shake_long)
-        binding.valueEditText.visibility = View.GONE
-        binding.costTextView.visibility = View.GONE
+        _ui?.labelTextView?.text = getString(R.string.warning_estimate_incomplete)
+        _ui?.labelTextView?.startAnimation(animations!!.shake_long)
+        _ui?.valueEditText?.visibility = View.GONE
+        _ui?.costTextView?.visibility = View.GONE
     }
 
     private fun showCostCard() {
-        binding.valueEditText.visibility = View.VISIBLE
-        binding.costTextView.visibility = View.VISIBLE
-        binding.costTextView.startAnimation(animations!!.bounce_soft)
-        binding.labelTextView.text = getString(R.string.quantity)
+        _ui?.valueEditText?.visibility = View.VISIBLE
+        _ui?.costTextView?.visibility = View.VISIBLE
+        _ui?.costTextView?.startAnimation(animations!!.bounce_soft)
+        _ui?.labelTextView?.text = getString(R.string.quantity)
     }
 
     private fun haltAnimation() {
-        binding.startAnimationView.visibility = View.GONE
-        binding.endAnimationView.visibility = View.GONE
+        _ui?.startAnimationView?.visibility = View.GONE
+        _ui?.endAnimationView?.visibility = View.GONE
     }
 
     private fun hideCostCard() {
-        binding.costCard.visibility = View.GONE
-        binding.updateButton.visibility = View.GONE
+        _ui?.costCard?.visibility = View.GONE
+        _ui?.updateButton?.visibility = View.GONE
     }
 
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
 
-        val value = binding.valueEditText.text.toString()
+        val value = _ui?.valueEditText?.text.toString()
         //  Lose focus on fields
         //  valueEditText.clearFocus()
 
@@ -1156,7 +1486,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 lineAmount = validateLengthCosting(qty = qty, tenderRate = tenderRate)
             }
             else -> {
-                binding.labelTextView.text = getString(R.string.label_quantity)
+                _ui?.labelTextView?.text = getString(R.string.label_quantity)
                 try { //  Default Calculation
                     lineAmount = qty * tenderRate!!
                 } catch (e: NumberFormatException) {
@@ -1173,7 +1503,7 @@ class EstimatePhotoFragment : LocationFragment() {
         when (displayAmount >= 0.0) {
             true -> {
                 // Display pricing information
-                binding.costTextView.text =
+                _ui?.costTextView?.text =
                     (" * R $tenderRate =  R ${DecimalFormat("#0.00").format(displayAmount)}")
                 newJobItemEstimate?.qty = qty
                 newJobItemEstimate?.lineRate = tenderRate!!
@@ -1192,7 +1522,7 @@ class EstimatePhotoFragment : LocationFragment() {
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double? = null
-        when (binding.labelTextView.text) {
+        when (_ui?.labelTextView?.text) {
             getString(R.string.label_length_m) ->
                 try { //  Set the Area to the QTY
                     inLineAmount = qty * tenderRate!!
@@ -1210,7 +1540,7 @@ class EstimatePhotoFragment : LocationFragment() {
         tenderRate: Double?
     ): Double? {
         var inlineAmount: Double?
-        binding.labelTextView.text = getString(R.string.label_amount)
+        _ui?.labelTextView?.text = getString(R.string.label_amount)
         try {
             inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1226,7 +1556,7 @@ class EstimatePhotoFragment : LocationFragment() {
         tenderRate: Double?
     ): Double? {
         var inlineAmount: Double?
-        binding.labelTextView.text = getString(R.string.label_volume_m3)
+        _ui?.labelTextView?.text = getString(R.string.label_volume_m3)
         try {
             inlineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1242,7 +1572,7 @@ class EstimatePhotoFragment : LocationFragment() {
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double?
-        binding.labelTextView.text = getString(R.string.label_area_m2)
+        _ui?.labelTextView?.text = getString(R.string.label_area_m2)
         try {
             inLineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1258,7 +1588,7 @@ class EstimatePhotoFragment : LocationFragment() {
         tenderRate: Double?
     ): Double? {
         var inLineAmount: Double?
-        binding.labelTextView.text = getString(R.string.label_quantity)
+        _ui?.labelTextView?.text = getString(R.string.label_quantity)
         try { //  make the change in the array and update view
             inLineAmount = qty * tenderRate!!
         } catch (e: NumberFormatException) {
@@ -1347,8 +1677,8 @@ class EstimatePhotoFragment : LocationFragment() {
                     isEstimateDone = createViewModel.estimateComplete(newJobItemEstimate)
 
                     if (isEstimateDone) {
-                        binding.costCard.visibility = View.VISIBLE
-                        binding.updateButton.visibility = View.VISIBLE
+                        _ui?.costCard?.visibility = View.VISIBLE
+                        _ui?.updateButton?.visibility = View.VISIBLE
                         setValueEditText(quantity)
                         setCost()
                     }
@@ -1389,7 +1719,7 @@ class EstimatePhotoFragment : LocationFragment() {
         // make sure to unregister the observer you have registered.
         mapboxNavigation.unregisterLocationObserver(locationObserver)
         mapboxNavigation.onDestroy()
-        _binding = null
+        _ui = null
     }
 
     private suspend fun buildDeleteDialog(view: View) {
@@ -1415,7 +1745,7 @@ class EstimatePhotoFragment : LocationFragment() {
                         duration = ToastDuration.LONG
                     )
                     Coroutines.io {
-                        createViewModel.deleteItemFromList(it.id, it.estimateId)
+                        createViewModel.deleteItemFromList(it.itemId, it.estimateId)
                         newJob?.removeJobEstimateByItemId(it.itemId)
                         createViewModel.backupJob(newJob!!)
                         createViewModel.setJobToEdit(newJob?.jobId!!)

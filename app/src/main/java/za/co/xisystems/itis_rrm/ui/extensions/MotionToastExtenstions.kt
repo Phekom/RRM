@@ -18,8 +18,8 @@ fun Activity.extensionToast(
     position: ToastGravity = ToastGravity.BOTTOM,
     duration: ToastDuration = ToastDuration.LONG
 ) {
-    var mWeakRef  = WeakReference(this)
-    val weakActivity = mWeakRef.get()!!
+    var mWeakRef: WeakReference<Activity>? = WeakReference(this)
+    val weakActivity = mWeakRef?.get()!!
     MotionToast.createColorToast(
         context = weakActivity,
         title = title,
@@ -28,14 +28,16 @@ fun Activity.extensionToast(
         position = position.getValue(),
         duration = duration.getValue(),
         font = ResourcesCompat.getFont(weakActivity, R.font.helvetica_regular)
-    )
+    ).also {
+        mWeakRef = null
+    }
 }
 
 fun Fragment.extensionToast(
     colorToast: ColorToast
 ) {
-    val mWeakRef = WeakReference(this.requireActivity())
-    val weakActivity = mWeakRef.get()!!
+    var mWeakRef: WeakReference<Activity>? = WeakReference(this.requireActivity())
+    val weakActivity = mWeakRef?.get()!!
     MotionToast.createColorToast(
         title = colorToast.title,
         context = weakActivity,
@@ -44,7 +46,9 @@ fun Fragment.extensionToast(
         position = colorToast.gravity.getValue(),
         duration = colorToast.duration.getValue(),
         font = ResourcesCompat.getFont(weakActivity, R.font.helvetica_regular)
-    )
+    ).also {
+        mWeakRef = null
+    }
 }
 
 fun Fragment.extensionToast(
