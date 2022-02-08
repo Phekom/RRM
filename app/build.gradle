@@ -49,7 +49,7 @@ android {
 
     flavorDimensions "default"
 
-    compileSdkVersion 31
+    compileSdkVersion 32
 
     // Build Features
     buildFeatures {
@@ -57,7 +57,7 @@ android {
         buildConfig true
     }
 
-    def versionLabel =  '1.6.0.28' //"${versioning.name}.${versioning.build}"
+    def versionLabel =  "${versioning.name}.${versioning.build}"
     def versionBuild = 1
     def versionBuildDate = getDate()
     def appId = "za.co.xisystems.itismaintenance"
@@ -261,7 +261,7 @@ dependencies {
 
     // Kotlin
     implementation "androidx.activity:activity-ktx:$activity_version"
-    implementation "androidx.appcompat:appcompat:$activity_version"
+    implementation "androidx.appcompat:appcompat:1.4.1"
 
     // Desugar
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
@@ -272,7 +272,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.fragment:fragment-ktx:1.4.0'
+    implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
     // OkHttpProfiler
@@ -310,8 +310,8 @@ dependencies {
     androidTestImplementation 'com.kaspersky.android-components:kaspresso:1.4.0'
 
     // Layouts
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
-    implementation "androidx.coordinatorlayout:coordinatorlayout:1.1.0"
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
     // Navigation
     def nav_version = '2.3.5'
@@ -391,7 +391,7 @@ dependencies {
     implementation 'com.github.takusemba:cropme:2.0.8'
 
     //Location
-    implementation 'com.google.android.gms:play-services-location:19.0.0'
+    implementation 'com.google.android.gms:play-services-location:19.0.1'
 
     def coroutine_version = '1.6.0'
     //Kotlin Coroutines
@@ -418,7 +418,7 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.4.0' // align with Roomigrant
+    def room_version = '2.4.1' // align with Roomigrant
 
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
@@ -441,7 +441,7 @@ dependencies {
 
 
     // preference
-    implementation 'androidx.preference:preference-ktx:1.1.1'
+    implementation 'androidx.preference:preference-ktx:1.2.0'
 
     // Jackson
     def jackson_version = '2.13.1'
@@ -510,7 +510,7 @@ dependencies {
 
     //Mapbox
     implementation "com.mapbox.navigation:android:2.1.2"
-    implementation("androidx.car.app:app:1.1.0")
+    implementation "androidx.car.app:app:1.1.0"
 
 }
 
