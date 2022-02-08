@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<za.co.xisystems.itis_rrm.utils.image_capture.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:override="false">
+
+    <ImageView
+        android:id="@+id/image_thumbnail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/add_a_photo" />
+
+    <TextView
+        android:id="@+id/gif_indicator"
+        style="@style/itis_TextSmall"
+        android:layout_gravity="bottom"
+        android:background="@color/black_alpha_30"
+        android:paddingLeft="@dimen/dimen_16"
+        android:paddingTop="@dimen/dimen_4"
+        android:paddingRight="@dimen/dimen_16"
+        android:paddingBottom="@dimen/dimen_4"
+        android:text="@string/text_gif"
+        android:textColor="@color/white"
+        tools:visibility="visible" />
+
+
+    <ImageView
+        android:id="@+id/image_selected_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="2dp"
+        android:background="@drawable/indicator_bg"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_selected"
+        android:contentDescription="@string/select_image" />
+
+
+    <TextView
+        android:id="@+id/text_selected_number"
+        style="@style/itis_TextMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="2dp"
+        android:background="@drawable/indicator_bg"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        tools:text="99"
+        tools:visibility="gone" />
+
+</za.co.xisystems.itis_rrm.utils.image_capture.widget.SquareFrameLayout>
