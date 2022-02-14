@@ -59,28 +59,28 @@ class WorkDataRepository(
 ) : SafeApiRequest() {
 
     val searchResults = MutableLiveData<List<JobDTO>>()
-    private var jobDao: JobDao? = appDb.getJobDao()
+    private var jobDao: JobDao = appDb.getJobDao()
     private val coroutineScope = CoroutineScope(dispatchers.main())
     var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     val allWork: LiveData<List<JobDTO>>?
 
     init {
-        allWork = jobDao?.getAllWork()
+        allWork = jobDao.getAllWork()
     }
 
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    fun jobSearch(criteria: String?) {
+    fun jobSearch(criteria: String) {
         coroutineScope.launch(dispatchers.main()) {
-            searchResults.value = jobSearchAsync(criteria!!).await()
+            searchResults.value = jobSearchAsync(criteria).await()
         }
     }
 
     private fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>> =
         coroutineScope.async(dispatchers.io()) {
-            return@async jobDao?.searchJobs(criteria.toRoomSearchString()) ?: listOf()
+            return@async jobDao.searchJobs(criteria.toRoomSearchString()) ?: listOf()
         }
 
     private fun postWorkStatus(result: XIResult<String>) = coroutineScope.launch(dispatchers.main()) {

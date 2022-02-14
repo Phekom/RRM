@@ -141,6 +141,7 @@ class HomeFragment : BaseFragment() {
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()
+
                         }
                     }
                 })
@@ -532,6 +533,9 @@ class HomeFragment : BaseFragment() {
             homeViewModel.healthCheck(userDTO!!.userId)
         }
     }
+
+
+
 
     private fun processHealthCheck(result: XIResult<Boolean>) {
         when (result) {

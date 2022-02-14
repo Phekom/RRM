@@ -210,7 +210,11 @@ class WorkViewModel(
 
     ) = viewModelScope.launch(ioContext) {
         try {
-            workDataRepository.clearErrors()
+            withContext(mainContext) {
+                workDataRepository.clearErrors()
+                workflowState.postValue(XIResult.Progress(true))
+            }
+
             val newItemEstimateWorks = setJobWorksLittleEndianGuids(itemEstiWorks)
 
             val systemJobId = DataConversion.toLittleEndian(itemEstiJob.jobId)!!
@@ -269,7 +273,11 @@ class WorkViewModel(
     ) = viewModelScope.launch(ioContext) {
 
         try {
-            workDataRepository.clearErrors()
+            withContext(mainContext) {
+                workDataRepository.clearErrors()
+                workflowState.postValue(XIResult.Progress(true))
+            }
+
             val updatedJob = offlineDataRepository.getUpdatedJob(jobId)
             val systemJobId = DataConversion.toLittleEndian(updatedJob.jobId)!!
 

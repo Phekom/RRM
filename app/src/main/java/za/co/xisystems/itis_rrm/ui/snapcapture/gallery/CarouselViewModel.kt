@@ -43,9 +43,9 @@ class CarouselViewModel(
         return unallocatedPhotos
     }
 
-    fun searchUnallocatedPhotos(criteria: String) = viewModelScope.launch(ioContext) {
-        capturedPictureRepository.searchUnallocatedPhotos(criteria)
-    }
+//    fun searchUnallocatedPhotos(criteria: String) = viewModelScope.launch(ioContext) {
+//        capturedPictureRepository.searchUnallocatedPhotos(criteria)
+//    }
 
     fun getSearchResults(): LiveData<List<UnallocatedPhotoDTO>> {
         return searchResults

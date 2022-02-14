@@ -98,6 +98,8 @@ class HomeViewModel(
         }
     }
 
+
+
     fun healthCheck(userId: String) = viewModelScope.launch(ioContext) {
         try {
             val result = offlineDataRepository.getServiceHealth(userId)

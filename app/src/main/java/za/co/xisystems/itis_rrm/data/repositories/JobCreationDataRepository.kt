@@ -392,7 +392,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private suspend fun uploadCreateJobImages(
+    private suspend fun uploadCreateJobImages( 
         packageJob: JobDTO,
         activity: FragmentActivity
     ) {

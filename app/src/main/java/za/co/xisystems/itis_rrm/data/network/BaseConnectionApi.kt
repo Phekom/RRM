@@ -19,23 +19,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.data.network.responses.ActivitySectionsResponse
-import za.co.xisystems.itis_rrm.data.network.responses.AuthResponse
-import za.co.xisystems.itis_rrm.data.network.responses.ContractsResponse
-import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
-import za.co.xisystems.itis_rrm.data.network.responses.JobResponse
-import za.co.xisystems.itis_rrm.data.network.responses.LookupResponse
-import za.co.xisystems.itis_rrm.data.network.responses.PhotoEstimateResponse
-import za.co.xisystems.itis_rrm.data.network.responses.PhotoMeasureResponse
-import za.co.xisystems.itis_rrm.data.network.responses.QuantityUpdateResponse
-import za.co.xisystems.itis_rrm.data.network.responses.RouteSectionPointResponse
-import za.co.xisystems.itis_rrm.data.network.responses.SaveMeasurementResponse
-import za.co.xisystems.itis_rrm.data.network.responses.ToDoListGroupsResponse
-import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.data.network.responses.UploadWorksItemResponse
-import za.co.xisystems.itis_rrm.data.network.responses.WorkflowMoveResponse
-import za.co.xisystems.itis_rrm.data.network.responses.WorkflowResponse
-import za.co.xisystems.itis_rrm.data.network.responses.WorkflowUpdateResponse
+import za.co.xisystems.itis_rrm.data.network.responses.*
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -53,6 +37,12 @@ interface BaseConnectionApi {
         @Field("username") userlogon: String,
         @Field("userpassword") userpwd: String
     ): Response<AuthResponse>
+
+    @FormUrlEncoded
+    @POST("VersionCheck")
+    suspend fun versionCheck(
+        @Field("VersionNum") versionNum: String
+    ): Response<VersionCheckResponse>
 
     @FormUrlEncoded
     @POST("HealthCheck")

@@ -2,7 +2,6 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest.permission
 import android.content.Context
-import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
@@ -44,33 +43,20 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.databinding.FragmentCaptureWorkBinding
 import za.co.xisystems.itis_rrm.databinding.ListSelectorBinding
 import za.co.xisystems.itis_rrm.extensions.checkLocationProviders
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
-import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
-import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
-import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.extensions.failProgress
-import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
-import za.co.xisystems.itis_rrm.ui.extensions.startProgress
+import za.co.xisystems.itis_rrm.ui.extensions.*
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.workstate_item.WorkStateItem
 import za.co.xisystems.itis_rrm.utils.*
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
-import java.util.Date
-import java.util.HashMap
+import java.util.*
 
 class CaptureWorkFragment : LocationFragment() {
 
@@ -99,6 +85,7 @@ class CaptureWorkFragment : LocationFragment() {
     private var estimateSize = 0
     private var estimateCount = 0
     private var errorState = false
+    private var measuresShowing = false
 
     /**
      * ActivityResultContract for taking a photograph
@@ -171,15 +158,15 @@ class CaptureWorkFragment : LocationFragment() {
         super.onDestroyView()
         // Remember to flush the RecyclerView's adaptor
         workViewModel.workflowState.removeObservers(viewLifecycleOwner)
-        _ui?.workActionsListView?.adapter = null
-        _ui?.imageCollectionView?.clearImages()
+        ui.workActionsListView.adapter = null
+        ui.imageCollectionView.clearImages()
         _ui = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         stateRestored = false
-        _ui?.commentsEditText?.filters = arrayOf(ValidateInputs.EMOJI_FILTER)
+        ui.commentsEditText.filters = arrayOf(ValidateInputs.EMOJI_FILTER)
         val args: CaptureWorkFragmentArgs by navArgs()
 
         args.jobId?.let {
@@ -192,13 +179,13 @@ class CaptureWorkFragment : LocationFragment() {
     }
 
     private fun bindUI() {
-        _ui?.imageCollectionView?.clearImages()
+        ui.imageCollectionView.clearImages()
         estimateWorksPhotoArrayList = ArrayList()
 
-        _ui?.takePhotoButton?.setOnClickListener {
+        ui.takePhotoButton.setOnClickListener {
             initLaunchCamera()
         }
-        _ui?.moveWorkflowButton?.setOnClickListener {
+        ui.moveWorkflowButton.setOnClickListener {
             validateUploadWorks()
         }
     }
@@ -263,7 +250,7 @@ class CaptureWorkFragment : LocationFragment() {
                 )
             }
             is XIResult.Status -> {
-                _ui?.moveWorkflowButton?.text = result.message
+                ui.moveWorkflowButton.text = result.message
             }
             is XIResult.Progress -> {
                 handleProgress(result)
@@ -287,17 +274,17 @@ class CaptureWorkFragment : LocationFragment() {
         }
 
     private fun renderHistoricalGallery(photoPairs: List<Pair<Uri, Bitmap>>) {
-        _ui?.imageCollectionView?.clearImages()
-        _ui?.imageCollectionView?.scaleForSize(photoPairs.size)
-        _ui?.imageCollectionView?.addZoomedImages(photoPairs, requireActivity())
-        keyListener = _ui?.commentsEditText?.keyListener!!
-        _ui?.commentsEditText?.keyListener = null
-        _ui?.commentsEditText?.setText(getString(R.string.comment_placeholder), NORMAL)
-        _ui?.takePhotoButton?.isClickable = false
-        _ui?.takePhotoButton?.background =
+        ui.imageCollectionView.clearImages()
+        ui.imageCollectionView.scaleForSize(photoPairs.size)
+        ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
+        keyListener = ui.commentsEditText.keyListener!!
+        ui.commentsEditText.keyListener = null
+        ui.commentsEditText.setText(getString(R.string.comment_placeholder), NORMAL)
+        ui.takePhotoButton.isClickable = false
+        ui.takePhotoButton.background =
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
-        _ui?.moveWorkflowButton?.isClickable = false
-        _ui?.moveWorkflowButton?.background =
+        ui.moveWorkflowButton.isClickable = false
+        ui.moveWorkflowButton.background =
             ContextCompat.getDrawable(requireContext(), R.drawable.round_corner_gray)
     }
 
@@ -312,10 +299,10 @@ class CaptureWorkFragment : LocationFragment() {
         val photoPairs = photoUtil.prepareGalleryPairs(filenames)
 
         if (photoPairs.isNotEmpty()) {
-            _ui?.imageCollectionView?.clearImages()
-            _ui?.imageCollectionView?.scaleForSize(photoPairs.size)
-            _ui?.imageCollectionView?.addZoomedImages(photoPairs, requireActivity())
-            _ui?.imageCollectionView?.visibility = View.VISIBLE
+            ui.imageCollectionView.clearImages()
+            ui.imageCollectionView.scaleForSize(photoPairs.size)
+            ui.imageCollectionView.addZoomedImages(photoPairs, requireActivity())
+            ui.imageCollectionView.visibility = View.VISIBLE
         }
     }
 
@@ -327,13 +314,13 @@ class CaptureWorkFragment : LocationFragment() {
             } -> {
                 validationNotice(R.string.please_make_sure_workflow_items_contain_photos)
             }
-            _ui?.commentsEditText?.text?.trim()!!.isEmpty() -> {
+            ui.commentsEditText.text.trim().isEmpty() -> {
                 validationNotice(R.string.please_provide_a_comment)
             }
             else -> {
-                _ui?.moveWorkflowButton?.isClickable = false
+                ui.moveWorkflowButton.isClickable = false
                 uploadEstimateWorksItem(estimateWorksPhotoArrayList, itemEstimate)
-                _ui?.moveWorkflowButton?.isClickable = true
+                ui.moveWorkflowButton.isClickable = true
             }
         }
     }
@@ -349,14 +336,12 @@ class CaptureWorkFragment : LocationFragment() {
 
             activeWorks.estimateId = estimateItem?.estimateId
             var comments = ""
-            if (!ValidateInputs.isValidInput(_ui?.commentsEditText?.text.toString())) {
-                _ui?.commentsEditText?.error = getString(R.string.invalid_char)
-                false
+            if (!ValidateInputs.isValidInput(ui.commentsEditText.text.toString())) {
+                ui.commentsEditText.error = getString(R.string.invalid_char)
             } else {
-                comments = _ui?.commentsEditText?.text!!.toString().trim { it <= ' ' }
-                true
+                comments = ui.commentsEditText.text!!.toString().trim { it <= ' ' }
             }
-            // val comments = _ui?.commentsEditText.text.toString().trim()
+            // val comments = ui.commentsEditText.text.toString().trim()
 
             sendWorkToService(activeWorks, comments)
         } else {
@@ -366,7 +351,7 @@ class CaptureWorkFragment : LocationFragment() {
                 position = ToastGravity.CENTER,
                 duration = ToastDuration.LONG
             )
-            _ui?.moveWorkflowButton?.failProgress("Network down ...")
+            ui.moveWorkflowButton.failProgress("Network down ...")
         }
     }
 
@@ -428,7 +413,7 @@ class CaptureWorkFragment : LocationFragment() {
                 }
                 is XIResult.Error -> {
                     toggleLongRunning(false)
-                    _ui?.moveWorkflowButton?.failProgress("Job submission failed")
+                    ui.moveWorkflowButton.failProgress("Job submission failed")
                     workViewModel.resetWorkState()
                     crashGuard(
                         throwable = result,
@@ -455,12 +440,12 @@ class CaptureWorkFragment : LocationFragment() {
         when (result.isLoading) {
             true -> {
                 toggleLongRunning(true)
-                _ui?.moveWorkflowButton?.initProgress(viewLifecycleOwner)
-                _ui?.moveWorkflowButton?.startProgress(_ui?.moveWorkflowButton?.text.toString())
+                ui.moveWorkflowButton.initProgress(viewLifecycleOwner)
+                ui.moveWorkflowButton.startProgress(ui.moveWorkflowButton.text.toString())
             }
             else -> {
                 toggleLongRunning(false)
-                _ui?.moveWorkflowButton?.doneProgress(_ui?.moveWorkflowButton?.text.toString())
+                ui.moveWorkflowButton.doneProgress(ui.moveWorkflowButton.text.toString())
             }
         }
     }
@@ -476,7 +461,7 @@ class CaptureWorkFragment : LocationFragment() {
                 }
                 is XIResult.Error -> {
                     this@CaptureWorkFragment.toggleLongRunning(false)
-                    _ui?.moveWorkflowButton?.failProgress("Work submission failed")
+                    ui.moveWorkflowButton.failProgress("Work submission failed")
                     crashGuard(
                         throwable = result,
                         refreshAction = { this@CaptureWorkFragment.retryWorkSubmission() }
@@ -502,14 +487,14 @@ class CaptureWorkFragment : LocationFragment() {
     private fun handleWorkSuccess(result: XIResult.Success<String>) = uiScope.launch(dispatchers.ui()) {
         when (result.data != "JOB_COMPLETE") {
             true -> {
-                _ui?.imageCollectionView?.clearImages()
+                ui.imageCollectionView.clearImages()
                 this@CaptureWorkFragment.extensionToast(
                     message = "Work captured",
                     style = ToastStyle.SUCCESS,
                     position = ToastGravity.CENTER,
                     duration = ToastDuration.SHORT
                 )
-                _ui?.moveWorkflowButton?.doneProgress("Workflow complete")
+                ui.moveWorkflowButton.doneProgress("Workflow complete")
                 toggleLongRunning(false)
                 refreshUI()
             }
@@ -538,7 +523,7 @@ class CaptureWorkFragment : LocationFragment() {
         backupWorkSubmission.observeOnce(viewLifecycleOwner, {
             it?.let {
                 activeWorks = it
-                val comments = _ui?.commentsEditText?.text.toString().trim()
+                val comments = ui.commentsEditText.text.toString().trim()
                 sendWorkToService(activeWorks, comments)
             }
         })
@@ -696,7 +681,7 @@ class CaptureWorkFragment : LocationFragment() {
 
                 activeWorks = workItem
 
-                _ui?.imageCollectionView?.clearImages()
+                ui.imageCollectionView.clearImages()
                 estimateWorksPhotoArrayList = activeWorks.jobEstimateWorksPhotos
                 if (estimateWorksPhotoArrayList.size > 0) {
                     loadPictures(XIResult.Success(activeWorks))
@@ -772,31 +757,32 @@ class CaptureWorkFragment : LocationFragment() {
 
     }
 
-      @Synchronized
+    @Synchronized
     private fun submitAllOutStandingEstimates(
         estimates: List<JobItemEstimateDTO>?
     ) {
         // get Data from db Search for all estimates 8 and work 21 = result is int > 0  then button yes else fetch
 
-          val alertDialog = AlertDialog.Builder(requireActivity())
-          alertDialog.setTitle(R.string.confirm)
-          alertDialog.setIcon(R.drawable.ic_error)
-          alertDialog.setMessage("Work Complete - Submit for Measurements")
-          alertDialog.setCancelable(false)
-          alertDialog.setPositiveButton(
-              R.string.yes
-          ) { dialog, _ ->
-              dialog.dismiss()
-              uiScope.launch {
-                  if (!estimates.isNullOrEmpty()) {
-                  pushCompletedEstimates(estimates)
-              }
-              }
-          }
-          if (estimates?.isNotEmpty() == true) {
-              alertDialog.create()
-              alertDialog.show()
-          }
+        val alertDialog = AlertDialog.Builder(requireActivity())
+        alertDialog.setTitle(R.string.confirm)
+        alertDialog.setIcon(R.drawable.ic_error)
+        alertDialog.setMessage("Work Complete - Submit for Measurements")
+        alertDialog.setCancelable(false)
+        alertDialog.setPositiveButton(
+            R.string.yes
+        ) { dialog, _ ->
+            dialog.dismiss()
+            uiScope.launch {
+                if (!estimates.isNullOrEmpty()) {
+                    pushCompletedEstimates(estimates)
+                    measuresShowing = false
+                }
+            }
+        }
+        if (estimates?.isNotEmpty() == true && !measuresShowing) {
+            alertDialog.create()
+            alertDialog.show()
+        }
 
     }
 
@@ -826,15 +812,15 @@ class CaptureWorkFragment : LocationFragment() {
             workViewModel.workflowState.observe(viewLifecycleOwner, jobObserver)
             workViewModel.workflowState.postValue(XIResult.Progress(true))
             withContext(dispatchers.main()) {
-            for (jobEstimate in estimates) {
+                for (jobEstimate in estimates) {
                     uiScope.launch(dispatchers.main()) {
-                val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
-                if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
+                        val jobItemEstimate = workViewModel.getJobItemEstimateForEstimateId(jobEstimate.estimateId)
+                        if (jobItemEstimate.actId == ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE) {
                             withContext(dispatchers.main()) {
-                    moveJobItemEstimateToNextWorkflow(
-                        WorkflowDirection.NEXT,
-                        jobEstimate
-                    )
+                                moveJobItemEstimateToNextWorkflow(
+                                    WorkflowDirection.NEXT,
+                                    jobEstimate
+                                )
                             }
                         }
                     }
@@ -862,7 +848,7 @@ class CaptureWorkFragment : LocationFragment() {
                         position = ToastGravity.CENTER,
                         duration = ToastDuration.LONG
                     )
-                    _ui?.moveWorkflowButton?.failProgress("Workflow failed ...")
+                    ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
                 jobItEstimate?.jobId == null -> {
                     this@CaptureWorkFragment.extensionToast(
@@ -871,7 +857,7 @@ class CaptureWorkFragment : LocationFragment() {
                         position = ToastGravity.CENTER,
                         duration = ToastDuration.LONG
                     )
-                    _ui?.moveWorkflowButton?.failProgress("Workflow failed ...")
+                    ui.moveWorkflowButton.failProgress("Workflow failed ...")
                 }
                 else -> {
                     prepareWorkflowMove(jobItEstimate, workflowDirection, userDTO)
@@ -954,7 +940,7 @@ class CaptureWorkFragment : LocationFragment() {
             }
         }
 
-        _ui?.workActionsListView?.apply {
+        ui.workActionsListView.apply {
             layoutManager = LinearLayoutManager(this.context)
             adapter = groupAdapter
         }
@@ -991,24 +977,4 @@ class CaptureWorkFragment : LocationFragment() {
     private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
     }
-}
-
-private fun JobEstimateWorksPhotoDTO.setWorksId(toLittleEndian: String?) {
-    this.worksId = toLittleEndian!!
-}
-
-private fun JobEstimateWorksPhotoDTO.setPhotoId(toLittleEndian: String?) {
-    this.photoId = toLittleEndian!!
-}
-
-private fun JobEstimateWorksDTO.setWorksId(toLittleEndian: String?) {
-    this.worksId = toLittleEndian!!
-}
-
-private fun JobEstimateWorksDTO.setEstimateId(toLittleEndian: String?) {
-    this.estimateId = toLittleEndian
-}
-
-private fun JobEstimateWorksDTO.setTrackRouteId(toLittleEndian: String?) {
-    this.trackRouteId = toLittleEndian!!
 }

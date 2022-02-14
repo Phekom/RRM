@@ -231,6 +231,7 @@
 
     <!-- Location Validation -->
     <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
+    <string name="new_line">\n</string>
     <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
     <string name="invalid_km_marker">The closest active section to this location ($1%s) is $2%s km away,\n at the $3%s km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>
@@ -287,7 +288,7 @@
     <string name="msg_limit_images">Limit selection to %d images.</string>
     <string name="msg_no_images">No image available Please Use Camera.</string>
     <string name="msg_no_external_storage_permission">To continue, please allow RRM to access photos and media on this device.</string>
-    <string name="folder">Folder</string>
+
     <string name="title_camera">Camera</string>
     <string name="title_gallery">Gallery</string>
     <string name="title_choose_image_provider">Choose</string>
@@ -306,5 +307,6 @@
     <string name="auto_delete">Please Note Images Older Than 48hours Will Auto Delete From This Gallery Please create your JI estimates and use the images before they Disappear</string>
     <string name="text_gif">GIF</string>
     <string name="invalid_char">You Have Entered an Invalid CharSequence</string>
+    <string name="folder">Folder</string>
 
 </resources>
