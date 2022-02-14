@@ -10,7 +10,9 @@ package za.co.xisystems.itis_rrm.ui.auth
  * Updated by Shaun McDonald 2020/04/15
  */
 import android.R.style
+import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.WindowManager
@@ -23,6 +25,7 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
@@ -32,6 +35,7 @@ import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.extensions.exitApplication
@@ -45,6 +49,7 @@ import za.co.xisystems.itis_rrm.utils.hideKeyboard
 import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
+
 
 class LoginActivity : BaseActivity(), AuthListener, DIAware {
 
@@ -119,6 +124,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         }
     }
 
+
     private fun validatePin(pin: String) {
         Coroutines.io {
             authViewModel.validatePin(pin)
@@ -161,15 +167,41 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         }
     }
 
+    private fun promptUserToForNewVersion(response : VersionCheckResponse) = Coroutines.ui {
+        val newVersionlinkn = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
+        val syncDialog: AlertDialog.Builder =
+            AlertDialog.Builder(this)
+                .setTitle("New Version Available")
+                .setMessage("${ response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) +"Release Date "+ response.releaseDate}")
+                .setCancelable(false)
+                .setIcon(R.drawable.ic_warning_yellow)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    val intent = Intent(
+                        Intent.ACTION_VIEW, Uri.parse(newVersionlinkn))
+                    startActivity(intent)
+                }
+
+        syncDialog.show()
+    }
+
     private fun gotoMainActivity() {
         try {
-            Intent(this, MainActivity::class.java).also { mainAct ->
-                mainAct.flags =
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            Coroutines.main {
+               val newVersion = BuildConfig.VERSION_NAME
+                val response  = authViewModel.getAppVersionCheck("1.6.0.32")
+                if (response.errorMessage.equals("")){
+                    Intent(this, MainActivity::class.java).also { mainAct ->
+                        mainAct.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(mainAct)
+                    }
+                    reset()
+                } else {
+                    promptUserToForNewVersion(response)
+                }
 
-                startActivity(mainAct)
             }
-            reset()
+
         } catch (t: Throwable) {
             val xiErr = XIResult.Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {

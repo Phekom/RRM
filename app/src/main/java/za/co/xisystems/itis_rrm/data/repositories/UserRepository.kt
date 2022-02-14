@@ -9,6 +9,7 @@ import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -106,6 +107,14 @@ class UserRepository(
             for (userRole in user.userRoles) {
                 appDb.getUserRoleDao().saveRole(userRole)
             }
+        }
+    }
+
+
+    suspend fun getAppVersionCheck(versionNmb: String): VersionCheckResponse {
+        return withContext(dispatchers.io()) {
+            val appVersionCheck = apiRequest { api.versionCheck(versionNmb) }
+            appVersionCheck
         }
     }
 
