@@ -51,9 +51,9 @@ class CaptureViewModel(
         return unallocatedPhotos
     }
 
-    fun searchUnallocatedPhotos(criteria: String) = viewModelScope.launch(ioContext) {
-        capturedPicsRepository.searchUnallocatedPhotos(criteria)
-    }
+//    fun searchUnallocatedPhotos(criteria: String) = viewModelScope.launch(ioContext) {
+//        capturedPicsRepository.searchUnallocatedPhotos(criteria)
+//    }
 
     fun getSearchResults(): LiveData<List<UnallocatedPhotoDTO>> {
         return searchResults

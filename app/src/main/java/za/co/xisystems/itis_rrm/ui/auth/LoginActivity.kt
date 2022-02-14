@@ -168,7 +168,8 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
     }
 
     private fun promptUserToForNewVersion(response : VersionCheckResponse) = Coroutines.ui {
-        val newVersionlinkn = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
+        val qaVersionlinkn = "https://itisqa.nra.co.za/portal/mobile/rrm_app.apk"
+        val prodVersionlinkn = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
         val syncDialog: AlertDialog.Builder =
             AlertDialog.Builder(this)
                 .setTitle("New Version Available")
@@ -177,7 +178,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
                 .setIcon(R.drawable.ic_warning_yellow)
                 .setPositiveButton(R.string.ok) { _, _ ->
                     val intent = Intent(
-                        Intent.ACTION_VIEW, Uri.parse(newVersionlinkn))
+                        Intent.ACTION_VIEW, Uri.parse(qaVersionlinkn))
                     startActivity(intent)
                 }
 
@@ -188,7 +189,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         try {
             Coroutines.main {
                val newVersion = BuildConfig.VERSION_NAME
-                val response  = authViewModel.getAppVersionCheck("1.6.0.32")
+                val response  = authViewModel.getAppVersionCheck(newVersion)
                 if (response.errorMessage.equals("")){
                     Intent(this, MainActivity::class.java).also { mainAct ->
                         mainAct.flags =

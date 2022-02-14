@@ -161,7 +161,7 @@ interface JobDao {
         criteria: String,
         jobActId: Int = ActivityIdConstants.JOB_APPROVED,
         estimateActId: Int = ActivityIdConstants.ESTIMATE_INCOMPLETE
-    ): List<JobDTO>?
+    ): List<JobDTO>
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobForJobId(jobId: String): JobDTO

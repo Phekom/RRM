@@ -56,12 +56,12 @@ class CapturedPictureRepository(
         appDb.getUnallocatedPhotoDao().updateUnallocatedPhoto(retakenUnallocatedPhoto)
     }
 
-    // searchUnallocatedPhotos
-    fun searchUnallocatedPhotos(criteria: String?) {
-        coroutineScope.launch(dispatchers.main()) {
-            searchResults.value = searchUnallocatedPhotoAsync(criteria?.toRoomSearchString()!!).await()
-        }
-    }
+//    // searchUnallocatedPhotos
+//    fun searchUnallocatedPhotos(criteria: String?) {
+//        coroutineScope.launch(dispatchers.main()) {
+//            searchResults.value = searchUnallocatedPhotoAsync(criteria?.toRoomSearchString()!!).await()
+//        }
+//    }
 
     @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
@@ -76,9 +76,9 @@ class CapturedPictureRepository(
         return@withContext appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhoto(photoDTO.photoId)
     }
 
-    private fun searchUnallocatedPhotoAsync(criteria: String): Deferred<List<UnallocatedPhotoDTO>?> = coroutineScope.async(dispatchers.io()) {
-        return@async appDb.getUnallocatedPhotoDao().searchUnallocatedPhotos(criteria)
-    }
+//    private fun searchUnallocatedPhotoAsync(criteria: String): Deferred<List<UnallocatedPhotoDTO>?> = coroutineScope.async(dispatchers.io()) {
+//        return@async appDb.getUnallocatedPhotoDao().searchUnallocatedPhotos(criteria)
+//    }
 
     // deleteExpiredPhotos
     fun deleteExpiredPhotos() = coroutineScope.launch(dispatchers.io()) {
