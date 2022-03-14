@@ -60,8 +60,8 @@ android {
     def versionLabel =  "${versioning.name}.${versioning.build}"
     def versionBuild = 1
     def versionBuildDate = getDate()
-    def appId = "za.co.xisystems.itis_rrm"
-//    def appId = "za.co.xisystems.itismaintenance"
+//    def appId = "za.co.xisystems.itis_rrm"
+    def appId = "za.co.xisystems.itismaintenance"
 
     // host properties
     def propertyFile = file(project.rootProject.file("host.properties").toString())
@@ -360,7 +360,7 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
     //Paging
-    implementation 'androidx.paging:paging-runtime-ktx:3.1.0'
+    implementation 'androidx.paging:paging-runtime-ktx:3.1.1'
 
     //Retrofit2
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
