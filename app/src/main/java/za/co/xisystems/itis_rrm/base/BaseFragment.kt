@@ -22,6 +22,7 @@ import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.DNS_PORT
 import za.co.xisystems.itis_rrm.constants.Constants.FIVE_SECONDS
@@ -41,6 +42,7 @@ import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ViewLogger
@@ -55,9 +57,9 @@ import za.co.xisystems.itis_rrm.utils.ViewLogger
 abstract class BaseFragment(
     protected val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : Fragment(), IProgressView, DIAware {
+    override val di by lazy { (requireActivity().applicationContext as MainApp).di }
 
     private lateinit var sharedViewModel: SharedViewModel
-    override val di by closestDI()
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null
@@ -161,7 +163,11 @@ abstract class BaseFragment(
         if (Build.VERSION.SDK_INT >= 29) {
             photoPermissions.add(Manifest.permission.ACCESS_MEDIA_LOCATION)
         }
+
     }
+
+    lateinit var JOB_ACTIVITY: JobCreationActivity
+
 
     private fun initAnimations() {
         click = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.click)
@@ -199,6 +205,7 @@ abstract class BaseFragment(
         super.onAttach(context)
         bounce = AnimationUtils.loadAnimation(context.applicationContext, R.anim.bounce)
         shake = AnimationUtils.loadAnimation(context.applicationContext, R.anim.shake)
+       // JOB_ACTIVITY = context as JobCreationActivity
     }
 
     override fun onViewCreated(
@@ -315,7 +322,7 @@ abstract class BaseFragment(
         sharedViewModel.takingPhotos = false
     }
 
-    abstract fun onCreateOptionsMenu(menu: Menu): Boolean
+//    abstract fun onCreateOptionsMenu(menu: Menu): Boolean
 
     override fun onDestroyView() {
         super.onDestroyView()

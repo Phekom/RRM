@@ -22,16 +22,11 @@ import za.co.xisystems.itis_rrm.utils.GPSUtils
  * Copyright (c) 2020 XI Systems. All rights reserved.
  **/
 abstract class LocationFragment : BaseFragment() {
-
-    override val di: DI by closestDI()
     private lateinit var locationViewModel: LocationViewModel
     private val locationFactory by instance<LocationViewModelFactory>()
     private var gpsEnabled = false
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // fragment has no options
-        return false
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

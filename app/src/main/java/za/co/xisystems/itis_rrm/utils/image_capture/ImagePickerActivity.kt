@@ -164,7 +164,7 @@ class ImagePickerActivity : BaseActivity(), OnImageSelectListener {
                 }
 
                 override fun onPermissionGranted() {
-                    fetchData(this@ImagePickerActivity)
+                    fetchData()
                 }
             })
     }
@@ -177,7 +177,7 @@ class ImagePickerActivity : BaseActivity(), OnImageSelectListener {
         when (requestCode) {
             Constants.RC_READ_EXTERNAL_STORAGE_PERMISSION -> {
                 if (PermissionHelper.hasGranted(grantResults)) {
-                    fetchData(this@ImagePickerActivity)
+                    fetchData()
                 } else {
                     finish()
                 }
@@ -193,16 +193,12 @@ class ImagePickerActivity : BaseActivity(), OnImageSelectListener {
         }
     }
 
-    private fun fetchData(activity : ImagePickerActivity) {
-        viewModel.fetchImages(activity)
+    private fun fetchData() {
+        viewModel.fetchImages()
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
-        val fragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
-//        if (fragment != null && fragment is FolderFragment) {
-//            binding.toolbar.setTitle(config.folderTitle)
-//        }
     }
 
     private fun onDone() {

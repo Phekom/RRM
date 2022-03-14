@@ -27,7 +27,8 @@ sealed class XIResult<out T : Any> {
             exception: Throwable,
             message: String,
             topic: String? = null
-        ): XIResult<Nothing> = Error(exception, message, topic)
+        ): XIResult<Nothing> = Error( exception,
+            message, topic)
 
         fun status(message: String): XIResult<Nothing> = Status(message)
         fun progressUpdate(key: String, ratio: Float): XIResult<Nothing> = ProgressUpdate(key, ratio)

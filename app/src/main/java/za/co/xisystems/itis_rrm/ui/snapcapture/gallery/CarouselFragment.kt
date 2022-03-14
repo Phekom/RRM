@@ -22,7 +22,6 @@ class CarouselFragment : LocationFragment() {
         val POSITION_KEY = CarouselFragment::class.java.simpleName.toString().plus("position")
     }
 
-    override val di by closestDI()
     private lateinit var viewModel: CarouselViewModel
     private val factory: CarouselViewModelFactory by instance()
     private lateinit var layoutManager: LinearLayoutManager

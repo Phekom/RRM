@@ -15,6 +15,7 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
@@ -66,6 +67,8 @@ class JobCreationDataRepository(
     private val jobDataController: JobDataController? = null
     private val photoUpload = MutableLiveData<String>()
     private val routeSectionPoint = MutableLiveData<String>()
+    var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+
 
     init {
 
@@ -85,6 +88,10 @@ class JobCreationDataRepository(
         return withContext(dispatchers.io()) {
             appDb.getUserDao().getUser()
         }
+    }
+
+    private fun postEvent(result: XIResult<Boolean>) {
+        databaseStatus.postValue(XIEvent(result))
     }
 
     private fun sendMsg(uploadResponse: String?) {
@@ -113,6 +120,25 @@ class JobCreationDataRepository(
         }
     }
 
+
+    suspend fun getItemForID( projectItemId: String? ): ProjectItemDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getProjectItemDao().getItemForID(projectItemId!!)
+        }
+    }
+
+    suspend fun getItemTempForID(itemId: String) : ItemDTOTemp {
+        return withContext(dispatchers.io()) {
+            appDb.getItemDaoTemp().getProjectItemById(itemId)
+        }
+    }
+
+    suspend fun getJobForId(jobId: String) : JobDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getJobDao().getJobForJobId(jobId)
+        }
+    }
+
     suspend fun getAllSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getSectionItemDao().getFilteredSectionItems(projectId)
@@ -129,14 +155,12 @@ class JobCreationDataRepository(
     }
 
     fun saveNewItem(newJobItem: ItemDTOTemp?) {
-        Coroutines.io {
-            if (newJobItem != null && !appDb.getItemDaoTemp()
+        if (newJobItem != null && !appDb.getItemDaoTemp()
                 .checkItemExistsItemId(newJobItem.itemId)
-            ) {
-
-                appDb.getItemDaoTemp().insertItems(newJobItem)
-            }
-        }
+        ) { appDb.getItemDaoTemp().insertItems(newJobItem) }
+//        Coroutines.io {
+//
+//        }
     }
 
     fun delete(item: ItemDTOTemp) {
@@ -655,6 +679,19 @@ class JobCreationDataRepository(
     suspend fun checkIfPhotoExists(imageFileName: String):
             Boolean = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByName(imageFileName)
+    }
+
+    suspend fun getServiceHealth(): Boolean {
+        return try {
+            val userId = appDb.getUserDao().getUserID()
+            val healthCheck = apiRequest { api.healthCheck(userId) }
+            healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
+        } catch (t: Throwable) {
+            val errorMessage = "Failed to check service health: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            val healthError = XIResult.Error(t, errorMessage)
+            postEvent(healthError)
+            false
+        }
     }
 
 

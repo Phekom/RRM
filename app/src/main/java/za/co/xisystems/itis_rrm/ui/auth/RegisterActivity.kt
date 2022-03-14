@@ -3,19 +3,28 @@ package za.co.xisystems.itis_rrm.ui.auth
 /**
  * Updated by Shaun McDonald - 2020/04/15
  */
+import am.appwise.components.ni.NoInternetDialog
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
+import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
@@ -24,6 +33,7 @@ import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.hide
@@ -32,13 +42,12 @@ import za.co.xisystems.itis_rrm.utils.show
 import za.co.xisystems.itis_rrm.utils.snackbar
 import za.co.xisystems.itis_rrm.utils.toast
 
-private const val PERMISSION_REQUEST = 10
 
 class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
-
-    override val di by closestDI()
+    override val di by lazy { (applicationContext as MainApp).di }
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
+    private var uiScope = UiLifecycleScope()
     private var permissions = arrayOf(
         Manifest.permission.CAMERA,
         Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -47,8 +56,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_WIFI_STATE,
     )
 
+    open var gpsEnabled = false
+    private var networkEnabled: Boolean = false
+
     companion object {
         val TAG: String = RegisterActivity::class.java.simpleName
+        private const val PERMISSION_REQUEST = 10
     }
 
     private lateinit var binding: ActivityRegisterBinding
@@ -58,59 +71,69 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
+        viewModel.setupAuthListener(this)
+        val noInternetDialog: NoInternetDialog = NoInternetDialog.Builder(this@RegisterActivity).build()
 
         if (startPermissionRequest(permissions)) {
-            toast("Permissions already provided.")
+            getInternetConnectionResult(noInternetDialog)
         } else {
             requestPermissions(permissions, PERMISSION_REQUEST)
         }
 
-        viewModel = ViewModelProvider(this, factory).get(AuthViewModel::class.java)
-        viewModel.setupAuthListener(this)
 
-        Coroutines.main {
-            binding.registerbutton.setOnClickListener {
-                val username = binding.registerusernameeditText
-                val password = binding.registerpasswordeditText
-                viewModel.onRegButtonClick(it, username, password)
-                // ToastUtils().toastServerAddress(this.applicationContext)
-            }
+        binding.serverTextView.setOnClickListener {
+            ToastUtils().toastServerAddress(this.applicationContext)
+        }
 
+        binding.buildFlavorTextView.setOnClickListener {
+            ToastUtils().toastVersion(this.applicationContext)
+        }
+
+
+    }
+
+    private fun registerThisUser(view: View, username: TextInputEditText, password: TextInputEditText, noInternetDialog: NoInternetDialog) {
+        uiScope.launch(uiScope.coroutineContext) {
+            viewModel.onRegButtonClick(view, username, password)
             when (this@RegisterActivity.isConnected) {
                 true -> {
-                    val loggedInUser = viewModel.user.await()
-                    loggedInUser.observe(this, { user ->
-                        // Register the user
-                        if (user != null) {
-                            when {
-                                user.userStatus != "Y" -> {
-                                    onFailure(getString(R.string.user_blocked, user.userName))
-                                }
-                                user.pinHash == null -> {
-                                    Coroutines.main {
-                                        registerPinOrNot()
+                    networkEnabled = true
+                    if (!networkEnabled) {
+                        noInternetDialog.showDialog()
+                    } else {
+                        if (noInternetDialog.isShowing) {
+                            ToastUtils().toastShort(this@RegisterActivity, "Check Internet Connection")
+                        } else {
+                            val loggedInUser = viewModel.user.await()
+                            loggedInUser.observe(this@RegisterActivity, { user ->
+                                // Register the user
+                                if (user != null) {
+                                    when {
+                                        user.userStatus != "Y" -> {
+                                            onFailure(getString(R.string.user_blocked, user.userName))
+                                        }
+                                        user.pinHash == null -> {
+                                            Coroutines.main {
+                                                registerPinOrNot()
+                                            }
+                                        }
+                                        else -> {
+                                            authorizeUser()
+                                        }
                                     }
                                 }
-                                else -> {
-                                    authorizeUser()
-                                }
-                            }
+                            })
                         }
-                    })
+                    }
+
                 }
                 else -> {
                     onFailure("This step requires an active internet connection.")
                 }
             }
-
-            binding.serverTextView.setOnClickListener {
-                ToastUtils().toastServerAddress(this.applicationContext)
-            }
-
-            binding.buildFlavorTextView.setOnClickListener {
-                ToastUtils().toastVersion(this.applicationContext)
-            }
         }
+
     }
 
     private fun authorizeUser() {
@@ -144,36 +167,6 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         pinAlert.show()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PERMISSION_REQUEST) {
-            val allAllowed = requestAgain(permissions, grantResults)
-            if (allAllowed) toast("Permissions Granted")
-        }
-    }
-
-    private fun requestAgain(
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ): Boolean {
-        var allAllowed = true
-        for (i in permissions.indices) {
-            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                allAllowed = false
-                val requestAgain = shouldShowRequestPermissionRationale(permissions[i])
-                if (requestAgain) {
-                    toast("Permission Denied")
-                } else {
-                    toast("Please Enable Permissions from your Device Settings")
-                }
-            }
-        }
-        return allAllowed
-    }
 
     private fun startPermissionRequest(permissions: Array<String>): Boolean {
         var allAccess = true
@@ -190,6 +183,12 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         googlePlayServicesCheck(this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        googlePlayServicesCheck(this)
+    }
+
+
     private fun googlePlayServicesCheck(activity: Activity) {
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
         if (resultCode != ConnectionResult.SUCCESS) {
@@ -198,12 +197,20 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
                 GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
             dialog?.show()
         }
-        if (PermissionController.checkPermissionsEnabled(applicationContext)) {
-            // googleApiClient!!.connect()
-        } else {
-            PermissionController.startPermissionRequests(activity)
+
+    }
+
+
+    private fun getInternetConnectionResult(noInternetDialog: NoInternetDialog) {
+
+        binding.registerbutton.setOnClickListener {
+            val username = binding.registerusernameeditText
+            val password = binding.registerpasswordeditText
+            registerThisUser(it, username, password, noInternetDialog)
+            // ToastUtils().toastServerAddress(this.applicationContext)
         }
     }
+
 
     override fun onStarted() {
         binding.loading.show()

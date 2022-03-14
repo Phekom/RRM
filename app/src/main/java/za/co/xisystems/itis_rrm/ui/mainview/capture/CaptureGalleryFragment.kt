@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,9 +19,8 @@ import androidx.navigation.Navigation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
@@ -31,13 +29,10 @@ import za.co.xisystems.itis_rrm.databinding.FragmentCaptureGalleryBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
 import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
-import za.co.xisystems.itis_rrm.ui.mainview.create.edit_estimates.EstimatePhotoFragment
-import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.image_capture.camera.OnImageReadyListener
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.Constants
-import za.co.xisystems.itis_rrm.utils.image_capture.helper.PermissionHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.PermissionHelper.openAppSettings
 import za.co.xisystems.itis_rrm.utils.image_capture.model.GridCount
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
@@ -61,7 +56,7 @@ class CaptureGalleryFragment : LocationFragment() {
 
     private var itemIdPhotoType = HashMap<String, String>()
     private lateinit var captureViewModel: CaptureViewModel
-    override val di by closestDI()
+
     private var _ui: FragmentCaptureGalleryBinding? = null
     private val ui get() = _ui!!
     private val photoUtil: PhotoUtil by instance()

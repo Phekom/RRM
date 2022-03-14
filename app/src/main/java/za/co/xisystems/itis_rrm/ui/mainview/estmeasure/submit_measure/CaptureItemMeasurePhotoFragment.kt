@@ -15,7 +15,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -30,12 +29,10 @@ import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
@@ -48,11 +45,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentCaptureItemMeasurePhotoBindi
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.custom.MeasureGalleryUIState
-import za.co.xisystems.itis_rrm.ui.extensions.addZoomedImages
-import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
-import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.extensions.scaleForSize
-import za.co.xisystems.itis_rrm.ui.extensions.showZoomedImage
+import za.co.xisystems.itis_rrm.ui.extensions.*
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -63,10 +56,8 @@ import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 
 //
 class CaptureItemMeasurePhotoFragment :
-    LocationFragment(),
-    DIAware {
+    LocationFragment() {
 
-    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private val photoUtil: PhotoUtil by instance()
@@ -109,13 +100,9 @@ class CaptureItemMeasurePhotoFragment :
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.captured_photos)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

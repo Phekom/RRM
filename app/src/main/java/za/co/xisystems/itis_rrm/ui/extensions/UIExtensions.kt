@@ -2,7 +2,11 @@
 package za.co.xisystems.itis_rrm.ui.extensions
 
 import android.app.Dialog
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.widget.ImageView
 import androidx.fragment.app.FragmentActivity
@@ -69,3 +73,16 @@ fun showZoomedImage(imageUrl: Uri, activity: FragmentActivity) {
         .into(zoomageView!!)
     dialog.show()
 }
+
+fun Context.isOnline(): Boolean {
+    return try {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val netInfo = cm.activeNetworkInfo
+        //should check null because in airplane mode it will be null
+        netInfo != null && netInfo.isConnected
+    } catch (e: NullPointerException) {
+        e.printStackTrace()
+        false
+    }
+}
+

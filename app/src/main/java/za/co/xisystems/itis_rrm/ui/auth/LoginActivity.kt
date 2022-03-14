@@ -8,11 +8,10 @@ package za.co.xisystems.itis_rrm.ui.auth
 
 /**
  * Updated by Shaun McDonald 2020/04/15
+ * Updated by Francis Mahlava 2022/03/06
  */
 import android.R.style
-import android.app.AlertDialog
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.WindowManager
@@ -21,12 +20,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.poovam.pinedittextfield.PinField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -35,25 +30,18 @@ import za.co.xisystems.itis_rrm.custom.results.isRecoverableException
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.databinding.ActivityLoginBinding
 import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
+import za.co.xisystems.itis_rrm.utils.*
 
 
-class LoginActivity : BaseActivity(), AuthListener, DIAware {
+class LoginActivity : BaseActivity(), AuthListener {
 
-    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var authViewModel: AuthViewModel
     private val binding by viewBinding(ActivityLoginBinding::inflate)
@@ -167,42 +155,16 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
         }
     }
 
-    private fun promptUserToForNewVersion(response : VersionCheckResponse) = Coroutines.ui {
-        val qaVersionlinkn = "https://itisqa.nra.co.za/portal/mobile/rrm_app.apk"
-        val prodVersionlinkn = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
-        val syncDialog: AlertDialog.Builder =
-            AlertDialog.Builder(this)
-                .setTitle("New Version Available")
-                .setMessage("${ response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) +"Release Date "+ response.releaseDate}")
-                .setCancelable(false)
-                .setIcon(R.drawable.ic_warning_yellow)
-                .setPositiveButton(R.string.ok) { _, _ ->
-                    val intent = Intent(
-                        Intent.ACTION_VIEW, Uri.parse(qaVersionlinkn))
-                    startActivity(intent)
-                }
-
-        syncDialog.show()
-    }
 
     private fun gotoMainActivity() {
+        hideKeyboard()
         try {
-            Coroutines.main {
-               val newVersion = BuildConfig.VERSION_NAME
-                val response  = authViewModel.getAppVersionCheck(newVersion)
-                if (response.errorMessage.equals("")){
-                    Intent(this, MainActivity::class.java).also { mainAct ->
-                        mainAct.flags =
-                            Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                        startActivity(mainAct)
-                    }
-                    reset()
-                } else {
-                    promptUserToForNewVersion(response)
-                }
-
+            Intent(this, MainActivity::class.java).also { mainAct ->
+                mainAct.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(mainAct)
             }
-
+            reset()
         } catch (t: Throwable) {
             val xiErr = XIResult.Error(t, "Failed to login")
             if (xiErr.isRecoverableException()) {
@@ -221,6 +183,7 @@ class LoginActivity : BaseActivity(), AuthListener, DIAware {
             }
         }
     }
+
 
     private fun retryGotoMain() {
         IndefiniteSnackbar.hide()

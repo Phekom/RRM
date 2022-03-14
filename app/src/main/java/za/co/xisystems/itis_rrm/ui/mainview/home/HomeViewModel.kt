@@ -7,10 +7,12 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.app.Application
+import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.viewModelScope
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -19,13 +21,19 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.R
+import za.co.xisystems.itis_rrm.custom.errors.ConnectException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 
 class HomeViewModel(
@@ -41,6 +49,7 @@ class HomeViewModel(
     private var mainContext = dispatchers.main() + Job(superJob)
     var healthState: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
     var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
+    var versionState: MutableLiveData<XIResult<String>?> = MutableLiveData()
 
     val user by lazyDeferred {
         repository.getUser()
@@ -69,40 +78,69 @@ class HomeViewModel(
     }
 
     fun fetchAllData(userId: String) = viewModelScope.launch(ioContext, CoroutineStart.DEFAULT) {
-
         try {
             offlineDataRepository.loadActivitySections(userId)
             offlineDataRepository.loadContracts(userId)
-
             offlineDataRepository.loadLookups(userId)
             offlineDataRepository.loadTaskList(userId)
             offlineDataRepository.loadWorkflows(userId)
-
             withContext(mainContext) {
                 databaseState.postValue(XIResult.Success(true))
             }
-        } catch (exception: Exception) {
-            Timber.e(exception, "Failed to synch contracts")
+
+        } catch (t: Throwable) {
+            val fetchFail = XIResult.Error( t, "Failed to fetch contracts:" + " ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            databaseState.postValue(fetchFail)
+        } finally {
             withContext(mainContext) {
                 ioContext.cancelChildren(
-                    CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
+                    CancellationException("Failed to fetch contracts:" ?: XIErrorHandler.UNKNOWN_ERROR)
                 )
-                val fetchFail =
-                    XIResult.Error(
-                        exception,
-                        "Failed to fetch contracts:" +
-                            " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
-                    )
-                databaseState.postValue(fetchFail)
             }
         }
+//        try {
+//       offlineDataRepository.loadActivitySections(userId)
+//            offlineDataRepository.loadContracts(userId)
+//            offlineDataRepository.loadLookups(userId)
+//            offlineDataRepository.loadTaskList(userId)
+//            offlineDataRepository.loadWorkflows(userId)
+//            withContext(mainContext) {
+//                databaseState.postValue(XIResult.Success(true))
+//            }
+//        } catch (exception: Exception) {
+//            Timber.e(exception, "Failed to synch contracts")
+//            withContext(mainContext) {
+//                ioContext.cancelChildren(
+//                    CancellationException(exception.message ?: XIErrorHandler.UNKNOWN_ERROR, exception)
+//                )
+//                val fetchFail =
+//                    XIResult.Error(
+//                        exception,
+//                        "Failed to fetch contracts:" +
+//                                " ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+//                    )
+//                databaseState.postValue(fetchFail)
+//            }
+//        }
     }
 
 
 
-    fun healthCheck(userId: String) = viewModelScope.launch(ioContext) {
+
+
+    fun healthCheck() = viewModelScope.launch(ioContext) {
+//        try {
+//            val result = offlineDataRepository.getServiceHealth()
+//            withContext(mainContext) {
+//                healthState.value = XIEvent(XIResult.Success(result))
+//            }
+//        } catch (t: Throwable) {
+//            failValidation()
+//        } finally {
+//            failValidation()
+//        }
         try {
-            val result = offlineDataRepository.getServiceHealth(userId)
+            val result = offlineDataRepository.getServiceHealth()
             withContext(mainContext) {
                 healthState.value = XIEvent(XIResult.Success(result))
             }
@@ -126,4 +164,17 @@ class HomeViewModel(
     fun resetSyncStatus() {
         bigSyncDone = MutableLiveData()
     }
+
+    fun failValidation() = viewModelScope.launch(mainContext) {
+        healthState.value =
+            XIEvent(
+                XIResult.Error(
+                    TransmissionException(
+                        "Server Communication Error", ConnectException("You Have No Active Data")
+                    ),
+                    "You May have Ran out of Data Please Check and Retry.","You Have No Active Data Connection"
+                )
+            )
+    }
+
 }

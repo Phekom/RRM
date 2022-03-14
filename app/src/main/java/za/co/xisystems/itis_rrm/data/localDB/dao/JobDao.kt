@@ -178,11 +178,11 @@ interface JobDao {
     @Query("DELETE FROM JOB_TABLE")
     fun deleteAll()
 
-    @Query("UPDATE JOB_TABLE SET deleted = 1 WHERE jobId = :jobId AND deleted = 0")
-    fun softDeleteJobForJobId(jobId: String)
+//    @Query("UPDATE JOB_TABLE SET deleted = 1 WHERE jobId = :jobId AND deleted = 0")
+//    fun softDeleteJobForJobId(jobId: String)
 
-//    @Query("UPDATE JOB_TABLE SET deleted = 0 WHERE jobId = :jobId AND deleted = 1")
-//    fun unDeleteJobForJobId(jobId: String)
+    @Query("UPDATE JOB_TABLE SET deleted = 0 WHERE jobId = :jobId AND deleted = 1")
+    fun softDeleteJobForJobId(jobId: String)
 
     fun getAllWork(): LiveData<List<JobDTO>>? =
         getJobsByJobAndEstimateActivityIds(

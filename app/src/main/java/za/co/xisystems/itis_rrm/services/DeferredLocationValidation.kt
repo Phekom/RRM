@@ -46,13 +46,24 @@ class DeferredLocationViewModel(
     var geoCodingResult: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     private var errorState: Boolean = false
     val errorMessage: MutableLiveData<ColorToast> = MutableLiveData()
+
+
+//    private suspend fun getRouteSectionPoint(
+//        locationQuery: LocationValidation
+//    ): RouteSectionPointResponse  = withContext(ioContext) {
+//        return@withContext deferredLocationRepository.getRouteSectionPoint(
+//            locationQuery
+//        )
+//    }
+
     private suspend fun getRouteSectionPoint(
         locationQuery: LocationValidation
-    ): XIResult<LocationValidation> = withContext(ioContext) {
+    ):XIResult<LocationValidation>  = withContext(ioContext) { //RouteSectionPointResponse
         return@withContext deferredLocationRepository.getRouteSectionPoint(
             locationQuery
         )
     }
+
 
     init {
         geoCodingResult = MutableLiveData()
@@ -66,8 +77,11 @@ class DeferredLocationViewModel(
             locationJob.jobId,
             locationJob.actId
         ) as ArrayList<JobItemEstimateDTO>
+
         this@DeferredLocationViewModel.errorState = false
         var validProjectSectionId: String? = null
+        var estimatIndex = -1
+
 
         locationJob.jobItemEstimates.forEachIndexed estimate@{ estIndex, uncheckedEstimate ->
             uncheckedEstimate.jobItemEstimatePhotos.forEachIndexed photo@{ phIndex, uncheckedPhoto ->
@@ -83,6 +97,7 @@ class DeferredLocationViewModel(
                 val routeSectionResponse = getRouteSectionPoint(
                     locationQuery
                 )
+
                 when (routeSectionResponse) {
 
                     is XIResult.Error -> {
@@ -115,17 +130,25 @@ class DeferredLocationViewModel(
                             validProjectSectionId.isNullOrBlank()
                         ) {
                             validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
+
+
                         }
                     }
                     else -> {
                         Timber.d("^*^ $routeSectionResponse")
                     }
                 }
-            } // All photos processed
+
+
+            }
+
+
+            // All photos processed
             try {
                 val geoCoded = uncheckedEstimate.arePhotosGeoCoded()
                 val checkedEstimate = uncheckedEstimate.copy(geoCoded = geoCoded)
                 locationJob.jobItemEstimates[estIndex] = checkedEstimate
+                estimatIndex = estIndex
                 jobCreationDataRepository.backupEstimate(checkedEstimate)
             } catch (e: Exception) {
                 val message = "Could not save updated estimate: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -135,23 +158,24 @@ class DeferredLocationViewModel(
                 }
             }
         }
+
         // jobItemEstimates processed
         try {
             if (!validProjectSectionId.isNullOrBlank() && locationJob.isGeoCoded()) {
 
                 val updatedJobId = updateOrCreateJobSection(locationJob, validProjectSectionId!!)
                 if (updatedJobId.isNullOrBlank()) {
-                    failLocationValidation("Failed to create job section")
+                    val projectItemId =  locationJob.jobItemEstimates[estimatIndex].projectItemId
+                    failLocationValidation("Failed to create job section" ,projectItemId!!)
                 } else {
                     withContext(mainContext) {
                         geoCodingResult.value = XIEvent(XIResult.Success(updatedJobId))
                     }
                 }
             } else {
-                failLocationValidation(
-                    getApplication<MainApp>()
-                        .getString(R.string.location_general_failure)
-                )
+                val projectItemId =  locationJob.jobItemEstimates[estimatIndex].projectItemId
+                failLocationValidation(getApplication<MainApp>() .getString(R.string.location_general_failure), projectItemId!!)
+
             }
         } catch (e: Throwable) {
             val message = "Failed to save geocoded job: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}"
@@ -159,6 +183,7 @@ class DeferredLocationViewModel(
             handleLocationError(XIResult.Error(e, message))
         }
     }
+
 
     private suspend fun processRouteSectionError(
         routeSectionResponse: XIResult.Error,
@@ -198,14 +223,16 @@ class DeferredLocationViewModel(
         geoCodingResult.value = XIEvent(operationException)
     }
 
-    private fun failLocationValidation(message: String) = viewModelScope.launch(mainContext) {
-        geoCodingResult.value =
+    private fun failLocationValidation(message: String, projectItemId: String) = viewModelScope.launch(mainContext) {
+                val estimate = jobCreationDataRepository.getItemForID(projectItemId)
+           geoCodingResult.value =
             XIEvent(
                 XIResult.Error(
                     LocationException(
                         message
                     ),
-                    "One or more locations could not be verified"
+                    "Are not within your allocated road reserve.","Images For ${estimate.itemCode}  ${estimate.descr}"
+                    //"One or more images not within your allocated road reserve."
                 )
             )
     }
@@ -324,7 +351,7 @@ class DeferredLocationViewModel(
             val jobToUpdate = jobCreationDataRepository.getUpdatedJob(job.jobId)
             val projectSection = jobCreationDataRepository.getSection(projectSectionId)
             if (!jobCreationDataRepository
-                .checkIfJobSectionExistForJobAndProjectSection(
+                    .checkIfJobSectionExistForJobAndProjectSection(
                         jobId = DataConversion.toLittleEndian(jobToUpdate.jobId),
                         projectSectionId = DataConversion.toLittleEndian(projectSection.sectionId)
                     )
@@ -453,7 +480,7 @@ data class LocationValidation(
         sectionEndKm = parcel.readValue(Double::class.java.classLoader) as? Double,
         sectionId = parcel.readString(),
 
-    )
+        )
 
     fun init(
         longitude: Double,

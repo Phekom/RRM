@@ -18,7 +18,7 @@
     <string name="android_sdk">Android SDK:</string>
     <string name="app_name">RRM</string>
 
-    <string name="are_you_sure_you_want_to_decline">Decline this job?</string>
+    <string name="are_you_sure_you_want_to_decline">Are You Sure, You want to Decline this job? the Action Can not be Un-Done</string>
     <string name="are_you_sure_you_want_to_correct">Correct these Measurements?</string>
     <string name="are_you_sure_you_want_to_correct_esti">Correct these estimates?</string>
     <string name="are_you_sure_you_want_to_approve">Approve this job?</string>
@@ -147,7 +147,7 @@
     <string name="capture_measure_photo">Capture Measurements</string>
     <string name="are_you_sure_you_want_to_submit_measurements">Are you sure you want to submit these Measurements?</string>
     <string name="action_search">Search</string>
-
+    <string name="action_back">Back</string>
     <!-- Exception Strings -->
 
     <!-- UOM translations-->
@@ -194,6 +194,7 @@
     <string name="version">Version</string>
     <string name="contract_hint">Contract Hint</string>
     <string name="plus_to_add_project_items">Press + to add project items</string>
+    <string name="add_project_items">Add Project Items</string>
     <string name="pricing_hint">Pricing Hint</string>
     <string name="estimated_start_date">Estimated Start Date:</string>
     <string name="click_to_select_date">(Click to select date)</string>
@@ -233,9 +234,10 @@
     <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
     <string name="new_line">\n</string>
     <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
-    <string name="invalid_km_marker">The closest active section to this location ($1%s) is $2%s km away,\n at the $3%s km marker position.</string>
+    <string name="invalid_marker">The closest active section to this location ($1%s) is $2%s km away, at the $3%s km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>
-    <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>
+    <string name="location_general_failure">One or more locations not within your allocated road reserve.</string>
+<!--    <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>-->
     <string name="item_number">No:..</string>
 
     <!-- Offline Mode -->
@@ -306,7 +308,15 @@
         <![CDATA[Storage permission is needed to take a picture. Please allow storage permission from Settings > Permissions.]]></string>
     <string name="auto_delete">Please Note Images Older Than 48hours Will Auto Delete From This Gallery Please create your JI estimates and use the images before they Disappear</string>
     <string name="text_gif">GIF</string>
-    <string name="invalid_char">You Have Entered an Invalid CharSequence</string>
+    <string name="invalid_char">Input can not be Empty </string>
     <string name="folder">Folder</string>
+    <string name="title_activity_job_creation">JobCreationActivity</string>
+
+    <string name="title_activity_jon_creation">JonCreationActivity</string>
+    <string name="ji_creation">Job Creation</string>
+    <string name="title_creat_job">Job Creation</string>
+    <string name="title_measure">Measure Estimates</string>
+    <string name="title_add_items">Add Project Items</string>
+    <string name="title_select_items">Select Project Item</string>
 
 </resources>

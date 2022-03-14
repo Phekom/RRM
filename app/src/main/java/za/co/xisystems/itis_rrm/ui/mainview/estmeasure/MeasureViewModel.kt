@@ -22,6 +22,10 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.ConnectException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
@@ -69,6 +73,8 @@ class MeasureViewModel(
     private val mainContext = (Job(superJob) + Dispatchers.Main + uncaughtExceptionHandler)
     private val ioContext = (Job(superJob) + Dispatchers.IO + uncaughtExceptionHandler)
     private val photoUtil = PhotoUtil.getInstance(getApplication())
+    var netCheckResults: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+
 
     init {
         initWorkflowChannels()
@@ -240,7 +246,7 @@ class MeasureViewModel(
         }
 
         try {
-            measureCreationDataRepository.saveMeasurementItems(
+            val messages = measureCreationDataRepository.saveMeasurementItems(
                 userId,
                 jobId,
                 jimNo,
@@ -249,14 +255,28 @@ class MeasureViewModel(
                 activity,
                 itemMeasureJob
             )
+            if (messages.isEmpty()) {
+                measureCreationDataRepository.updateMeasureCreatedInfo(
+                    userId,
+                    jobId
+                )
+            }
 
-            measureCreationDataRepository.updateMeasureCreatedInfo(
-                userId,
-                jobId
-            )
-        } catch (e: Exception) {
-            workflowState.postValue(XIResult.Error(e, e.message!!))
+        } catch (t: Throwable) {
+            val contractErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+            workflowState.postValue(contractErr)
+        } finally {
+            failNetValidation()
         }
+
+
+//        try {
+//
+//
+//        } catch (e: Exception) {
+//            failNetValidation()
+//           // workflowState.postValue(XIResult.Error(e, e.message!!))
+//        }
     }
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId(
@@ -265,6 +285,18 @@ class MeasureViewModel(
         return withContext(Dispatchers.IO) {
             measureCreationDataRepository.getJobItemMeasuresForJobIdAndEstimateId(jobId)
         }
+    }
+
+    fun failNetValidation() = viewModelScope.launch(mainContext) {
+        netCheckResults.value =
+            XIEvent(
+                XIResult.Error(
+                    TransmissionException(
+                        "Server Communication Error", ConnectException("You Have No Active Data")
+                    ),
+                    "You May have Ran out of Data Please Check and Retry.", "You Have No Active Data Connection"
+                )
+            )
     }
 
     suspend fun getJobItemMeasuresForJobIdAndEstimateId2(

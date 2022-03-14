@@ -3,7 +3,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.capture.usecases
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
-import za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.models.PhotoType
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.new_job_utils.models.PhotoType
 
 class LinkCaptureToJobItemEstimateUseCase(
     private val capturedPictureRepository: CapturedPictureRepository,

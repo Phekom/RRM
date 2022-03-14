@@ -5,14 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
 import org.kodein.di.instance
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult.Error
@@ -23,22 +20,17 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterPinBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
+import za.co.xisystems.itis_rrm.utils.*
 
-private const val PERMISSION_REQUEST = 10
 
-class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
+class RegisterPinActivity : BaseActivity(), AuthListener {
     companion object {
         val TAG: String = RegisterPinActivity::class.java.simpleName
         const val GOOGLE_PLAY_SERVICES_RESOLUTION_REQUEST = 1
+        private const val PERMISSION_REQUEST = 10
     }
 
-    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
@@ -95,6 +87,14 @@ class RegisterPinActivity : AppCompatActivity(), AuthListener, DIAware {
                 ToastUtils().toastVersion(appContext)
             }
         }
+    }
+
+    override fun startLongRunningTask() {
+
+    }
+
+    override fun endLongRunningTask() {
+
     }
 
     override fun onRequestPermissionsResult(

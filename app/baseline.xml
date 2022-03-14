@@ -30,7 +30,7 @@
     <ID>ForbiddenComment:ProgressButtonExtensions.kt$// TODO: Exchange hard-coded colours to match the theme</ID>
     <ID>FunctionNaming:AppExecutor.kt$AppExecutor$fun AppExecutor( diskIO: Executor?, mainThread: Executor?, networkIO: Executor? ): AppExecutor?</ID>
     <ID>FunctionNaming:DebugMainApp.kt$DebugMainApp$// Strict mode halps us catch leaks and bad practices super quick private fun SetStrictMode()</ID>
-    <ID>FunctionNaming:MainActivityViewModel.kt$MainActivityViewModel$fun Item5(measureapproval: ApproveMeasureItem)</ID>
+    <ID>FunctionNaming:JobCreationViewModel.kt$MainActivityViewModel$fun Item5(measureapproval: ApproveMeasureItem)</ID>
     <ID>FunctionNaming:SettingsViewModel.kt$SettingsViewModel$fun Item5(measureapproval: ApproveMeasureItem)</ID>
     <ID>FunctionOnlyReturningConstant:MeasureCreationDataRepository.kt$MeasureCreationDataRepository$private fun getErrorState(): Boolean</ID>
     <ID>FunctionParameterNaming:ActivityDao.kt$ActivityDao$ACT_ID: Long</ID>
@@ -244,9 +244,9 @@
     <ID>PackageNaming:HealthCheckResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
     <ID>PackageNaming:HealthDTO.kt$package za.co.xisystems.itis_rrm.data.localDB.entities</ID>
     <ID>PackageNaming:HealthDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
-    <ID>PackageNaming:HomeFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:CreationHomeFragment.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
     <ID>PackageNaming:HomeUIState.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
-    <ID>PackageNaming:HomeViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
+    <ID>PackageNaming:EstimatePhotoViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
     <ID>PackageNaming:HomeViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.home</ID>
     <ID>PackageNaming:IActivityProgressView.kt$package za.co.xisystems.itis_rrm.ui.mainview.create.new_job_utils.contracts</ID>
     <ID>PackageNaming:IBaseActivity.kt$package za.co.xisystems.itis_rrm.data._commons.views</ID>
@@ -306,7 +306,7 @@
     <ID>PackageNaming:LookupOptionDao.kt$package za.co.xisystems.itis_rrm.data.localDB.dao</ID>
     <ID>PackageNaming:LookupResponse.kt$package za.co.xisystems.itis_rrm.data.network.responses</ID>
     <ID>PackageNaming:MainActivity.kt$package za.co.xisystems.itis_rrm</ID>
-    <ID>PackageNaming:MainActivityViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
+    <ID>PackageNaming:JobCreationViewModel.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
     <ID>PackageNaming:MainActivityViewModelFactory.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
     <ID>PackageNaming:MainApp.kt$package za.co.xisystems.itis_rrm</ID>
     <ID>PackageNaming:MapActivity.kt$package za.co.xisystems.itis_rrm.ui.mainview.activities</ID>
@@ -455,9 +455,9 @@
     <ID>TooGenericExceptionCaught:EstimatePhotoFragment.kt$EstimatePhotoFragment$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:EstimatesItem.kt$EstimatesItem$e: Exception</ID>
     <ID>TooGenericExceptionCaught:EstimatesItem.kt$EstimatesItem$e: NullPointerException</ID>
-    <ID>TooGenericExceptionCaught:HomeFragment.kt$HomeFragment$t: Throwable</ID>
-    <ID>TooGenericExceptionCaught:HomeViewModel.kt$HomeViewModel$exception: Exception</ID>
-    <ID>TooGenericExceptionCaught:HomeViewModel.kt$HomeViewModel$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:CreationHomeFragment.kt$HomeFragment$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:EstimatePhotoViewModel.kt$HomeViewModel$exception: Exception</ID>
+    <ID>TooGenericExceptionCaught:EstimatePhotoViewModel.kt$HomeViewModel$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:JobApprovalDataRepository.kt$JobApprovalDataRepository$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:JobApprovalDataRepository.kt$JobApprovalDataRepository$throwable: Throwable</ID>
     <ID>TooGenericExceptionCaught:JobInfoFragment.kt$JobInfoFragment$t: Throwable</ID>
@@ -520,7 +520,7 @@
     <ID>TooManyFunctions:CreateFragment.kt$CreateFragment : BaseFragmentOfflineListenerDIAware</ID>
     <ID>TooManyFunctions:CreateViewModel.kt$CreateViewModel : ViewModel</ID>
     <ID>TooManyFunctions:EstimatePhotoFragment.kt$EstimatePhotoFragment : LocationFragmentDIAware</ID>
-    <ID>TooManyFunctions:HomeFragment.kt$HomeFragment : BaseFragmentDIAware</ID>
+    <ID>TooManyFunctions:CreationHomeFragment.kt$HomeFragment : BaseFragmentDIAware</ID>
     <ID>TooManyFunctions:JobApprovalDataRepository.kt$JobApprovalDataRepository : SafeApiRequest</ID>
     <ID>TooManyFunctions:JobCreationDataRepository.kt$JobCreationDataRepository : SafeApiRequest</ID>
     <ID>TooManyFunctions:JobDao.kt$JobDao</ID>
@@ -563,7 +563,7 @@
     <ID>VariableNaming:Animations.kt$Animations$@JvmField val shake_long: Animation</ID>
     <ID>VariableNaming:Animations.kt$Animations$@JvmField val shake_longer: Animation</ID>
     <ID>VariableNaming:AppExecutor.kt$AppExecutor$private val LOCK = Any()</ID>
-    <ID>VariableNaming:MainActivityViewModel.kt$MainActivityViewModel$val measureapproval_Item = MutableLiveData&lt;ApproveMeasureItem&gt;()</ID>
+    <ID>VariableNaming:JobCreationViewModel.kt$MainActivityViewModel$val measureapproval_Item = MutableLiveData&lt;ApproveMeasureItem&gt;()</ID>
     <ID>VariableNaming:SettingsViewModel.kt$SettingsViewModel$val measureapproval_Item = MutableLiveData&lt;ApproveMeasureItem&gt;()</ID>
     <ID>VariableNaming:ToastUtils.kt$ToastUtils$val versionName_flavor = "Version " + BuildConfig.VERSION_NAME + " - " + BuildConfig.FLAVOR + "\n"</ID>
     <ID>VariableNaming:UnSubmittedViewModel.kt$UnSubmittedViewModel$val jobtoEdit_Item = MutableLiveData&lt;JobDTO&gt;()</ID>

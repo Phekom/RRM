@@ -9,6 +9,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.work
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -46,6 +47,7 @@ import za.co.xisystems.itis_rrm.databinding.ItemExpandableHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.extensions.uomForUI
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.CardItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.estimate_work_item.ExpandableHeaderWorkItem
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModel
@@ -60,7 +62,6 @@ const val JOB_ID = "jobId"
 
 class WorkFragment : LocationFragment() {
 
-    override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private lateinit var expandableGroups: MutableList<ExpandableGroup>
     private val factory: WorkViewModelFactory by instance()
@@ -96,8 +97,12 @@ class WorkFragment : LocationFragment() {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                val directions = WorkFragmentDirections.actionGlobalNavHome()
-                Navigation.findNavController(this@WorkFragment.requireView()).navigate(directions)
+                Intent(requireContext(), MainActivity::class.java).also { home ->
+                    home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
+                }
+//                val directions = WorkFragmentDirections.actionGlobalNavHome()
+//                Navigation.findNavController(this@WorkFragment.requireView()).navigate(directions)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -124,12 +129,27 @@ class WorkFragment : LocationFragment() {
         })
     }
 
+    private val backClickListener = View.OnClickListener {
+        setBackPressed()
+    }
+
+    private fun setBackPressed() {
+        Intent(requireContext(), MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
+    }
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _ui = FragmentWorkBinding.inflate(inflater, container, false)
+        _ui?.toolbar?.apply {
+            setOnBackClickListener(backClickListener)
+        }
         return ui.root
     }
 
@@ -246,7 +266,7 @@ class WorkFragment : LocationFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        _ui?.toolbar?.setTitle("Select Estimate Start To Work")
         if (savedInstanceState != null && !stateRestored) {
             onRestoreInstanceState(savedInstanceState)
             stateRestored = true
@@ -333,10 +353,6 @@ class WorkFragment : LocationFragment() {
         super.onDestroyView()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
 
     private suspend fun List<JobDTO>.toWorkListItems(): List<ExpandableGroup> {
         // Initialize Expandable group with expandable item and specify whether it should be expanded by default or not

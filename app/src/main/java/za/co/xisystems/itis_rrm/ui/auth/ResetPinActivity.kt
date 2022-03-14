@@ -16,8 +16,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import www.sanju.motiontoast.MotionToast
 import www.sanju.motiontoast.MotionToastStyle
@@ -28,19 +26,15 @@ import za.co.xisystems.itis_rrm.databinding.ActivityResetPinBinding
 import za.co.xisystems.itis_rrm.delegates.viewBinding
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
+import za.co.xisystems.itis_rrm.utils.*
 
-class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
+class ResetPinActivity : BaseActivity(), AuthListener{
     companion object {
         val TAG: String = ResetPinActivity::class.java.simpleName
         private const val PERMISSION_REQUEST = 10
     }
 
-    override val di by closestDI()
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
     private lateinit var appContext: Context
@@ -90,6 +84,14 @@ class ResetPinActivity : AppCompatActivity(), AuthListener, DIAware {
                 }
             })
         }
+    }
+
+    override fun startLongRunningTask() {
+
+    }
+
+    override fun endLongRunningTask() {
+
     }
 
     private fun scanForPinUpdate() {

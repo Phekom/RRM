@@ -18,9 +18,8 @@ import za.co.xisystems.itis_rrm.base.BaseFragment
  * Created by Francis Mahlava on 03,October,2019
  */
 
-class CorrectionsFragment : BaseFragment(), DIAware {
-    //
-    override val di by closestDI()
+class CorrectionsFragment : BaseFragment() {
+
     private lateinit var correctionsViewModel: CorrectionsViewModel
     private val factory: CorrectionsViewModelFactory by instance()
 
@@ -46,8 +45,5 @@ class CorrectionsFragment : BaseFragment(), DIAware {
         return inflater.inflate(R.layout.fragment_correction, container, false)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 }

@@ -3,12 +3,18 @@ package za.co.xisystems.itis_rrm.data.repositories
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.room.Transaction
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
+import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
@@ -25,6 +31,12 @@ class UserRepository(
 
     private val users = MutableLiveData<UserDTO>()
     private val userError = MutableLiveData<String>()
+    private val superJob = SupervisorJob()
+    private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+    private var ioContext = dispatchers.io() + Job(superJob)
+    private var mainContext = dispatchers.main() + Job(superJob)
+    var healthState: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+    var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
 
     init {
         users.observeForever { user ->
@@ -78,6 +90,22 @@ class UserRepository(
         }
     }
 
+    private fun postEvent(result: XIResult<Boolean>) {
+        databaseStatus.postValue(XIEvent(result))
+    }
+
+    private fun postStatus(message: String) {
+        val status = XIResult.Status(message)
+        postEvent(status)
+    }
+
+    suspend fun getHealthCheck(): HealthCheckResponse {
+        val healthCheck = apiRequest { api.healthCheck("userId") }
+        return withContext(dispatchers.io()) {
+            healthCheck
+        }
+    }
+
     suspend fun updateUser(
         phoneNumber: String,
         imei: String,
@@ -110,13 +138,6 @@ class UserRepository(
         }
     }
 
-
-    suspend fun getAppVersionCheck(versionNmb: String): VersionCheckResponse {
-        return withContext(dispatchers.io()) {
-            val appVersionCheck = apiRequest { api.versionCheck(versionNmb) }
-            appVersionCheck
-        }
-    }
 
     suspend fun authenticatePin() {
         appDb.getUserDao().pinAuthenticated()

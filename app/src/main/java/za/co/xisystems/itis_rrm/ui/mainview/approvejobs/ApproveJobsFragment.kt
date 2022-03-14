@@ -54,7 +54,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class ApproveJobsFragment : BaseFragment() {
 
-    override val di by closestDI()
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
     lateinit var dialog: Dialog
@@ -100,10 +99,7 @@ class ApproveJobsFragment : BaseFragment() {
         return ui.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // No options for this fragment
-        return false
-    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

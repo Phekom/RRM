@@ -4,11 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <androidx.core.widget.NestedScrollView
         style="@style/_default"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:animateLayoutChanges="true">
+        android:animateLayoutChanges="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -54,14 +59,14 @@
                     android:layout_marginStart="@dimen/xsmall"
                     android:layout_marginTop="@dimen/medium"
                     android:layout_marginBottom="@dimen/xsmall"
-                    android:inputType="text"
                     android:backgroundTint="@color/itis_burnt_orange"
                     android:hint="@string/description"
+                    android:inputType="textShortMessage"
                     android:shadowColor="@color/red"
                     android:textColorHighlight="@color/red" />
 
                 <Button
-                    android:id="@+id/selectContractProjectContinueButton"
+                    android:id="@+id/createJobBtn"
                     style="@style/_button"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/button_size"

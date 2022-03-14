@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -12,8 +13,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import org.kodein.di.DIAware
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -25,17 +24,17 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentUnsubmittedjobsBinding
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmittedJobItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment : BaseFragment(), DIAware {
+class UnSubmittedFragment : BaseFragment() {
 
-    override val di by closestDI()
-    private lateinit var createViewModel: CreateViewModel
-    private val createFactory: CreateViewModelFactory by instance()
+    private lateinit var addViewModel: AddItemsViewModel
+    private val createFactory: AddItemsViewModelFactory by instance()
     private lateinit var groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>
     private lateinit var unSubmittedViewModel: UnSubmittedViewModel
     private val factory: UnSubmittedViewModelFactory by instance()
@@ -50,12 +49,27 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                Navigation.findNavController(this@UnSubmittedFragment.requireView())
-                    .navigate(R.id.action_global_nav_home)
+                Intent(requireContext(), MainActivity::class.java).also { home ->
+                    home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
+                }
+//                Navigation.findNavController(this@UnSubmittedFragment.requireView())
+//                    .navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
             .addCallback(this, callback)
+    }
+
+    private val backClickListener = View.OnClickListener {
+        setBackPressed()
+    }
+
+    private fun setBackPressed() {
+        Intent(requireContext(), MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
     }
 
     override fun onCreateView(
@@ -64,20 +78,21 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         savedInstanceState: Bundle?
     ): View {
         _ui = FragmentUnsubmittedjobsBinding.inflate(inflater, container, false)
+        _ui?.toolbar?.apply {
+            setTitle(getString(R.string.menu_unSubmitted))
+            setOnBackClickListener(backClickListener)
+        }
         return ui.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         unSubmittedViewModel =
             ViewModelProvider(this.requireActivity(), factory).get(UnSubmittedViewModel::class.java)
 
-        createViewModel =
-            ViewModelProvider(this.requireActivity(), createFactory).get(CreateViewModel::class.java)
+        addViewModel =
+            ViewModelProvider(this.requireActivity(), createFactory).get(AddItemsViewModel::class.java)
     }
 
     /**
@@ -110,7 +125,7 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
                     } else {
                         _ui?.noData?.visibility = View.GONE
                         _ui?.incompleteJobListView?.visibility = View.VISIBLE
-                        initRecyclerView(jobList.toApproveListItems())
+                        initRecyclerView(jobList.toUnSubmittedListItems())
                     }
                 })
             } catch (t: Throwable) {
@@ -132,12 +147,12 @@ class UnSubmittedFragment : BaseFragment(), DIAware {
         fetchUnsubmitted()
     }
 
-    private fun List<JobDTO>.toApproveListItems(): List<UnSubmittedJobItem> {
+    private fun List<JobDTO>.toUnSubmittedListItems(): List<UnSubmittedJobItem> {
         return this.map { jobsToApprove ->
             UnSubmittedJobItem(
                 jobsToApprove,
                 unSubmittedViewModel,
-                createViewModel,
+                addViewModel,
                 groupAdapter,
                 this@UnSubmittedFragment
             )

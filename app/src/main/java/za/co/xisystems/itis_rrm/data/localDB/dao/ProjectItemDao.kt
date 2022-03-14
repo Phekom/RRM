@@ -66,6 +66,9 @@ interface ProjectItemDao {
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
     fun getItemForItemId(itemId: String): LiveData<ProjectItemDTO>
 
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId LIKE :itemId")
+    fun getItemForID(itemId: String): ProjectItemDTO
+
     @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE sectionItemId LIKE :sectionItemId")
     fun getItemForItemCode(sectionItemId: String): LiveData<List<ProjectItemDTO>>
 

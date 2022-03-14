@@ -7,8 +7,8 @@ import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
 import org.kodein.di.instance
+import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.extensions.exitApplication
 import za.co.xisystems.itis_rrm.forge.XIArmoury
 import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
@@ -17,11 +17,11 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 abstract class BaseActivity : AppCompatActivity(), DIAware {
-    override val di by closestDI()
+    override val di by lazy { (applicationContext as MainApp).di }
     private lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
-
+    open var gpsEnabled = false
     val takingPhotos get() = sharedViewModel.takingPhotos
 
     override fun onCreate(savedInstanceState: Bundle?) {

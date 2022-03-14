@@ -37,8 +37,9 @@ object XIErrorHandler {
     private const val SERVICE_HOST_UNREACHABLE =
         "Service Host for RRM is down, please try again later."
     private const val EMPTY_RESPONSE = "Server returned empty response."
-    const val NO_SUCH_DATA = "Data not found in the database"
+    const val NO_SUCH_DATA = "Please Check Data Connection \n Or Internet Connection." //\n Or Move to an Area with Good Network Coverage" //Data not found in the database
     const val UNKNOWN_ERROR = "An unknown error occurred!"
+
 
     fun handleError(errorAction: XIErrorAction) {
         this.handleError(

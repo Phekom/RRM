@@ -51,7 +51,6 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 @Suppress("KDocUnresolvedReference")
 class ApproveMeasureFragment : BaseFragment(), DIAware {
 
-    override val di by closestDI()
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance<ApproveMeasureViewModelFactory>()
 
@@ -68,10 +67,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -50,7 +50,7 @@ class ImagePickerViewModel(private val unallocatedRepository: CapturedPictureRep
 
     fun getConfig() = config
 
-    fun fetchImages(activity: ImagePickerActivity) {
+    fun fetchImages() {
         if (job != null) return
 
         result.postValue(ImageResult(CallbackStatus.FETCHING, arrayListOf()))
