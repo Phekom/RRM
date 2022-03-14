@@ -15,7 +15,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -49,6 +49,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -230,6 +231,15 @@ class OfflineDataRepository(
             appDb.getJobSectionDao().getProjectSectionId(jobId!!)
         }
     }
+
+    suspend fun getAppVersionCheck(versionNmb: String): VersionCheckResponse {
+        return withContext(dispatchers.io()) {
+            val appVersionCheck = apiRequest { api.versionCheck(versionNmb) }
+            appVersionCheck
+        }
+    }
+
+
 
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(dispatchers.io()) {
@@ -617,6 +627,9 @@ class OfflineDataRepository(
 
     @Transaction
     private suspend fun saveJob(jobDTO: JobDTO?) {
+//        if(appDb.getJobDao().checkIfJobExist())
+
+
         jobDTO?.let { job ->
 
             if (!appDb.getJobDao().checkIfJobExist(job.jobId)) {
@@ -1494,8 +1507,9 @@ class OfflineDataRepository(
         this.estimateId = toBigEndian!!
     }
 
-    suspend fun getServiceHealth(userId: String): Boolean {
+    suspend fun getServiceHealth(): Boolean {
         return try {
+            val userId = appDb.getUserDao().getUserID()
             val healthCheck = apiRequest { api.healthCheck(userId) }
             healthCheck.errorMessage.isNullOrBlank() || healthCheck.isAlive == 1
         } catch (t: Throwable) {
@@ -1506,6 +1520,13 @@ class OfflineDataRepository(
         }
     }
 
+    suspend fun getHealthCheck(): HealthCheckResponse {
+        val userId = appDb.getUserDao().getUserID()
+        val healthCheck = apiRequest { api.healthCheck(userId) }
+        return withContext(dispatchers.io()) {
+            healthCheck
+        }
+    }
 
     private fun JobItemMeasureDTO.setDeleted(i: Int) {
         this.deleted = i

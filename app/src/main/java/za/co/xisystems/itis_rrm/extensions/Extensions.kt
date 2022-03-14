@@ -8,6 +8,8 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.location.Location
 import android.location.LocationManager
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -160,4 +162,15 @@ fun displayPromptForEnablingGPS(
             d.dismiss()
         }
     builder.create().show()
+}
+
+
+fun connectivityCheck() : NetworkRequest {
+    val networkRequest = NetworkRequest.Builder()
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+        .build()
+
+    return networkRequest
 }

@@ -37,7 +37,7 @@ class ServiceUriUtil {
         }
 
         private val webServiceRootUri: String
-            get() = BuildConfig.API_HOST
+            get() = BuildConfig.FLAVOR
 
         private val serverUriFriendlyString: String
             get() {

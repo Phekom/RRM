@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_back"
+        android:title="@string/action_back"
+        app:actionLayout="@layout/main_toolbar"
+        app:showAsAction="always" />
+
+<!--    <item-->
+<!--        android:icon="@drawable/ic_arrow_back"-->
+<!--            android:id="@+id/action_back"-->
+<!--           android:title="@string/action_back"-->
+<!--            app:showAsAction="always" />-->
+
+<!--    <item-->
+<!--        android:icon="@drawable/ic_settings_black"-->
+<!--        android:id="@+id/action_settings"-->
+<!--        android:orderInCategory="200"-->
+<!--        android:title="@string/action_settings"-->
+<!--        app:showAsAction="ifRoom" />-->
+
+<!--    <item-->
+<!--        android:icon="@drawable/ic_exit_to_app_black"-->
+<!--        android:id="@+id/action_logout"-->
+<!--        android:orderInCategory="300"-->
+<!--        android:title="@string/logout"-->
+<!--        app:showAsAction="ifRoom" />-->
+</menu>

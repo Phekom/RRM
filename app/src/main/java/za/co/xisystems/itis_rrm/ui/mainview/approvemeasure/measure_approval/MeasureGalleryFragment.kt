@@ -8,16 +8,14 @@ package za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.measure_approval
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import kotlinx.coroutines.launch
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -30,7 +28,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewMod
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 
 class MeasureGalleryFragment : BaseFragment() {
-    override val di by closestDI()
+
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private val galleryObserver =
@@ -59,10 +57,7 @@ class MeasureGalleryFragment : BaseFragment() {
         return ui.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Not all fragments have options
-        return false
-    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

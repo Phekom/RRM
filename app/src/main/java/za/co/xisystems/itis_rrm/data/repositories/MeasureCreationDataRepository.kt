@@ -1,12 +1,10 @@
 /**
  * Updated by Shaun McDonald on 2021/05/19
- * Last modified on 2021/05/18, 20:28
+ * Updated by Francis Mahlava on 2022/03/10
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
 package za.co.xisystems.itis_rrm.data.repositories
-
-// import sun.security.krb5.Confounder.bytes
 
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
@@ -90,7 +88,7 @@ class MeasureCreationDataRepository(
         mSures: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
-    ) {
+    ) : String {
         val topic = "Saving Measurements"
         postWorkflowStatus(XIResult.Progress(true))
         val measureData = JsonObject()
@@ -105,11 +103,9 @@ class MeasureCreationDataRepository(
         Timber.d("$measureData")
 
         val measurementItemResponse = apiRequest { api.saveMeasurementItems(measureData) }
-
-        val messages = measurementItemResponse.errorMessage ?: ""
-
+        val messages = measurementItemResponse.errorMessage
         // You're only okay to perform the next step if this succeeded.
-        if (messages.isBlank()) {
+        if (measurementItemResponse.errorMessage.isNullOrEmpty()) {
             persistMeasurementWorkflow(
                 measurementItemResponse.workflowJob,
                 mSures,
@@ -120,11 +116,16 @@ class MeasureCreationDataRepository(
             postWorkflowStatus(
                 XIResult.Error(
                     topic = topic,
-                    exception = ServiceException(messages),
+                    exception = ServiceException(messages!!),
                     message = messages
                 )
             )
         }
+
+        return withContext(dispatchers.io()) {
+            messages!!
+        }
+
     }
 
     private suspend fun persistMeasurementWorkflow(
@@ -358,6 +359,7 @@ class MeasureCreationDataRepository(
             appDb.getProjectItemDao().getItemForItemId(projectItemId!!)
         }
     }
+
 
     fun saveJobItemMeasureItems(jobItemMeasures: ArrayList<JobItemMeasureDTO>) {
         Coroutines.io {

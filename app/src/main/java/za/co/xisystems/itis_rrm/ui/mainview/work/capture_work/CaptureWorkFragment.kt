@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.work.capture_work
 
 import android.Manifest.permission
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
@@ -10,7 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.method.KeyListener
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView.BufferType.NORMAL
@@ -30,10 +30,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -60,7 +59,6 @@ import java.util.*
 
 class CaptureWorkFragment : LocationFragment() {
 
-    override val di by closestDI()
     private lateinit var workViewModel: WorkViewModel
     private val factory: WorkViewModelFactory by instance()
     private val photoUtil: PhotoUtil by instance()
@@ -122,6 +120,19 @@ class CaptureWorkFragment : LocationFragment() {
         const val ESTIMATE_KEY = "estimateId"
     }
 
+    private val backClickListener = View.OnClickListener {
+        setBackPressed(it)
+    }
+
+    private fun setBackPressed(view : View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavigationWork(itemEstimateJob.jobId)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
+        }
+    }
+
     private fun showWorkIncomplete() = uiScope.launch(dispatchers.main()) {
         this@CaptureWorkFragment.extensionToast(
             title = "Work data is incomplete",
@@ -140,7 +151,7 @@ class CaptureWorkFragment : LocationFragment() {
         estimateWorksArrayList = ArrayList()
         jobWorkStep = ArrayList()
         groupAdapter = GroupAdapter<GroupieViewHolder<ListSelectorBinding>>()
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title) + " "
+//        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title) + " "
         workViewModel = ViewModelProvider(this.requireActivity(), factory)[WorkViewModel::class.java]
     }
 
@@ -151,6 +162,11 @@ class CaptureWorkFragment : LocationFragment() {
     ): View {
         // Inflate the layout for this fragment
         _ui = FragmentCaptureWorkBinding.inflate(inflater, container, false)
+
+        _ui?.toolbar?.apply {
+            setTitle( getString(R.string.capture_work_title))
+            setOnBackClickListener(backClickListener)
+        }
         return ui.root
     }
 
@@ -337,7 +353,7 @@ class CaptureWorkFragment : LocationFragment() {
             activeWorks.estimateId = estimateItem?.estimateId
             var comments = ""
             if (!ValidateInputs.isValidInput(ui.commentsEditText.text.toString())) {
-                ui.commentsEditText.error = getString(R.string.invalid_char)
+                ui.commentsEditText.error = getString(R.string.invalid_char)+ " Or ( $&+~;=\\?@|/'<>^*()%!- )"
             } else {
                 comments = ui.commentsEditText.text!!.toString().trim { it <= ' ' }
             }
@@ -509,8 +525,8 @@ class CaptureWorkFragment : LocationFragment() {
             Timber.d("RefreshUI -> JobID ${itemEstimateJob.jobId}")
             Timber.d("RefreshUI -> EstimateID ${itemEstimate.estimateId}")
             val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentSelf(
-                jobId = itemEstimateJob.jobId,
-                estimateId = itemEstimate.estimateId
+                 itemEstimateJob.jobId,
+                 itemEstimate.estimateId
             )
 
             Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
@@ -751,7 +767,7 @@ class CaptureWorkFragment : LocationFragment() {
 
     private fun popViewOnWorkSubmit() {
         uiScope.launch(dispatchers.main()) {
-            val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimate.jobId)
+            val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavigationWork(itemEstimate.jobId)
             Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
         }
 
@@ -911,8 +927,12 @@ class CaptureWorkFragment : LocationFragment() {
         Handler(Looper.getMainLooper()).postDelayed(
             {
                 uiScope.launch {
-                    val directions = CaptureWorkFragmentDirections.actionGlobalNavHome()
-                    Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
+//                    val directions = CaptureWorkFragmentDirections.actionGlobalNavHome()
+//                    Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
+                    Intent(requireContext(), MainActivity::class.java).also { home ->
+                        home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(home)
+                    }
                 }
             },
             Constants.TWO_SECONDS
@@ -955,12 +975,11 @@ class CaptureWorkFragment : LocationFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title = getString(R.string.capture_work_title)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
 
             override fun handleOnBackPressed() {
                 uiScope.launch(dispatchers.main()) {
-                    val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavWork(itemEstimateJob.jobId)
+                    val directions = CaptureWorkFragmentDirections.actionCaptureWorkFragmentToNavigationWork(itemEstimateJob.jobId)
                     Navigation.findNavController(this@CaptureWorkFragment.requireView()).navigate(directions)
                 }
             }
@@ -969,10 +988,6 @@ class CaptureWorkFragment : LocationFragment() {
             .addCallback(this, callback)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
 
     private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()

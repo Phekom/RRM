@@ -170,14 +170,22 @@ class JobApprovalDataRepository(
                 when {
                     errorMessage.lowercase(Locale.ENGLISH).contains("no job found") &&
                         direction == WorkflowDirection.FAIL.value -> {
-                        appDb.getJobDao().softDeleteJobForJobId(jobId)
+                        val bigJobId: String =
+                            DataConversion.toBigEndian(jobId)!!
+                        appDb.getJobDao().deleteJobForJobId(bigJobId)
                         postWorkflowStatus(XIResult.Success("DECLINED"))
                     }
                     errorMessage.isBlank() && workflowMoveResponse.workflowJob != null -> {
                         saveWorkflowJob(workflowMoveResponse.workflowJob!!)
                     }
                     else -> {
-                        throw ServiceException(errorMessage)
+                        val newError = "Requested Action Was Done Previously "
+                        if ( errorMessage.contains("Cannot workflow unsupported entity type")){
+                            val bigJobId: String =
+                                DataConversion.toBigEndian(jobId)!!
+                            appDb.getJobDao().deleteJobForJobId(bigJobId)
+                        }
+                        throw ServiceException(newError)
                     }
                 }
             } catch (t: Throwable) {

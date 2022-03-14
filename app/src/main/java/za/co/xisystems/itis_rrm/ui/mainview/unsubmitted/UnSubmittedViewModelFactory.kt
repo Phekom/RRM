@@ -10,15 +10,11 @@ import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 
 @Suppress("UNCHECKED_CAST")
 class UnSubmittedViewModelFactory(
-//    private val repository: UserRepository,
     private val offlineDataRepository: OfflineDataRepository
-//    private val Db : AppDatabase,
-//    val context: Context
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return UnSubmittedViewModel(
             offlineDataRepository
         ) as T
-//        return MeasureViewModel(repository,,Db ,context) as T
     }
 }

@@ -16,8 +16,11 @@ package za.co.xisystems.itis_rrm.ui.mainview.home
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Color
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -41,6 +44,8 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
+import za.co.xisystems.itis_rrm.custom.errors.ReceptionException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
@@ -50,16 +55,17 @@ import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment() {
 
-    override val di by closestDI()
     private lateinit var homeViewModel: HomeViewModel
     private val factory: HomeViewModelFactory by instance()
     private var gpsEnabled: Boolean = false
@@ -137,11 +143,10 @@ class HomeFragment : BaseFragment() {
                 user.observe(viewLifecycleOwner, { userInstance ->
                     userInstance.let {
                         userDTO = it
-                        _ui?.welcome?.text = getString(R.string.welcome_greeting, it.userName)
+                        _ui?.welcome?.text = getString(R.string.welcome_greeting, it.userName)?:""
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()
-
                         }
                     }
                 })
@@ -180,11 +185,6 @@ class HomeFragment : BaseFragment() {
         if (item != null) item.isVisible = false
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        activity?.menuInflater?.inflate(R.menu.search, menu)
-        return true
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -334,6 +334,7 @@ class HomeFragment : BaseFragment() {
                     drawable?.setTint(colorNotConnected)
                 }
             )
+            updateServiceHealth(result)
             result = false
         } else {
             _ui?.dataEnabled?.setText(R.string.mobile_data_connected)
@@ -345,6 +346,9 @@ class HomeFragment : BaseFragment() {
                     drawable?.setTint(colorConnected)
                 }
             )
+            updateServiceHealth(result)
+            _ui?.welcome?.text = getString(R.string.welcome_greeting, userDTO?.userName)
+
         }
 
         // Check if GPS connected
@@ -369,6 +373,7 @@ class HomeFragment : BaseFragment() {
                 }
             )
         }
+
 
         return result
     }
@@ -530,7 +535,7 @@ class HomeFragment : BaseFragment() {
                     processHealthCheck(result)
                 }
             })
-            homeViewModel.healthCheck(userDTO!!.userId)
+            homeViewModel.healthCheck()
         }
     }
 
@@ -563,15 +568,18 @@ class HomeFragment : BaseFragment() {
     private fun updateServiceHealth(serviceHealthy: Boolean) {
         when (serviceHealthy) {
             true -> {
-                _ui?.connectedTo?.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
-                _ui?.ivCloud?.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        this@HomeFragment.requireContext(),
-                        R.drawable.ic_baseline_services_up
-                    ).also { drawable ->
-                        drawable?.setTint(colorConnected)
-                    }
-                )
+                Coroutines.main {
+                    _ui?.connectedTo?.text = getString(R.string.services_up, BuildConfig.VERSION_NAME)
+                    _ui?.ivCloud?.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            this@HomeFragment.requireContext(),
+                            R.drawable.ic_baseline_services_up
+                        ).also { drawable ->
+                            drawable?.setTint(colorConnected)
+                        }
+                    )
+
+                }
             }
             else -> {
                 _ui?.connectedTo?.text = getString(R.string.services_down, BuildConfig.VERSION_NAME)
@@ -586,4 +594,10 @@ class HomeFragment : BaseFragment() {
             }
         }
     }
+
+
+
+
+
+
 }

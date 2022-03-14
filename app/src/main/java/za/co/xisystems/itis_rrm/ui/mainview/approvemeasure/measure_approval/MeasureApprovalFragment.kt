@@ -21,7 +21,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -37,10 +36,9 @@ import com.xwray.groupie.viewbinding.GroupieViewHolder
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -67,7 +65,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
 class MeasureApprovalFragment : BaseFragment() {
-    override val di by closestDI()
+
     private lateinit var approveViewModel: ApproveMeasureViewModel
     private val factory: ApproveMeasureViewModelFactory by instance()
     private lateinit var measurementsToApprove: ArrayList<JobItemMeasureDTO>
@@ -157,10 +155,7 @@ class MeasureApprovalFragment : BaseFragment() {
             ViewModelProvider(this.requireActivity(), factory)[ApproveMeasureViewModel::class.java]
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,

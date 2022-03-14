@@ -3,7 +3,6 @@ package za.co.xisystems.itis_rrm.services
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.LocationException
-import za.co.xisystems.itis_rrm.custom.errors.NoDataException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
@@ -23,53 +22,90 @@ class DeferredLocationRepository(
 ) : SafeApiRequest() {
 
     companion object {
-        const val DISTANCE = 50
+        const val DISTANCE = 50.0
         const val IN_BUFFER = -1.0
     }
+
+//    @Suppress("MagicNumber", "TooGenericExceptionCaught")
+//    suspend fun getRouteSectionPoint(
+//        locationQuery: LocationValidation
+//    ): RouteSectionPointResponse = withContext(dispatchers.io()) {
+//
+//        val routeSectionPointResponse: RouteSectionPointResponse =
+//            apiRequest {
+//                api.getRouteSectionPoint(
+//                    distance = DISTANCE.toDouble(),
+//                    buffer = IN_BUFFER,
+//                    latitude = locationQuery.latitude,
+//                    longitude = locationQuery.longitude,
+//                    userId = locationQuery.userId
+//                )
+//            }
+//        routeSectionPointResponse.apply {
+//            Timber.d("$routeSectionPointResponse")
+//            if (errorMessage.isNullOrBlank()) {
+//                // Interim fix until buffered routes
+//                val bufferLocations =
+//                    bufferLocation.split(";", ignoreCase = true, limit = 0)
+//                        .map { item -> item.trim() }.firstOrNull { item ->
+//                            !item.contains("xxx" as CharSequence, ignoreCase = true) && item != ""
+//                        }
+//
+//                if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
+//                        .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
+//                ) {
+//                    notEvenWrongException(locationQuery)
+//                } else {
+//                    routeSectionPointResponse.apply {
+//                        val routeSectionPointResult = locationQuery.copy(
+//                            direction = this.direction, route = this.linearId, pointLocation = this.pointLocation,
+//                            sectionId = this.sectionId.toString()
+//                        ).setBufferLocation(this.bufferLocation)
+//                         XIResult.Success(routeSectionPointResult)
+//                    }
+//                }
+//            } else {
+//                if (errorMessage.contains("point not on line" as CharSequence, ignoreCase = true)) {
+//                    throw notEvenWrongException(locationQuery)
+//                } else {
+//                    throw ServiceException(errorMessage)
+//                }
+//            }
+//        }
+//
+//        return@withContext routeSectionPointResponse
+//    }
+//
+
 
     @Suppress("MagicNumber", "TooGenericExceptionCaught")
     suspend fun getRouteSectionPoint(
         locationQuery: LocationValidation
     ): XIResult<LocationValidation> = withContext(dispatchers.io()) {
-        var result: XIResult<LocationValidation> =
-            XIResult.Error(
-                NoDataException("No response from the service"),
-                "The service is down, please try again later."
-            )
+        var result: XIResult<LocationValidation>? = null
+
         try {
 
             val routeSectionPointResponse: RouteSectionPointResponse =
                 apiRequest {
                     api.getRouteSectionPoint(
-                        distance = DISTANCE.toDouble(),
+                        distance = DISTANCE,
                         buffer = IN_BUFFER,
                         latitude = locationQuery.latitude,
                         longitude = locationQuery.longitude,
                         userId = locationQuery.userId
                     )
                 }
-            with(routeSectionPointResponse) {
-                Timber.d("$routeSectionPointResponse")
 
-                if (!errorMessage.isNullOrBlank()) {
-                    if (errorMessage.contains("point not on line" as CharSequence, ignoreCase = true)) {
-                        throw notEvenWrongException(locationQuery)
-                    } else {
-                        throw ServiceException(errorMessage)
-                    }
-                }
-
+            if (routeSectionPointResponse.errorMessage.isNullOrBlank()) {
                 // Interim fix until buffered routes
-                val bufferLocations =
-                    bufferLocation.split(";", ignoreCase = true, limit = 0)
-                        .map { item -> item.trim() }.firstOrNull { item ->
-                            !item.contains("xxx" as CharSequence, ignoreCase = true) && item != ""
-                        }
-
-                if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
-                    .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
-                ) {
-                    notEvenWrongException(locationQuery)
+                val bufferLocations = routeSectionPointResponse.bufferLocation.split(";", ignoreCase = true, limit = 0)
+                    .map { item -> item.trim() }.firstOrNull { item ->
+                        !item.contains("XXXX" as CharSequence, ignoreCase = true) && item != ""
+                    }
+                if (routeSectionPointResponse.linearId.contains("XXX" as CharSequence, ignoreCase = true).or(routeSectionPointResponse.linearId.isBlank())
+                        .or(bufferLocations.isNullOrEmpty())) {
+                    throw  notEvenWrongException()
                 } else {
                     routeSectionPointResponse.apply {
                         val routeSectionPointResult = locationQuery.copy(
@@ -79,20 +115,27 @@ class DeferredLocationRepository(
                         result = XIResult.Success(routeSectionPointResult)
                     }
                 }
+
+            } else {
+                if (routeSectionPointResponse.errorMessage.contains("Point not on line" as CharSequence, ignoreCase = true)) {
+                    throw notEvenWrongException()
+                } else {
+                    throw ServiceException(routeSectionPointResponse.errorMessage)
+                }
             }
+
+
+
         } catch (e: Throwable) {
             result = XIResult.Error(e, "${e.message}")
         }
 
-        return@withContext result
+        return@withContext result!!
     }
 
-    private fun notEvenWrongException(locationQuery: LocationValidation): LocationException {
-        return LocationException(
-            "Coordinate (lat: ${locationQuery.latitude}, " +
-                "lng: ${locationQuery.longitude}) " +
-                "is not in Sanral territory."
-        )
+
+    private fun notEvenWrongException(): LocationException {
+        return LocationException("One or more images not within your allocated road reserve.")
     }
 
     @Suppress("MagicNumber")
@@ -177,18 +220,21 @@ class DeferredLocationRepository(
             result = when {
                 distanceBack < distanceForward -> {
                     "The closest section (${closestEndKm.section}) is " +
-                        "${"%.3f".format(distanceBack)} km away at marker " +
-                        "${closestEndKm.kmMarker.round(3)}."
+                            "${"%.3f".format(distanceBack)} km away at marker " +
+                            "${closestEndKm.kmMarker.round(3)}."
                 }
                 else -> {
                     "The closest section (${closestStartKm.section}) is " +
-                        "${"%.3f".format(distanceForward)}  km away at marker " +
-                        "${closestStartKm.kmMarker.round(3)}."
+                            "${"%.3f".format(distanceForward)}  km away at marker " +
+                            "${closestStartKm.kmMarker.round(3)}."
                 }
             }
         }
 
-        return@withContext XIResult.Error(LocationException(result), result)
+        return@withContext XIResult.Error(
+            LocationException(result),
+            result
+        )
     }
 
     private suspend fun validateRouteSection(
@@ -198,7 +244,10 @@ class DeferredLocationRepository(
 
         val message = "This photograph was not taken within 50 metres of a national road"
         var result: XIResult<LocationValidation> =
-            XIResult.Error(LocationException(message), message)
+            XIResult.Error(
+                LocationException(message),
+                message
+            )
 
         val sectionPoint = appDb.getSectionPointDao().getPointSectionData(projectId)
 

@@ -8,6 +8,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,14 +29,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import org.kodein.di.android.x.closestDI
+import kotlinx.coroutines.*
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
-import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
@@ -44,30 +40,21 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.databinding.FragmentSubmitMeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemMeasureHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.extensions.observeOnce
-import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
-import za.co.xisystems.itis_rrm.ui.extensions.doneProgress
-import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.extensions.failProgress
-import za.co.xisystems.itis_rrm.ui.extensions.initProgress
-import za.co.xisystems.itis_rrm.ui.extensions.startProgress
+import za.co.xisystems.itis_rrm.ui.extensions.*
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DataConversion
-import java.util.ArrayList
-import java.util.HashMap
+import java.util.*
 
 class SubmitMeasureFragment : BaseFragment() {
-    override val di by closestDI()
+
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private lateinit var jobItemMeasurePhotoDTO: ArrayList<JobItemMeasurePhotoDTO>
@@ -165,8 +152,6 @@ class SubmitMeasureFragment : BaseFragment() {
 
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
         jobItemMeasurePhotoDTO = ArrayList()
         jobItemMeasureArrayList = ArrayList()
         jobItemEstimatesForJob = ArrayList()
@@ -185,10 +170,27 @@ class SubmitMeasureFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View {
         // Inflate the layout for this fragment
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
         _ui = FragmentSubmitMeasureBinding.inflate(inflater, container, false)
+        _ui?.toolbar?.apply {
+            setTitle(getString(R.string.submit_measure_title))
+            setOnBackClickListener(backClickListener)
+        }
+
         return ui.root
+    }
+
+    private val backClickListener = View.OnClickListener {
+        setBackPressed(it)
+    }
+
+    private fun setBackPressed(view: View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = SubmitMeasureFragmentDirections
+                    .actionSubmitMeasureFragmentToNavigationMeasureEst()
+                Navigation.findNavController(view).navigate(navDirection)
+            }
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -346,8 +348,9 @@ class SubmitMeasureFragment : BaseFragment() {
     }
 
     private fun popViewBck() {
-        Navigation.findNavController(this@SubmitMeasureFragment.requireView())
-            .navigate(R.id.nav_estMeasure)
+        val navDirection = SubmitMeasureFragmentDirections
+            .actionSubmitMeasureFragmentToNavigationMeasureEst()
+        Navigation.findNavController(this@SubmitMeasureFragment.requireView()).navigate(navDirection)
     }
 
     private fun prepareMeasurementWorkflow(
@@ -440,31 +443,26 @@ class SubmitMeasureFragment : BaseFragment() {
 
     private fun popViewOnJobSubmit() {
         // Delete data from database after successful upload
-        val direction = MobileNavigationDirections.actionGlobalNavHome()
-        Navigation.findNavController(this@SubmitMeasureFragment.requireView())
-            .navigate(direction)
+        Intent(requireContext(), MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
+
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
+
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (activity as MainActivity).supportActionBar?.title =
-            getString(R.string.submit_measure_title)
-
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                Navigation.findNavController(this@SubmitMeasureFragment.requireView())
-                    .navigate(R.id.nav_estMeasure)
+                val navDirection = SubmitMeasureFragmentDirections
+                    .actionSubmitMeasureFragmentToNavigationMeasureEst()
+                Navigation.findNavController(this@SubmitMeasureFragment.requireView()).navigate(navDirection)
             }
         }
         requireActivity().onBackPressedDispatcher

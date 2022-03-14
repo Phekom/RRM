@@ -55,8 +55,11 @@ data class JobItemEstimatesPhotoDTO(
     val recordVersion: Int,
     @SerializedName("IsPhotoStart")
     var isPhotostart: Boolean,
+
     var sectionMarker: String?,
+
     val geoCoded: Boolean = false
+
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(

@@ -3,12 +3,17 @@ package za.co.xisystems.itis_rrm.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import androidx.lifecycle.MutableLiveData
 import okhttp3.Interceptor
 import okhttp3.Response
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
+import za.co.xisystems.itis_rrm.custom.errors.ConnectException
 import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceHostUnreachableException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
+import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.utils.ServiceUriUtil
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -18,25 +23,29 @@ import javax.net.ssl.HttpsURLConnection
 /**
  * Created by Francis Mahlava on 2019/10/18.
  */
+ 
 class NetworkConnectionInterceptor(
     context: Context
 ) : Interceptor {
     private val serviceUriUtil = ServiceUriUtil.getInstance()!!
     private val serviceHost = BuildConfig.API_HOST//serviceUriUtil.webServiceHost!!
     private val applicationContext = context.applicationContext
+    var healthState: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+
 
     override fun intercept(chain: Interceptor.Chain): Response {
+        healthState = MutableLiveData()
         if (!isInternetAvailable()) {
             throw NoInternetException("Make sure you have an active data connection")
         }
 
         if (isHostAvailable(serviceHost)) {
-            throw ServiceHostUnreachableException(
-                "Service Host for RRM is down, please try again later. Host: $serviceHost"
-            )
+            throw ServiceHostUnreachableException("Service Host for RRM is down, please try again later. Host: $serviceHost" )
+        }else{
+            isURLActive(URL(serviceHost), healthState)
         }
 
-//        if (!isURLActive(URL(serviceURL))) {
+//        if (!isURLActive(URL(serviceHost))) {
 //            throw ServiceHostUnreachableException(
 //                "Service Host for RRM is down, please try again later."
 //            )
@@ -84,7 +93,7 @@ class NetworkConnectionInterceptor(
         return result
     }
 
-    private fun isURLActive(url: URL, timeoutMillis: Int = 60000): Boolean {
+    private fun isURLActive(url: URL, healthState: MutableLiveData<XIEvent<XIResult<String>>>,timeoutMillis: Int = 60000): Boolean {
         val connection = url.openConnection() as HttpsURLConnection
         return try {
             connection.connectTimeout = timeoutMillis
@@ -94,6 +103,15 @@ class NetworkConnectionInterceptor(
             val responseCode = connection.responseCode
             HttpsURLConnection.HTTP_OK <= responseCode && responseCode < HttpsURLConnection.HTTP_BAD_REQUEST
         } catch (exception: IOException) {
+//            healthState.value =
+//                XIEvent(
+//                    XIResult.Error(
+//                        TransmissionException(
+//                            "Server Communication Error", ConnectException("You Have No Active Data")
+//                        ), "You May have Ran out of Data Please Check and Retry.","You Have No Active Data Connection"
+//                    )
+//                )
+            throw ServiceHostUnreachableException("Service Host for RRM is down, please try again later. Host: $serviceHost")
             Timber.e("Could not connect to service host: ${exception.message}")
             false
         } finally {

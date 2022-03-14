@@ -12,6 +12,8 @@ import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.BindableItem
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -21,9 +23,8 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
-import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModel
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
@@ -37,7 +38,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 class UnSubmittedJobItem(
     private val jobDTO: JobDTO,
     private val viewModel: UnSubmittedViewModel,
-    private val createModel: CreateViewModel,
+    private val createModel: AddItemsViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>,
     private val fragment: UnSubmittedFragment,
 ) : BindableItem<UnsubmtdJobListItemBinding>() {
@@ -90,7 +91,7 @@ class UnSubmittedJobItem(
             )
         itemDeleteBuilder.setTitle(R.string.confirm)
         itemDeleteBuilder.setIcon(R.drawable.ic_baseline_file_upload_24)
-        itemDeleteBuilder.setMessage("Upload this unsubmitted job?")
+        itemDeleteBuilder.setMessage("Upload this un-submitted job?")
         // Yes button
         itemDeleteBuilder.setPositiveButton(
             R.string.yes
@@ -104,18 +105,18 @@ class UnSubmittedJobItem(
             )
             Coroutines.main {
                 try {
-                    createModel.setJobForReUpload(jobDTO.jobId)
-                    createModel.jobForReUpload.observeOnce(fragment.viewLifecycleOwner, { event ->
-                        event.getContentIfNotHandled()?.let { incompleteJob ->
-                            Coroutines.main {
-                                fragment.toggleLongRunning(true)
-                                val result = createModel.reUploadJob(incompleteJob, fragment.requireActivity())
-                                handleUploadResult(result, position, jobDTO.jobId)
-                            }
-                        }
-                    })
+//                    createModel.setJobForReUpload(jobDTO.jobId)
+//                    createModel.jobForReUpload.observeOnce(fragment.viewLifecycleOwner, { event ->
+//                        event.getContentIfNotHandled()?.let { incompleteJob ->
+//                            Coroutines.main {
+//                                fragment.toggleLongRunning(true)
+//                                val result = createModel.reUploadJob(incompleteJob, fragment.requireActivity())
+//                                handleUploadResult(result, position, jobDTO.jobId)
+//                            }
+//                        }
+//                    })
                 } catch (t: Throwable) {
-                    Timber.e("Failed to upload unsubmitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+                    Timber.e("Failed to upload un-submitted job: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}")
                 }
             }
         }
@@ -130,19 +131,29 @@ class UnSubmittedJobItem(
         deleteAlert.show()
     }
 
-    private fun sendJobToEdit(jobDTO: JobDTO, view: View) {
-
-        Coroutines.main {
-            createModel.setJobToEdit(jobDTO.jobId)
+    private fun sendJobToEdit(jobData : JobDTO, view: View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = UnSubmittedFragmentDirections
+                    .actionNavigationUnSubmittedToNavigationAddItems(jobData.projectId!!, jobData.jobId)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
         }
-        val navDirection =
-            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
-                jobDTO.projectId,
-                jobDTO.jobId
-            )
 
-        Navigation.findNavController(view)
-            .navigate(navDirection)
+
+
+
+//        Coroutines.main {
+//            createModel.setJobToEdit(jobDTO.jobId)
+//        }
+//        val navDirection =
+//            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
+//                jobDTO.projectId,
+//                jobDTO.jobId
+//            )
+//
+//        Navigation.findNavController(view)
+//            .navigate(navDirection)
     }
 
     private fun handleUploadResult(result: XIResult<Boolean>, position: Int, jobId: String) {
@@ -164,7 +175,7 @@ class UnSubmittedJobItem(
                     message = "${result.message} - hit upload arrow to retry.",
                     style = ToastStyle.ERROR
                 )
-                createModel.resetUploadState()
+//                createModel.resetUploadState()
             }
             else -> {
                 Timber.e("$result")

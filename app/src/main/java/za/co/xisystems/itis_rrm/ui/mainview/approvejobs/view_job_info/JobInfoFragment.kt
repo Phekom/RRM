@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -23,10 +22,9 @@ import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import java.util.Date
 import org.kodein.di.DIAware
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants
@@ -60,7 +58,7 @@ import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.FAIL
 import za.co.xisystems.itis_rrm.utils.enums.WorkflowDirection.NEXT
 
 class JobInfoFragment : BaseFragment(), DIAware {
-    override val di by closestDI()
+
     private lateinit var approveViewModel: ApproveJobsViewModel
     private val factory: ApproveJobsViewModelFactory by instance()
     private var workObserver = Observer<XIResult<String>?> { handleWorkSubmission(it) }
@@ -158,10 +156,6 @@ class JobInfoFragment : BaseFragment(), DIAware {
             .addCallback(this, callback)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -358,7 +352,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
 
                             var comments = ""
                             if (!ValidateInputs.isValidInput(_ui?.workflowCommentsEditText?.text.toString())) {
-                                _ui?.workflowCommentsEditText?.error = getString(R.string.invalid_char)
+                                _ui?.workflowCommentsEditText?.error = getString(R.string.invalid_char)+ " Or ( $&+~;=\\?@|/'<>^*()%!- )"
                                 false
                             } else {
                                 comments = _ui?.workflowCommentsEditText?.text!!.toString().trim { it <= ' ' }
@@ -397,6 +391,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                     userDTO.userId, trackRouteId, description, direction, jobId
                 )
                 task.join()
+
             } catch (t: Throwable) {
                 val message = t.message ?: XIErrorHandler.UNKNOWN_ERROR
                 val xiErr = XIResult.Error(t, "Failed to complete workflow: $message")

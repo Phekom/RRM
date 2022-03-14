@@ -73,8 +73,8 @@ open class CardItem(
             workViewModel.setWorkItem(estimate.estimateId)
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = WorkFragmentDirections.actionNavWorkToCaptureWorkFragment(
-                    jobId = job.jobId,
-                    estimateId = estimate.estimateId
+                    job.jobId,
+                    estimate.estimateId
                 )
                 Navigation.findNavController(view!!).navigate(navDirection)
             }

@@ -47,20 +47,25 @@ import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.LocationViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.MainActivityViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.activities.SettingsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivityViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.settings.SettingsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.activities.SharedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.create.CreationViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.edit_estimate.EstimatePhotoViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.select_items.SelectItemsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvejobs.ApproveJobsViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.approvemeasure.ApproveMeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFactory
-import za.co.xisystems.itis_rrm.ui.mainview.create.CreateViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
 import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
+import za.co.xisystems.itis_rrm.ui.start.SplashActivityViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
 
@@ -90,8 +95,28 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
         bind { singleton { CapturedPictureRepository(instance()) } }
+        bind { singleton { SplashActivityViewModelFactory(instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
+
+        bind { provider { CreationViewModelFactory(jobCreationDataRepository = instance(),userRepository = instance(),
+            application = this@MainApp, photoUtil = instance())
+            }
+        }
+        bind { provider { JobCreationViewModelFactory(instance()) } }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         bind {
             provider {
@@ -105,7 +130,30 @@ open class MainApp : Application(), DIAware {
 
         bind {
             provider {
-                CreateViewModelFactory(
+                EstimatePhotoViewModelFactory(
+                    jobCreationDataRepository = instance(),
+                    userRepository = instance(),
+                    application = this@MainApp,
+                    photoUtil = instance()
+                )
+            }
+        }
+
+        bind {
+            provider {
+                AddItemsViewModelFactory(
+                    jobCreationDataRepository = instance(),
+                    userRepository = instance(),
+                    application = this@MainApp,
+                    photoUtil = instance()
+                )
+            }
+        }
+
+
+        bind {
+            provider {
+                SelectItemsViewModelFactory(
                     jobCreationDataRepository = instance(),
                     userRepository = instance(),
                     application = this@MainApp,

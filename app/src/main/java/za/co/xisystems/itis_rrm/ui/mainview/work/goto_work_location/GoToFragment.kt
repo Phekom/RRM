@@ -109,7 +109,6 @@ import java.util.Locale
 @Suppress("MagicNumber")
 class GoToFragment : LocationFragment(), PermissionsListener {
 
-    override val di by closestDI()
     private val factory: GoToViewModelFactory by instance()
     private lateinit var goToViewModel: GoToViewModel
     private lateinit var workViewModel: WorkViewModel
@@ -396,8 +395,8 @@ class GoToFragment : LocationFragment(), PermissionsListener {
                 workViewModel.setWorkItem(itemEstimate.estimateId)
                 withContext(Dispatchers.Main.immediate) {
                     val navDirection = GoToFragmentDirections.actionWorkLocationToCaptureWorkFragment(
-                        jobId = itemEstimateJob.jobId,
-                        estimateId = itemEstimate.estimateId
+                        itemEstimateJob.jobId,
+                        itemEstimate.estimateId
                     )
                     Navigation.findNavController(requireView()).navigate(navDirection)
                 }
@@ -700,9 +699,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        return false
-    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

@@ -13,13 +13,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.password4j.SecureString
 import kotlinx.coroutines.*
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.NoConnectivityException
-import za.co.xisystems.itis_rrm.custom.errors.NoInternetException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
+import za.co.xisystems.itis_rrm.custom.errors.*
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
 import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -42,7 +40,13 @@ class AuthViewModel(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : AndroidViewModel(application) {
     private val supervisorJob = SupervisorJob()
-    private val ioContext = dispatchers.io() + Job(supervisorJob)
+    private val superJob = SupervisorJob()
+    private var databaseStatus: MutableLiveData<XIEvent<XIResult<Boolean>>> = MutableLiveData()
+    private var ioContext = dispatchers.io() + Job(superJob)
+    private var mainContext = dispatchers.main() + Job(superJob)
+    var healthState: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
+    var databaseState: MutableLiveData<XIResult<Boolean>?> = MutableLiveData()
+    var versionCheckResults : MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
 
     var authListener: AuthListener? = null
 
@@ -51,7 +55,11 @@ class AuthViewModel(
     }
 
     val validPin: MutableLiveData<Boolean> = MutableLiveData()
-
+    init {
+        versionCheckResults = MutableLiveData()
+//        healthState = MutableLiveData()
+//        versionCheckResults = MutableLiveData()
+    }
     companion object {
         const val PIN_SIZE = 4
     }
@@ -117,9 +125,23 @@ class AuthViewModel(
         }
     }
 
-    suspend fun getAppVersionCheck(versionNmb: String) : VersionCheckResponse {
-        return withContext(dispatchers.ui()) {
-             repository.getAppVersionCheck(versionNmb)
+    fun failVersionValidation() = viewModelScope.launch(mainContext) {
+        versionCheckResults.value =
+            XIEvent(
+                XIResult.Error(
+                    TransmissionException(
+                        "Server Communication Error", ConnectException("You Have No Active Data")
+                    ),
+                    "You May have Ran out of Data Please Check and Retry.","You Have No Active Data Connection"
+                )
+            )
+    }
+
+
+
+     suspend fun healthCheck() : HealthCheckResponse  {
+        return withContext(mainContext) {
+            repository.getHealthCheck()
         }
     }
 
@@ -278,6 +300,8 @@ class AuthViewModel(
             }
         }
     }
+
+
 
     fun onRegButtonClick(
         view: View,

@@ -7,6 +7,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -37,14 +38,14 @@ import za.co.xisystems.itis_rrm.databinding.FragmentEstmeasureBinding
 import za.co.xisystems.itis_rrm.databinding.ItemHeaderBinding
 import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.estimate_measure_item.EstimateMeasureItem
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
 @Suppress("KDocUnresolvedReference")
-class MeasureFragment : BaseFragment(), DIAware {
+class MeasureFragment : BaseFragment() {
 
-    override val di by closestDI()
     private lateinit var measureViewModel: MeasureViewModel
     private val factory: MeasureViewModelFactory by instance()
     private var _ui: FragmentEstmeasureBinding? = null
@@ -58,6 +59,18 @@ class MeasureFragment : BaseFragment(), DIAware {
         setHasOptionsMenu(true)
     }
 
+    private val backClickListener = View.OnClickListener {
+        setBackPressed()
+    }
+
+    private fun setBackPressed() {
+        Intent(requireContext(), MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
+    }
+
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
@@ -65,8 +78,12 @@ class MeasureFragment : BaseFragment(), DIAware {
              * Callback for handling the [OnBackPressedDispatcher.onBackPressed] event.
              */
             override fun handleOnBackPressed() {
-                Navigation.findNavController(this@MeasureFragment.requireView())
-                    .navigate(R.id.action_global_nav_home)
+                Intent(requireContext(), MainActivity::class.java).also { home ->
+                    home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(home)
+                }
+//                Navigation.findNavController(this@MeasureFragment.requireView())
+//                    .navigate(R.id.action_global_nav_home)
             }
         }
         requireActivity().onBackPressedDispatcher
@@ -86,13 +103,13 @@ class MeasureFragment : BaseFragment(), DIAware {
         savedInstanceState: Bundle?
     ): View {
         _ui = FragmentEstmeasureBinding.inflate(inflater, container, false)
+        _ui?.toolbar?.apply {
+            setTitle("Select Estimate To Measure")
+            setOnBackClickListener(backClickListener)
+        }
         return ui.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // no options menu
-        return false
-    }
 
     override fun onStart() {
         super.onStart()
@@ -138,30 +155,28 @@ class MeasureFragment : BaseFragment(), DIAware {
         _ui?.estimationsSwipeToRefresh?.setColorSchemeColors(Color.WHITE)
 
         _ui?.estimationsSwipeToRefresh?.setOnRefreshListener {
-            Coroutines.default {
-                _ui?.estimationsToBeMeasuredListView?.veil()
-                fetchRemoteJobs()
-            }
+            _ui?.estimationsToBeMeasuredListView?.veil()
+            fetchRemoteJobs()
         }
     }
 
-    private suspend fun fetchRemoteJobs() = Coroutines.io {
+    private fun fetchRemoteJobs() {
         try {
-            val jobs = measureViewModel.offlineUserTaskList.await()
-            jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
-                if (works.isNullOrEmpty()) {
-                    Coroutines.ui {
+            Coroutines.main {
+                val jobs = measureViewModel.offlineUserTaskList.await()
+                jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
+                    if (works.isNullOrEmpty()) {
                         _ui?.noData?.visibility = View.VISIBLE
                         _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
+                    } else {
+                        Coroutines.main {
+                            _ui?.noData?.visibility = View.GONE
+                            _ui?.estimationsToBeMeasuredListView?.visibility = View.VISIBLE
+                            fetchEstimateMeasures()
+                        }
                     }
-                } else {
-                    Coroutines.ui {
-                        _ui?.noData?.visibility = View.GONE
-                        _ui?.estimationsToBeMeasuredListView?.visibility = View.VISIBLE
-                        fetchEstimateMeasures()
-                    }
-                }
-            })
+                })
+            }
         } catch (t: Throwable) {
             val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
             crashGuard(
@@ -172,6 +187,7 @@ class MeasureFragment : BaseFragment(), DIAware {
             _ui?.estimationsSwipeToRefresh?.isRefreshing = false
         }
     }
+
 
     fun retryFetchingJobs() {
         IndefiniteSnackbar.hide()

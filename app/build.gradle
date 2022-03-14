@@ -11,7 +11,7 @@ plugins {
     id "kotlin-android"
     id "kotlin-parcelize"
     id "kotlin-kapt"
-    id "androidx.navigation.safeargs.kotlin"
+    id "androidx.navigation.safeargs"
     id "deploygate"
     id "eu.davidea.grabver"
     id "org.sonarqube"
@@ -60,7 +60,8 @@ android {
     def versionLabel =  "${versioning.name}.${versioning.build}"
     def versionBuild = 1
     def versionBuildDate = getDate()
-    def appId = "za.co.xisystems.itismaintenance"
+    def appId = "za.co.xisystems.itis_rrm"
+//    def appId = "za.co.xisystems.itismaintenance"
 
     // host properties
     def propertyFile = file(project.rootProject.file("host.properties").toString())
@@ -100,13 +101,6 @@ android {
         vectorDrawables.useSupportLibrary = false
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "false")
-        buildConfigField("String", "USERNAME_TEST", '"niebuhrk"')
-        buildConfigField("String", "PASSWORD_TEST", '"kallien"')
-        buildConfigField("String", "USERNAME_STUB", '"user"')
-        buildConfigField("String", "PASSWORD_STUB", '"pass"')
-        buildConfigField("String", "PIN_CODE", '"1234"')
-        buildConfigField("boolean", "STUB", "false")
         buildConfigField("String", "VERSION_BUILD", "\"$versionBuild\"")
         buildConfigField("String", "VERSION_BUILD_DATE", '"' + versionBuildDate + '"')
         buildConfigField("String", "DNS_CHECK_IP4", "\"dns.google.com\"")
@@ -167,16 +161,11 @@ android {
         dev {
             splits.abi.enable = false
             splits.density.enable = false
-
             applicationId appId + ".dev"
-
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: ""]
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "true")
+            manifestPlaceholders = [app_name: "RRM-Dev", app_icon: "@mipmap/ic_launcher"]
             buildConfigField("String", "API_HOST", dev_api)
-            buildConfigField "String", "HOCKEYAPP_APP_ID", "\"\""
             versionName 'versioning.name'
-            targetSdkVersion 30
+            targetSdkVersion 32
             minSdkVersion 23
             testFunctionalTest true
             testHandleProfiling true
@@ -185,12 +174,8 @@ android {
         qa { // Sanral QA
             splits.abi.enable = false
             splits.density.enable = false
-
             applicationId appId + ".qa"
-
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", registerAutoFillTest.toString())
-            manifestPlaceholders = [app_name: "RRM-Qa", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: "7b77445b888a411b83ae27491a5bd7c9"]
-            buildConfigField("boolean", "REGISTER_AUTO_FILL_TEST", "false")
+            manifestPlaceholders = [app_name: "RRM-Qa", app_icon: "@mipmap/ic_launcher"]
             buildConfigField("String", "API_HOST", qa_api)
             testFunctionalTest true
             testHandleProfiling true
@@ -199,7 +184,7 @@ android {
         prod {
             appId = "za.co.nra.itisrrm"
             applicationId appId
-            manifestPlaceholders = [app_name: "RRM", app_icon: "@mipmap/ic_launcher", HOCKEYAPP_APP_ID: "722fd7502681497f96d51c26284bc056"]
+            manifestPlaceholders = [app_name: "RRM", app_icon: "@mipmap/ic_launcher"]
             buildConfigField("String", "API_HOST", prod_api)
         }
     }
@@ -230,7 +215,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = '1.8'
     }
 
     dependenciesInfo {
@@ -255,7 +240,7 @@ dependencies {
     implementation 'com.squareup.leakcanary:plumber-android:2.7'
 
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
 
     def activity_version = '1.4.0'
 
@@ -314,7 +299,7 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:1.2.0"
 
     // Navigation
-    def nav_version = '2.3.5'
+    def nav_version = '2.4.1'
 
     // Kotlin
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
@@ -330,7 +315,7 @@ dependencies {
     // sanselan
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
-    def lifecycle_version = '2.4.0'
+    def lifecycle_version = '2.4.1'
     def arch_version = "2.1.0"
 
     // ViewModel
@@ -418,7 +403,7 @@ dependencies {
     implementation 'com.github.tntkhang:full-screen-image-view-library:1.1.0'
 
     //Android  Room
-    def room_version = '2.4.1' // align with Roomigrant
+    def room_version = '2.4.2' // align with Roomigrant
 
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
@@ -449,8 +434,8 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:$jackson_version"
     implementation "com.fasterxml.jackson.core:jackson-annotations:$jackson_version"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_version"
-
-    implementation 'com.raygun:raygun4android:4.0.1'
+//
+//    implementation 'com.raygun:raygun4android:4.0.1'
 
     implementation 'org.apache.sanselan:sanselan:0.97-incubator'
 
@@ -511,6 +496,9 @@ dependencies {
     //Mapbox
     implementation "com.mapbox.navigation:android:2.1.2"
     implementation "androidx.car.app:app:1.1.0"
+
+    //No Internet available
+    implementation 'am.appwise.components:NoInternetDialog:1.1.3'
 
 }
 

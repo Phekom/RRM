@@ -21,6 +21,16 @@ object ValidateInputs {
 		return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches()
 	}
 
+    //*********** Validate Email Address ********//
+    fun isValidInputText(name: String): Boolean {
+        val regExpn = "^([a-zA-Z ]{1,24})+$"
+        if (name.equals("", ignoreCase = true)) return false
+        val inputStr: CharSequence = name
+        val pattern = Pattern.compile(blockCharacters, Pattern.CASE_INSENSITIVE)
+        val matcher = pattern.matcher(inputStr)
+        return !pattern.matcher(inputStr).find()
+    }
+
 
 	//*********** Validate Name Input ********// 
 	fun isValidName(name: String): Boolean {
