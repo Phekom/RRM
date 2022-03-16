@@ -183,6 +183,9 @@ class SplashScreen : AppCompatActivity(), DIAware {
                 .setMessage(response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) + "Release Date " + response.releaseDate)
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_warning_yellow)
+                .setNegativeButton(R.string.continue_old) { _, _ ->
+                    startActivity(Intent(baseContext, LoginActivity::class.java))
+                }
                 .setPositiveButton(R.string.ok) { _, _ ->
                     val intent = Intent(
                         Intent.ACTION_VIEW, Uri.parse(prodVersionlink)

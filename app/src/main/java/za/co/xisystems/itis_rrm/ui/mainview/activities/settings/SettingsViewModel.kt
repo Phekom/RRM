@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
@@ -69,4 +70,18 @@ class SettingsViewModel(
             offlineDataRepository.deleteAllData()
         }
     }
+
+
+    suspend fun checkUnsubmittedList(activityId: Int): List<JobDTO> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.getJobsFromActId(activityId)
+        }
+    }
+
+    suspend fun checkUnsubmittedMeasureList(activityId: Int): List<JobItemMeasureDTO> {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.checkUnsubmittedMeasureList(activityId)
+        }
+    }
+
 }

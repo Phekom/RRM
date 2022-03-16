@@ -318,5 +318,7 @@
     <string name="title_measure">Measure Estimates</string>
     <string name="title_add_items">Add Project Items</string>
     <string name="title_select_items">Select Project Item</string>
+    <string name="continue_old">UpDate Later</string>
+    <string name="you_have_out_standing_jobs">"You have JI's or Measurements not Submitted Please make sure you Submit them first as they can not be recovered after Resetting App "</string>
 
 </resources>

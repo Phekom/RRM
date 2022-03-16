@@ -187,9 +187,11 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobsForActivityId(activityId: Int): LiveData<List<JobDTO>> {
+
+
+    suspend fun getJobsFromActId(activityId: Int): List<JobDTO> {
         return withContext(dispatchers.io()) {
-            appDb.getJobDao().getJobsForActivityId(activityId).distinctUntilChanged()
+            appDb.getJobDao().getJobsFromActId(activityId)
         }
     }
 
@@ -1231,6 +1233,12 @@ class OfflineDataRepository(
         appDb.clearAllTables()
         entitiesFetched = false
         return null
+    }
+
+    suspend fun checkUnsubmittedMeasureList(activityId: Int): List<JobItemMeasureDTO> {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemMeasureDao().checkUnsubmittedMeasureList(activityId)
+        }
     }
 
     suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {

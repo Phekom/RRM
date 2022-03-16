@@ -43,6 +43,9 @@ interface JobItemMeasureDao {
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
     fun getJobApproveMeasureForActivityId(actId: Int): LiveData<List<JobItemMeasureDTO>>
 
+    @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE actId = :actId AND deleted = 0 ORDER BY jimNo ASC")
+    fun checkUnsubmittedMeasureList(actId: Int): List<JobItemMeasureDTO>
+
     @Query("SELECT * FROM JOB_ITEM_MEASURE WHERE jobId = :jobId AND actId = :actId AND deleted = 0 ORDER BY jimNo, projectItemId ASC")
     fun getJobItemMeasuresByJobIdAndActId(jobId: String?, actId: Int): LiveData<List<JobItemMeasureDTO>>
 

@@ -50,9 +50,5 @@ class JobCreationViewModel(
         }
     }
 
-    suspend fun getJobApproveMeasureForActivityId(activityId: Int): LiveData<List<JobItemMeasureDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobApproveMeasureForActivityId(activityId)
-        }
-    }
+
 }

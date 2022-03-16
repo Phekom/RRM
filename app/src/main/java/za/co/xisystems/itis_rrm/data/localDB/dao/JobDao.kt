@@ -169,6 +169,9 @@ interface JobDao {
 //    @Query("SELECT jobId FROM JOB_TABLE WHERE activityId = :actId AND deleted = 0")
 //    fun getJobIds(actId: Int): LiveData<List<String>>
 
+    @Query("SELECT * FROM JOB_TABLE WHERE actId = :actId AND deleted = 0")
+    fun getJobsFromActId(actId: Int): List<JobDTO>
+
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobFromJobId(jobId: String): LiveData<JobDTO>
 
