@@ -468,42 +468,85 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     when {
                         roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
+                            navCreate.isVisible = true
+
                             navUnsubmitted.isEnabled = true
+                            navUnsubmitted.isVisible = true
+
+                            navWork.isEnabled = false
                             navWork.isVisible = false
-                            navApproveMeasures.isVisible = false
+
+                            navApproveJobs.isEnabled = false
                             navApproveJobs.isVisible = false
+
+                            navEstMeasures.isEnabled = false
                             navEstMeasures.isVisible = false
+
+                            navApproveMeasures.isEnabled = false
+                            navApproveMeasures.isVisible = false
+
                         }
 
                         roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navWork.isEnabled = true
-                            navApproveMeasures.isVisible = false
-                            navApproveJobs.isVisible = false
+                            navCreate.isEnabled = false
                             navCreate.isVisible = false
+
+                            navUnsubmitted.isEnabled = false
                             navUnsubmitted.isVisible = false
+
+                            navWork.isEnabled = true
+                            navWork.isVisible = true
+
+                            navApproveJobs.isEnabled = false
+                            navApproveJobs.isVisible = false
+
+                            navEstMeasures.isEnabled = false
                             navEstMeasures.isVisible = false
+
+                            navApproveMeasures.isEnabled = false
+                            navApproveMeasures.isVisible = false
+
                         }
 
                         roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
+                            navCreate.isVisible = true
+
                             navUnsubmitted.isEnabled = true
+                            navUnsubmitted.isVisible = true
+
                             navWork.isEnabled = true
+                            navWork.isVisible = true
+
+                            navApproveJobs.isEnabled = false
+                            navApproveJobs.isVisible = false
+
                             navEstMeasures.isEnabled = true
                             navEstMeasures.isVisible = true
-                            navWork.isVisible = true
+
+                            navApproveMeasures.isEnabled = false
                             navApproveMeasures.isVisible = false
-                            navApproveJobs.isVisible = false
 
                         }
 
                         roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
-                            navUnsubmitted.isEnabled = true
-                            navEstMeasures.isEnabled = true
+                            navCreate.isVisible = true
 
+                            navUnsubmitted.isEnabled = true
+                            navUnsubmitted.isVisible = true
+
+                            navWork.isEnabled = false
                             navWork.isVisible = false
-                            navApproveMeasures.isVisible = false
+
+                            navApproveJobs.isEnabled = false
                             navApproveJobs.isVisible = false
+
+                            navEstMeasures.isEnabled = true
+                            navEstMeasures.isVisible = true
+
+                            navApproveMeasures.isEnabled = false
+                            navApproveMeasures.isVisible = false
 
                         }
 
@@ -514,6 +557,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             navUnsubmitted.isEnabled = true
                             navUnsubmitted.isVisible = true
 
+                            navWork.isEnabled = false
                             navWork.isVisible = false
 
                             navApproveJobs.isEnabled = true

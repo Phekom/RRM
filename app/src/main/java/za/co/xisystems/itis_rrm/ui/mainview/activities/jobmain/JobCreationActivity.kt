@@ -108,33 +108,51 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
                     when {
                         roleID.equals(MainActivity.PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
+                            navCreate.isVisible = true
+                            navWork.isEnabled = false
                             navWork.isVisible = false
-                        }
-
-                        roleID.equals(MainActivity.PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navWork.isEnabled = true
-                            navWork.isVisible = true
+                            navEstMeasures.isEnabled = false
                             navEstMeasures.isVisible = false
                         }
 
-                        roleID.equals(MainActivity.PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navWork.isVisible = true
-                            navCreate.isEnabled = true
+                        roleID.equals(MainActivity.PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            navCreate.isEnabled = false
+                            navCreate.isVisible = false
                             navWork.isEnabled = true
+                            navWork.isVisible = true
+                            navEstMeasures.isEnabled = false
+                            navEstMeasures.isVisible = false
+
+                        }
+
+                        roleID.equals(MainActivity.PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                            navCreate.isEnabled = true
+                            navCreate.isVisible = true
+                            navWork.isEnabled = true
+                            navWork.isVisible = true
                             navEstMeasures.isEnabled = true
                             navEstMeasures.isVisible = true
+
                         }
 
                         roleID.equals(MainActivity.PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navWork.isVisible = false
                             navCreate.isEnabled = true
+                            navCreate.isVisible = true
+                            navWork.isEnabled = false
+                            navWork.isVisible = false
                             navEstMeasures.isEnabled = true
+                            navEstMeasures.isVisible = true
+
                         }
 
                         roleID.equals(MainActivity.PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                             navCreate.isEnabled = true
-                            navEstMeasures.isEnabled = true
+                            navCreate.isVisible = true
+                            navWork.isEnabled = false
                             navWork.isVisible = false
+                            navEstMeasures.isEnabled = true
+                            navEstMeasures.isVisible = true
+
                         }
                     }
                 }
