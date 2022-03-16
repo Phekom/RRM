@@ -106,18 +106,6 @@ open class MainApp : Application(), DIAware {
         bind { provider { JobCreationViewModelFactory(instance()) } }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
         bind {
             provider {
                 HomeViewModelFactory(
