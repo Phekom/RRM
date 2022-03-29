@@ -34,6 +34,8 @@ import com.mapbox.maps.extension.observable.eventdata.MapLoadingErrorEventData
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadErrorListener
+import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.getGesturesSettings
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
@@ -64,6 +66,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.new_job_utils.models.PhotoType
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
@@ -82,6 +85,9 @@ import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
 import java.text.DecimalFormat
 import kotlin.collections.set
+import android.view.MotionEvent
+import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+
 
 /**
  * Created by Francis Mahlava on 2019/12/29.
@@ -134,6 +140,7 @@ class EstimatePhotoFragment : LocationFragment() {
             // You're going to need this when you
             // aren't driving.
             navigationLocationProvider.changePosition(rawLocation)
+            updateCamera(rawLocation)
         }
 
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
@@ -143,7 +150,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 locationMatcherResult.keyPoints,
             )
 
-            updateCamera(enhancedLocation)
+//            updateCamera(enhancedLocation)
         }
     }
     private var images = ArrayList<Image>()
@@ -244,7 +251,7 @@ class EstimatePhotoFragment : LocationFragment() {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = EstimatePhotoFragmentDirections
-                    .actionEstimatePhotoFragmentToNavigationAddItems(editEstimateData.itemId!!, editEstimateData.jobId)
+                    .actionEstimatePhotoFragmentToNavigationAddItems(editEstimateData.itemId!!, editEstimateData.jobId,"")
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
@@ -344,7 +351,8 @@ class EstimatePhotoFragment : LocationFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
          locationWarning = false
-
+        var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
+        jOB_ACTIVITY.navigationView.visibility = View.GONE
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
@@ -354,10 +362,13 @@ class EstimatePhotoFragment : LocationFragment() {
             .addCallback(this@EstimatePhotoFragment, callback)
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         newJobItemEstimatesList = ArrayList()
         newJobItemEstimatesPhotosList = ArrayList()
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -379,6 +390,9 @@ class EstimatePhotoFragment : LocationFragment() {
             setLocationProvider(navigationLocationProvider)
             enabled = true
         }
+        mapboxMap.removeOnMapClickListener( OnMapClickListener {
+            false
+        })
         _ui?.secondImage?.visibility = View.GONE
         _ui?.startPhotoButton?.visibility = View.GONE
 
@@ -386,6 +400,8 @@ class EstimatePhotoFragment : LocationFragment() {
 
         pullData()
     }
+
+
 
     @Suppress("MagicNumber")
     private fun updateCamera(location: Location) {
@@ -401,7 +417,35 @@ class EstimatePhotoFragment : LocationFragment() {
                 .build(),
             mapAnimationOptions
         )
-       // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
+
+        location.apply {
+            when {
+                hasAccuracy() -> {
+                    if (accuracy < 14.5F ){
+                        _ui?.group13loading?.visibility = View.GONE
+                        _ui?.linearlayouthorizon?.visibility = View.VISIBLE
+                        _ui?.lowBtns?.visibility = View.VISIBLE
+                        _ui?.photoLin?.visibility = View.VISIBLE
+                        ToastUtils().toastShort(requireContext(), location.accuracy.toString())
+                    }else{
+                        _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
+                        _ui?.lowBtns?.visibility = View.INVISIBLE
+                        _ui?.group13loading?.visibility = View.VISIBLE
+                        _ui?.textViewloading?.setText(R.string.updating_accuracy)
+                        extensionToast(
+                            message = "Location Accuracy is $accuracy and Not Good For Validation!\n Please Stand In One Position",
+                            style = ToastStyle.WARNING,
+                            position = ToastGravity.BOTTOM
+                        )
+                    }
+                }
+                else ->
+                    ToastUtils().toastShort(requireContext(), "Location Accuracy Not Available At this place")
+            }
+        }
+
+
+
 
     }
 
@@ -516,7 +560,7 @@ class EstimatePhotoFragment : LocationFragment() {
 
     override fun onStart() {
         super.onStart()
-        _ui?.group13Loading?.visibility = View.GONE
+        _ui?.group13loading?.visibility = View.GONE
         mAppExecutor = AppExecutor()
         lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -694,7 +738,8 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun navToAddProject(view: View) {
         val directions = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToNavigationAddItems(
             editEstimateData.itemId!!,
-            editEstimateData.jobId!!
+            editEstimateData.jobId!!,
+            editEstimateData.contractVoId?:""
         )
         Navigation.findNavController(view).navigate(directions)
     }

@@ -15,10 +15,12 @@ import android.os.Parcelable
 
 data class ProjectSelector(
     val projectId: String,
+    val contractId: String,
     val projectCode: String,
     val descr: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!
@@ -26,6 +28,7 @@ data class ProjectSelector(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(projectId)
+        parcel.writeString(contractId)
         parcel.writeString(projectCode)
         parcel.writeString(descr)
     }

@@ -24,7 +24,6 @@ import za.co.xisystems.itis_rrm.data.network.responses.*
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
-const val BASE_URL = BuildConfig.API_HOST
 
 interface BaseConnectionApi {
 
@@ -217,7 +216,7 @@ interface BaseConnectionApi {
             return Retrofit.Builder()
                 //.addCallAdapterFactory(NetworkResponseAdapterFactory())
                 .client(okkHttpclient.build())
-                .baseUrl(BASE_URL)
+                .baseUrl(BuildConfig.API_HOST)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(BaseConnectionApi::class.java)

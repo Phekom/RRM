@@ -12,8 +12,11 @@ package za.co.xisystems.itis_rrm.data.repositories
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
+import androidx.room.ColumnInfo
 import androidx.room.Transaction
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.Nullable
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -21,32 +24,7 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.LookupDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoGroupsDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowsDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
@@ -75,7 +53,7 @@ class OfflineDataRepository(
 ) : SafeApiRequest() {
 
     private var entitiesFetched = false
-    private val conTracts = MutableLiveData<List<ContractDTO>>()
+    private val conTracts = MutableLiveData<ArrayList<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val job = MutableLiveData<JobDTO>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
@@ -93,8 +71,14 @@ class OfflineDataRepository(
     private var contractMax: Int = 0
     private var projectCount: Int = 0
     private var projectMax: Int = 0
+    private var contractVoCount: Int = 0
+    private var contractVosMax: Int = 0
+    private var projectVoCount: Int = 0
+    private var projectVosMax: Int = 0
     private var newContracts: Boolean = false
     private var newProjects: Boolean = false
+    private var newContractVos: Boolean = false
+    private var newProjectVos: Boolean = false
 
     init {
         conTracts.observeForever {
@@ -376,6 +360,16 @@ class OfflineDataRepository(
                     if (!validProjects.isNullOrEmpty()) {
                         saveProjects(validProjects, contract)
                     }
+
+                    val validContractVos =
+                        contract.contractVos.filter { contractVos ->
+                            contractVos.contractVoId.isNotBlank()
+                        }.distinctBy { contractVos -> contractVos.contractVoId }
+
+                    if (!validContractVos.isNullOrEmpty()) {
+                        saveContractVos(validContractVos, contract)
+                    }
+
                 } else {
                     contractMax--
                 }
@@ -387,6 +381,7 @@ class OfflineDataRepository(
             Timber.e(ex, "Error saving contracts: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         }
     }
+
 
     private fun createWorkflowSteps() {
         val actId = ActivityIdConstants.JOB_APPROVED
@@ -419,6 +414,50 @@ class OfflineDataRepository(
             }
         }
     }
+
+    @Transaction
+    private suspend fun saveContractVos(validContractVos: List<ContractVoDTO>, contract: ContractDTO) {
+        withContext(dispatchers.io()) {
+            contractVosMax += validContractVos.size
+            validContractVos.forEach { contractVo ->
+                try {
+                    if (appDb.getContractVoDao().checkIfContractVoExists(contractVo.contractVoId)) {
+                        Timber.i(
+                            "Contract: ${contract.shortDescr} (${contract.contractId}) "
+                                .plus("ContractVoId: ${contractVo.voNumber} (${contractVo.contractVoId}) -> Duplicated")
+                        )
+                        contractVosMax--
+                    } else {
+                        appDb.getContractVoDao().insertContractVo(contractVo)
+                        contractVoCount++
+                        newContractVos = true
+                    }
+
+                   // Timber.d("pr**: $contractCount / $contractMax contracts")
+                    Timber.d("pr**: $contractVoCount / $contractVosMax contractVos")
+
+                    postEvent(
+                        XIResult.ProgressUpdate(
+                            "contractVos",
+                            (contractVoCount.toFloat() * contractCount.toFloat()) /
+                                    (contractVosMax.toFloat() * contractMax.toFloat())
+                        )
+                    )
+                } catch (ex: Exception) {
+                    Timber.e(
+                        ex,
+                        ("Contract: ${contract.shortDescr} (${contract.contractId}) ContractVoId: ${contractVo.voNumber}")
+                            .plus(" ${contractVo.contractVoId}) -> ${ex.message}")
+
+                    )
+                }
+            }
+            if (contractCount == contractMax && contractVoCount == contractVosMax) {
+                postEvent(XIResult.ProgressUpdate("ContractVos", -1.0f))
+            }
+        }
+    }
+
 
     @Transaction
     private suspend fun saveProjects(
@@ -458,6 +497,7 @@ class OfflineDataRepository(
                     updateProjectSections(project.projectSections, project)
 
                     updateVOItems(project.voItems, project)
+                  //updateProjectVoItems(contractVo.projectVos!!, contractVo)
 
                     Timber.d("pr**: $contractCount / $contractMax contracts")
                     Timber.d("pr**: $projectCount / $projectMax projects")
@@ -483,6 +523,55 @@ class OfflineDataRepository(
             }
         }
     }
+
+
+//    @Transaction
+//    private fun updateProjectVoItems(projectVos: ArrayList<ProjectVoDTO>, contractVo: ContractVoDTO) {
+//        projectVos.forEach { projectVo ->
+//            if (!appDb.getProjectVoDao()
+//                    .checkItemExistsProjectVo(projectVo.projectVoId)
+//            ) {
+//                try {
+//                    if (projectVo.itemCode.isNullOrEmpty()){
+//                        projectVo.setVoApprovalNumber(contractVo.nRAApprovalNumber)
+//                        projectVo.setVoNumber(contractVo.voNumber)
+//                        appDb.getProjectVoDao().insertProjectVoItem(projectVo)
+//
+//                    }else{
+//                        val pattern = Pattern.compile("(.*?)\\.")
+//                        val matcher = pattern.matcher(projectVo.itemCode!!)
+//                        if (matcher.find()) {
+//                            val itemCode = "${matcher.group(1)}0"
+//                            //  Let's Get the ID Back on Match
+//                            val sectionItemId = appDb.getSectionItemDao()
+//                                .getSectionItemId(
+//                                    itemCode.replace(
+//                                        "\\s+".toRegex(),
+//                                        ""
+//                                    )
+//                                )
+//                            projectVo.setVoApprovalNumber(contractVo.nRAApprovalNumber)
+//                            projectVo.setVoNumber(contractVo.voNumber)
+//                            projectVo.setSectionItemId(sectionItemId)
+//                            projectVo.itemId = projectVo.itemCode
+//                            projectVo.workflowId = 4
+//                            appDb.getProjectVoDao().insertProjectVoItem(projectVo)
+//
+//                        }
+//
+//                    }
+//
+//
+//                } catch (ex: Exception) {
+//                    Timber.e(
+//                        ex,
+//                        "ProjectVo ${projectVo.projectVoId} -> ${ex.message}"
+//                    )
+//                }
+//            }
+//        }
+//    }
+
 
     @Transaction
     private fun updateProjectItems(
@@ -562,20 +651,36 @@ class OfflineDataRepository(
         project: ProjectDTO
     ) {
         voItems?.forEach { voItem ->
-            if (!appDb.getVoItemDao().checkIfVoItemExist(voItem.projectVoId)) {
+            if (!appDb.getVoItemDao().checkIfExistsProjectVoItem(voItem.projectVoId)) {
                 try {
-                    appDb.getVoItemDao().insertVoItem(
-                        voItem.projectVoId,
-                        voItem.itemCode,
-                        voItem.voDescr,
-                        voItem.descr,
-                        voItem.uom,
-                        voItem.rate,
-                        voItem.projectItemId,
-                        voItem.contractVoId,
-                        voItem.contractVoItemId,
-                        project.projectId
-                    )
+                    if (voItem.itemCode.isNullOrEmpty()){
+//                        voItem.setVoApprovalNumber(project.nRAApprovalNumber)
+//                        voItem.setVoNumber(contractVo.voNumber)
+                        appDb.getVoItemDao().insertProjectVoItem(voItem)
+                    }else{
+                        val pattern = Pattern.compile("(.*?)\\.")
+                        val matcher = pattern.matcher(voItem.itemCode)
+                        if (matcher.find()) {
+                            val itemCode = "${matcher.group(1)}0"
+                            //  Let's Get the ID Back on Match
+                            val sectionItemId = appDb.getSectionItemDao()
+                                .getSectionItemId(
+                                    itemCode.replace(
+                                        "\\s+".toRegex(),
+                                        ""
+                                    )
+                                )
+//                            projectVo.setVoApprovalNumber(contractVo.nRAApprovalNumber)
+//                            projectVo.setVoNumber(contractVo.voNumber)
+                            voItem.setSectionItemId(sectionItemId)
+                            voItem.workflowId = 4
+                            appDb.getVoItemDao().insertProjectVoItem(voItem)
+
+                        }
+
+                    }
+
+
                 } catch (ex: Exception) {
                     Timber.e(
                         ex,
@@ -635,9 +740,13 @@ class OfflineDataRepository(
         jobDTO?.let { job ->
 
             if (!appDb.getJobDao().checkIfJobExist(job.jobId)) {
+                val newcontractID = appDb.getProjectDao().getContractIdForProjectId(DataConversion.toBigEndian(job.projectId!!).toString())
                 job.run {
                     setJobId(DataConversion.toBigEndian(jobId))
                     setProjectId(DataConversion.toBigEndian(projectId))
+                    if (newcontractID != null) {
+                        setContractId(DataConversion.toBigEndian(newcontractID))
+                    }
                     if (contractVoId != null) {
                         setContractVoId(DataConversion.toBigEndian(contractVoId))
                     }
@@ -747,6 +856,11 @@ class OfflineDataRepository(
                     )
                 } else {
                     jobItemEstimate.trackRouteId = null
+                    jobItemEstimate.setContractVoId(
+                        DataConversion.toBigEndian(
+                            jobItemEstimate.contractVoId
+                        )
+                    )
                     jobItemEstimate.setProjectVoId(
                         DataConversion.toBigEndian(
                             jobItemEstimate.projectVoId
@@ -1407,6 +1521,10 @@ class OfflineDataRepository(
         this.contractVoId = toBigEndian!!
     }
 
+    private fun JobDTO.setContractId(toBigEndian: String?) {
+        this.contractId = toBigEndian!!
+    }
+
     private fun JobDTO.setTrackRouteId(toBigEndian: String?) {
         this.trackRouteId = toBigEndian!!
     }
@@ -1497,6 +1615,22 @@ class OfflineDataRepository(
 
     private fun JobItemEstimateDTO.setProjectVoId(toBigEndian: String?) {
         this.projectVoId = toBigEndian
+    }
+
+    private fun JobItemEstimateDTO.setContractVoId(toBigEndian: String?) {
+        this.contractVoId = toBigEndian
+    }
+
+//    private fun ProjectVoDTO.setVoApprovalNumber(approvalNumber: String?) {
+//        this.approvalNumber = approvalNumber
+//    }
+//
+//    private fun ProjectVoDTO.setVoNumber(voNumber: String?) {
+//        this.voNumber = voNumber
+//    }
+
+    private fun VoItemDTO.setSectionItemId(sectionItemId: String?) {
+        this.sectionItemId = sectionItemId
     }
 
     private fun JobItemEstimateDTO.setTrackRouteId(toBigEndian: String?) {

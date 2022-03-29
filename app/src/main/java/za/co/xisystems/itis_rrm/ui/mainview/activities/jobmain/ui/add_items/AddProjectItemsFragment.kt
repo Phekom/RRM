@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.HandlerCompat
 import androidx.lifecycle.*
 import androidx.navigation.Navigation
@@ -23,12 +24,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.MobileNavigationDirections
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.ONE_SECOND
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
@@ -46,6 +45,7 @@ import za.co.xisystems.itis_rrm.extensions.observeOnce
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModel
 import za.co.xisystems.itis_rrm.services.DeferredLocationViewModelFactory
 import za.co.xisystems.itis_rrm.ui.extensions.*
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
@@ -81,7 +81,7 @@ class AddProjectItemsFragment : BaseFragment() {
     private var items: List<ItemDTOTemp> = ArrayList()
     private var jobBound: Boolean = false
     private val projectArgsData: AddProjectItemsFragmentArgs by navArgs()
-
+    private var syncDialog: AlertDialog.Builder? = null
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
 
 
@@ -122,6 +122,8 @@ class AddProjectItemsFragment : BaseFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
+        jOB_ACTIVITY.navigationView.visibility = View.GONE
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToCreate(this@AddProjectItemsFragment.requireView())
@@ -145,6 +147,9 @@ class AddProjectItemsFragment : BaseFragment() {
         _binding?.toolbar?.apply {
             setOnBackClickListener(backClickListener)
         }
+        _binding?.lastLin?.visibility = View.GONE
+        _binding?.totalCostTextView?.visibility = View.GONE
+        _binding?.submitButton?.visibility = View.GONE
         return binding.root
     }
 
@@ -157,9 +162,29 @@ class AddProjectItemsFragment : BaseFragment() {
             job = addViewModel.getJobForId(projectArgsData.jobId!!)
             _binding?.toolbar?.setTitle(job.descr)
             val contractNo =
-                addViewModel.getContractNoForId(job.contractVoId)
+                addViewModel.getContractNoForId(job.contractId)
             val projectCode =
                 addViewModel.getProjectCodeForId(job.projectId)
+            if (job.voJob == getString(R.string.no)) {
+                binding.selectedVoTextView.text = getString(R.string.none_vo)
+
+            } else {
+                if (projectArgsData.contractVoId.isNullOrBlank()) {
+                    extensionToast(
+                        "Contract VO ID / WA ID Missing ",
+                        ToastStyle.WARNING,
+                        ToastGravity.BOTTOM
+                    )
+                    binding.selectedVoTextView.text = getString(R.string.none_vo)
+                    job.voJob = "No"
+                } else {
+                    val voNumber = addViewModel.getContractVoData(projectArgsData.contractVoId!!)
+                    voNumber.observe(viewLifecycleOwner, { voNumberList ->
+                        binding.selectedVoTextView.text = voNumberList[0].voNumber
+                    })
+                }
+
+            }
             binding.selectedContractTextView.text = contractNo
             binding.selectedProjectTextView.text = projectCode
 
@@ -282,7 +307,7 @@ class AddProjectItemsFragment : BaseFragment() {
                 fragment = this@AddProjectItemsFragment,
                 tempItem = it,
                 addViewModel = addViewModel,
-                contractID = job.contractVoId,
+                contractID = job.contractId,
                 job = job
             )
         }
@@ -344,14 +369,13 @@ class AddProjectItemsFragment : BaseFragment() {
     }
 
     private fun openSelectItemFragment(view: View) {
-        val directions = AddProjectItemsFragmentDirections.actionNavigationAddItemsToNavigationSelectItems(job.projectId!!, job.jobId)
+        val directions = AddProjectItemsFragmentDirections.actionNavigationAddItemsToNavigationSelectItems(job.projectId!!, job.jobId, job.contractVoId)
         Navigation.findNavController(view).navigate(directions)
 //        Coroutines.io {
 //            withContext(Dispatchers.Main.immediate) {
 //                val navDirection = AddProjectItemsFragmentDirections
 //                    .actionNavigationAddItemsToNavigationSelectItems(job.projectId!!, job.jobId)
 //                Navigation.findNavController(view).navigate(navDirection)
-//
 //            }
 //        }
 
@@ -704,7 +728,21 @@ class AddProjectItemsFragment : BaseFragment() {
         _binding?.submitButton?.failProgress("Locations not verified ...")
         toggleLongRunning(false)
         _binding?.itemsCardView?.startAnimation(shake_long)
+        showErrorDialod()
         onGeoLocationFailed()
+    }
+
+    private fun showErrorDialod() = Coroutines.ui {
+        syncDialog = AlertDialog.Builder(requireContext()) // android.R.style.Theme_DeviceDefault_Dialog
+            .setTitle("Ji Locations Verification Failed")
+            .setMessage(getString(R.string.locati_dialog_error))
+            .setCancelable(false)
+            .setIcon(R.drawable.ic_warning_yellow)
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        syncDialog?.show()
     }
 
     private suspend fun validateJob(invalidJob: JobDTO) = uiScope.launch(uiScope.coroutineContext) {
@@ -740,9 +778,7 @@ class AddProjectItemsFragment : BaseFragment() {
     }
 
 
-    private suspend fun submitJob(
-        job: JobDTO
-    ) = withContext(uiScope.coroutineContext) {
+    private suspend fun submitJob(job: JobDTO) = withContext(uiScope.coroutineContext) {
         toggleLongRunning(true)
         _binding?.submitButton?.initProgress(viewLifecycleOwner)
         _binding?.submitButton?.startProgress("Submitting Job ...")
@@ -769,7 +805,7 @@ class AddProjectItemsFragment : BaseFragment() {
                     Coroutines.main {
 
                         val contractNo =
-                            addViewModel.getContractNoForId(job.contractVoId)
+                            addViewModel.getContractNoForId(job.contractId)
                         val projectCode =
                             addViewModel.getProjectCodeForId(job.projectId)
                         _binding?.selectedContractTextView?.text = contractNo
@@ -778,7 +814,7 @@ class AddProjectItemsFragment : BaseFragment() {
                         _binding?.infoTextView?.visibility = View.GONE
                         _binding?.lastLin?.visibility = View.VISIBLE
                         _binding?.totalCostTextView?.visibility = View.VISIBLE
-
+                        _binding?.submitButton?.visibility = View.VISIBLE
                         // Set Job Start & Completion Dates
                         job.dueDate?.let {
                             _binding?.dueDateTextView?.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
@@ -795,8 +831,10 @@ class AddProjectItemsFragment : BaseFragment() {
                                 _binding?.infoTextView?.visibility = View.GONE
                                 _binding?.lastLin?.visibility = View.VISIBLE
                                 _binding?.totalCostTextView?.visibility = View.VISIBLE
+                                _binding?.submitButton?.visibility = View.VISIBLE
                             }
                         })
+
                         bindProjectItems()
                         if (job.actId == 1) {
                             _binding?.addItemButton?.visibility = View.INVISIBLE

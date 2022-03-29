@@ -243,7 +243,7 @@ class ExpandableHeaderMeasureItem(
             measureGroupId = null,
             jobItemMeasurePhotos = jobItemMeasurePhotoDTO,
             projectItemId = (selectedJobItemEstimate.projectItemId).toString(),
-            projectVoId = jobForJobItemEstimate.voId,
+            projectVoId = jobForJobItemEstimate.projectVoId,
             qty = (quantity).toString().toDouble(),
             recordSynchStateId = 0,
             recordVersion = 0,

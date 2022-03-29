@@ -7,10 +7,13 @@ import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ContractVoSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.domain.ProjectVoSelector
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -34,6 +37,17 @@ class CreationViewModel(
         jobCreationDataRepository.getUser()
     }
 
+    suspend fun getProjectVoData(projectId: String): LiveData<List<VoItemDTO>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getProjectVoData(projectId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
+
+
     suspend fun getContractSelectors(): LiveData<List<ContractSelector>> = liveData {
         withContext(ioContext) {
             val data = jobCreationDataRepository.getContractSelectors()
@@ -52,6 +66,21 @@ class CreationViewModel(
         }
     }
 
+    suspend fun getContractVoSelectors(contractId: String): LiveData<List<ContractVoSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getContractVoSelectors(contractId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
+    suspend fun getContractVoIdForPrjId(projectId: String): List<VoItemDTO> {
+        val contractVoIds = jobCreationDataRepository.getContractVoIdForPrjId(projectId)
+       return withContext(dispatchers.io()) {
+            contractVoIds
+        }
+    }
 
     suspend fun backupJob(job: JobDTO) = viewModelScope.launch(ioContext) {
         jobCreationDataRepository.backupJob(job)

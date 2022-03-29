@@ -84,7 +84,7 @@ class MeasureCreationDataRepository(
         userId: String,
         jobId: String,
         jimNo: String?,
-        contractVoId: String?,
+        contractId: String?,
         mSures: ArrayList<JobItemMeasureDTO>,
         activity: FragmentActivity,
         itemMeasureJob: JobDTO
@@ -95,7 +95,7 @@ class MeasureCreationDataRepository(
         val gson = Gson()
         val newMeasure = gson.toJson(mSures)
         val jsonElement: JsonElement = JsonParser.parseString(newMeasure)
-        measureData.addProperty("ContractId", contractVoId)
+        measureData.addProperty("ContractId", contractId)
         measureData.addProperty("JiNo", jimNo)
         measureData.addProperty("JobId", jobId)
         measureData.add("MeasurementItems", jsonElement)

@@ -166,8 +166,6 @@ abstract class BaseFragment(
 
     }
 
-    lateinit var JOB_ACTIVITY: JobCreationActivity
-
 
     private fun initAnimations() {
         click = AnimationUtils.loadAnimation(requireContext().applicationContext, R.anim.click)
@@ -205,7 +203,7 @@ abstract class BaseFragment(
         super.onAttach(context)
         bounce = AnimationUtils.loadAnimation(context.applicationContext, R.anim.bounce)
         shake = AnimationUtils.loadAnimation(context.applicationContext, R.anim.shake)
-       // JOB_ACTIVITY = context as JobCreationActivity
+//        JOB_ACTIVITY = context as JobCreationActivity
     }
 
     override fun onViewCreated(

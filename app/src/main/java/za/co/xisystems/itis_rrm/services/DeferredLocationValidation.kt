@@ -225,16 +225,32 @@ class DeferredLocationViewModel(
 
     private fun failLocationValidation(message: String, projectItemId: String) = viewModelScope.launch(mainContext) {
                 val estimate = jobCreationDataRepository.getItemForID(projectItemId)
-           geoCodingResult.value =
-            XIEvent(
-                XIResult.Error(
-                    LocationException(
-                        message
-                    ),
-                    "Are not within your allocated road reserve.","Images For ${estimate.itemCode}  ${estimate.descr}"
-                    //"One or more images not within your allocated road reserve."
-                )
-            )
+                if (estimate.contractVoId.isNullOrEmpty()){
+                    val estimateItem = jobCreationDataRepository.getItemPrjForID(projectItemId)
+                    geoCodingResult.value =
+                        XIEvent(
+                            XIResult.Error(
+                                LocationException(
+                                    message
+                                ),
+                                "Are not within your allocated road reserve. ","Images For ${estimateItem.itemCode}  ${estimateItem.descr}"
+                                //"One or more images not within your allocated road reserve."
+                            )
+                        )
+                }else{
+                    val estimateItm = jobCreationDataRepository.getItemPrjVoForID(projectItemId)
+                    geoCodingResult.value =
+                        XIEvent(
+                            XIResult.Error(
+                                LocationException(
+                                    message
+                                ),
+                                "Are not within your allocated road reserve. ","Images For ${estimateItm.itemCode}  ${estimateItm.descr}"
+                                //"One or more images not within your allocated road reserve."
+                            )
+                        )
+                }
+
     }
 
     private suspend fun processAndPersist(

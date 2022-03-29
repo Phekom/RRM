@@ -23,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:animateLayoutChanges="true"
+        android:isScrollContainer="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -66,6 +67,8 @@
 
                 <View style="@style/_hline" />
 
+
+
                 <androidx.appcompat.widget.AppCompatEditText
                     android:id="@+id/descriptionEditText"
                     style="@style/_default"
@@ -78,6 +81,94 @@
                     android:shadowColor="@color/red"
                     android:textColorHighlight="@color/red" />
 
+
+                <LinearLayout
+                    android:id="@+id/voJobLin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/label1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="@dimen/dimen_10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="5dp"
+                        android:ellipsize="marquee"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:scrollHorizontally="true"
+                        android:singleLine="true"
+                        style="@style/_orangeTextLabel"
+                        android:text="@string/project_vo"
+                        android:textSize="14sp"
+                        android:textAllCaps="false" />
+
+                    <RadioGroup
+                        android:id="@+id/voJobRadioGroup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginStart="@dimen/dimen_10dp"
+                        android:layout_marginTop="@dimen/dimen_5dp">
+
+                        <RadioButton
+                            android:id="@+id/voJobYes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/yes" />
+
+                        <RadioButton
+                            android:id="@+id/voJobNo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/dimen_5dp"
+                            android:checked="false"
+                            android:text="@string/no" />
+
+                    </RadioGroup>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/voJobSelectLin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginTop="@dimen/small"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginBottom="@dimen/medium"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/VoTextLabel"
+                        style="@style/_orangeTextLabel"
+                        android:gravity="center_vertical"
+                        android:layout_marginStart="@dimen/xsmall"
+                        android:layout_marginEnd="@dimen/small"
+                        android:layout_marginTop="@dimen/xsmall"
+                        android:text="@string/select_contract_vo" />
+
+                    <Spinner
+                        android:id="@+id/contractVoSpinner"
+                        style="@style/_default2"
+                        android:layout_marginTop="@dimen/xsmall" />
+
+                </LinearLayout>
+
+
+                <View style="@style/_hline" />
+
                 <Button
                     android:id="@+id/createJobBtn"
                     android:layout_width="match_parent"
@@ -86,6 +177,7 @@
                     android:background="@drawable/buttonshape_clear"
                     android:text="@string/confirm_project_selection"
                     android:textColor="@color/sanral_burnt_orange" />
+
 
             </LinearLayout>
 

@@ -40,4 +40,9 @@ interface SectionItemDao {
 
     @Query("SELECT * FROM SECTION_ITEM_TABLE  WHERE sectionItemId IN (SELECT DISTINCT sectionItemId FROM PROJECT_ITEM_TABLE WHERE projectId = :projectId) ORDER BY itemCode ASC")
     fun getFilteredSectionItems(projectId: String): LiveData<List<SectionItemDTO>>
+
+    @Query("SELECT * FROM SECTION_ITEM_TABLE  WHERE sectionItemId IN (SELECT DISTINCT sectionItemId FROM TABLE_JOB_VO_ITEM WHERE contractVoId = :contractVoId) ORDER BY itemCode ASC")
+    fun getFilteredSectionItems2(contractVoId: String): LiveData<List<SectionItemDTO>>
+
+
 }

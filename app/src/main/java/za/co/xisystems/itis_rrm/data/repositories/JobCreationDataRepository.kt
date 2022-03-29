@@ -19,24 +19,15 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.JobDataController
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobTypeEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionPointDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ContractVoSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.domain.ProjectVoSelector
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -120,20 +111,32 @@ class JobCreationDataRepository(
         }
     }
 
+    suspend fun getItemPrjVoForID(projectItemId: String?): VoItemDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getVoItemDao().getItemForID(projectItemId!!)
+        }
+    }
 
-    suspend fun getItemForID( projectItemId: String? ): ProjectItemDTO {
+
+    suspend fun getItemPrjForID(projectItemId: String?): ProjectItemDTO {
         return withContext(dispatchers.io()) {
             appDb.getProjectItemDao().getItemForID(projectItemId!!)
         }
     }
 
-    suspend fun getItemTempForID(itemId: String) : ItemDTOTemp {
+    suspend fun getItemForID(projectItemId: String?): JobItemEstimateDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimateDao().getItemForID(projectItemId!!)
+        }
+    }
+
+    suspend fun getItemTempForID(itemId: String): ItemDTOTemp {
         return withContext(dispatchers.io()) {
             appDb.getItemDaoTemp().getProjectItemById(itemId)
         }
     }
 
-    suspend fun getJobForId(jobId: String) : JobDTO {
+    suspend fun getJobForId(jobId: String): JobDTO {
         return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobForJobId(jobId)
         }
@@ -142,6 +145,12 @@ class JobCreationDataRepository(
     suspend fun getAllSectionItemsForProject(projectId: String): LiveData<List<SectionItemDTO>> {
         return withContext(dispatchers.io()) {
             appDb.getSectionItemDao().getFilteredSectionItems(projectId)
+        }
+    }
+
+    suspend fun getAllSectionItemsForProject2(contractVoId: String): LiveData<List<SectionItemDTO>> {
+        return withContext(dispatchers.io()) {
+            appDb.getSectionItemDao().getFilteredSectionItems2(contractVoId)
         }
     }
 
@@ -154,10 +163,22 @@ class JobCreationDataRepository(
         }
     }
 
+
+    suspend fun getAllItemsForSectionItemByContractVoId(
+        sectionItemId: String,
+        contractVoId: String
+    ): LiveData<List<VoItemDTO>> {
+        return withContext(dispatchers.io()) {
+            appDb.getVoItemDao().getAllItemsForSectionItemByContractVoId(sectionItemId, contractVoId)
+        }
+    }
+
     fun saveNewItem(newJobItem: ItemDTOTemp?) {
         if (newJobItem != null && !appDb.getItemDaoTemp()
                 .checkItemExistsItemId(newJobItem.itemId)
-        ) { appDb.getItemDaoTemp().insertItems(newJobItem) }
+        ) {
+            appDb.getItemDaoTemp().insertItems(newJobItem)
+        }
 //        Coroutines.io {
 //
 //        }
@@ -278,6 +299,16 @@ class JobCreationDataRepository(
             itemsDeleted + estimatesDeleted + estimatesPhotosDeleted
         }
     }
+
+
+    @Transaction
+    suspend fun deleteItemTempFromList(itemId: String): Int {
+        return withContext(dispatchers.io()) {
+            val itemsDeleted = appDb.getItemDaoTemp().deleteItemFromList(itemId)
+            itemsDeleted
+        }
+    }
+
 
     @Suppress("TooGenericExceptionCaught")
     suspend fun submitJob(userId: Int, job: JobDTO): WorkflowJobDTO = withContext(dispatchers.io()) {
@@ -416,7 +447,7 @@ class JobCreationDataRepository(
         }
     }
 
-    private suspend fun uploadCreateJobImages( 
+    private suspend fun uploadCreateJobImages(
         packageJob: JobDTO,
         activity: FragmentActivity
     ) {
@@ -542,9 +573,9 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getContractNoForId(contractVoId: String?): String {
+    suspend fun getContractNoForId(contractId: String?): String {
         return withContext(dispatchers.io()) {
-            appDb.getContractDao().getContractNoForId(contractVoId)
+            appDb.getContractDao().getContractNoForId(contractId)
         }
     }
 
@@ -598,9 +629,28 @@ class JobCreationDataRepository(
         return appDb.getContractDao().getContractSelectors()
     }
 
+    fun getContractVoData(contractVoId: String): List<ContractVoSelector> {
+        return appDb.getContractVoDao().getContractVoSelectors(contractVoId)
+    }
+
+
+    fun getProjectVoData(projectId: String): List<VoItemDTO> {
+        return appDb.getVoItemDao().getProjectVoData(projectId)
+    }
+
     fun getProjectSelectors(contractId: String): List<ProjectSelector> {
         return appDb.getProjectDao().getProjectSelectorsForContractId(contractId)
     }
+
+    fun getContractVoSelectors(contractId: String): List<ContractVoSelector> {
+        return appDb.getContractVoDao().getContractVoSelectorsForId(contractId)
+    }
+
+
+    suspend fun getContractVoIdForPrjId(projectId: String): List<VoItemDTO> = withContext(dispatchers.io()) {
+        return@withContext appDb.getVoItemDao().getContractVoIdForPrjId(projectId)
+    }
+
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
@@ -630,9 +680,9 @@ class JobCreationDataRepository(
 
     @Transaction
     suspend fun backupEstimatePhoto(photoDTO: JobItemEstimatesPhotoDTO):
-        JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
+            JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
         if (appDb.getJobItemEstimatePhotoDao()
-            .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
+                .checkIfJobItemEstimatePhotoExistsByPhotoId(photoDTO.photoId)
         ) {
             appDb.getJobItemEstimatePhotoDao().updateJobItemEstimatePhoto(photoDTO)
         } else {

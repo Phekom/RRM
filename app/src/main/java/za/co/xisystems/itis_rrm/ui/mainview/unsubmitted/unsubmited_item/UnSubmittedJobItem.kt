@@ -135,7 +135,7 @@ class UnSubmittedJobItem(
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = UnSubmittedFragmentDirections
-                    .actionNavigationUnSubmittedToNavigationAddItems(jobData.projectId!!, jobData.jobId)
+                    .actionNavigationUnSubmittedToNavigationAddItems(jobData.projectId!!, jobData.jobId,jobData.contractVoId)
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }

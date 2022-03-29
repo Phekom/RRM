@@ -6,44 +6,35 @@ package za.co.xisystems.itis_rrm.ui.auth
 import am.appwise.components.ni.NoInternetDialog
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.github.ajalt.timberkt.Timber
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.network.PermissionController
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModelFactory
+import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.hide
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.show
-import za.co.xisystems.itis_rrm.utils.snackbar
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.utils.*
 
 
-class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
+class RegisterActivity : BaseActivity(), AuthListener, DIAware {
     override val di by lazy { (applicationContext as MainApp).di }
     private val factory: AuthViewModelFactory by instance()
     private lateinit var viewModel: AuthViewModel
@@ -56,7 +47,9 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_WIFI_STATE,
     )
 
-    open var gpsEnabled = false
+    private var pinAlert: AlertDialog? = null
+    private var builder: AlertDialog.Builder? = null
+    override var gpsEnabled = false
     private var networkEnabled: Boolean = false
 
     companion object {
@@ -93,7 +86,30 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
 
     }
 
-    private fun registerThisUser(view: View, username: TextInputEditText, password: TextInputEditText, noInternetDialog: NoInternetDialog) {
+    override fun startLongRunningTask() {
+        Timber.e{"starting task..."}
+        binding.loading.visibility = View.VISIBLE
+        // Make UI untouchable for duration of task
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
+    }
+
+    override fun endLongRunningTask() {
+        Timber.i { "stopping task..." }
+        binding.loading.visibility = View.GONE
+        // Re-enable UI touches
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    private fun registerThisUser(view: View, username: TextInputEditText, password: TextInputEditText,
+                                 noInternetDialog: NoInternetDialog) {
         uiScope.launch(uiScope.coroutineContext) {
             viewModel.onRegButtonClick(view, username, password)
             when (this@RegisterActivity.isConnected) {
@@ -145,27 +161,29 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
     }
 
     private fun registerPinOrNot() {
-        val builder =
-            AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
-        builder.setTitle(R.string.set_pin)
-        builder.setIcon(R.drawable.ic_baseline_lock_24px)
-        builder.setMessage(R.string.set_pin_msg)
-        builder.setCancelable(false)
+        builder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
+        builder?.setTitle(R.string.set_pin)
+        builder?.setIcon(R.drawable.ic_baseline_lock_24px)
+        builder?.setMessage(R.string.set_pin_msg)
+        builder?.setCancelable(false)
         // Yes button
-        builder.setPositiveButton(R.string.ok) { _, _ ->
+        builder?.setPositiveButton(R.string.ok) { _, _ ->
             if (ServiceUtil.isNetworkAvailable(this.applicationContext)) {
                 Intent(this, RegisterPinActivity::class.java).also { pin ->
                     pin.flags =
                         Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                    pinAlert?.dismiss()
                     startActivity(pin)
                 }
             } else {
                 toast(R.string.no_connection_detected.toString())
             }
         }
-        val pinAlert = builder.create()
-        pinAlert.show()
+
+        pinAlert = builder?.create()
+        pinAlert?.show()
     }
+
 
 
     private fun startPermissionRequest(permissions: Array<String>): Boolean {
@@ -176,6 +194,11 @@ class RegisterActivity : AppCompatActivity(), AuthListener, DIAware {
             }
         }
         return allAccess
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pinAlert?.dismiss()
     }
 
     override fun onStart() {

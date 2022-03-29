@@ -51,19 +51,19 @@ data class ProjectDTO(
 
     @SerializedName("ProjectId")
     @NotNull
-    val projectId: String,
+    val projectId: String, // A73DEBE5ADDC4D16947857E9AE606278
 
     @SerializedName("Descr")
-    val descr: String?,
+    val descr: String?, // MD11 General N2-1
 
     @SerializedName("EndDate")
-    val endDate: String?,
+    val endDate: String?, // 2020-11-30T00:00:00
 
     @SerializedName("Items")
     val items: ArrayList<ProjectItemDTO> = ArrayList(),
 
     @SerializedName("ProjectCode")
-    val projectCode: String?,
+    val projectCode: String?, // MD11 General Vuka-Kew N2-1
 
     @SerializedName("ProjectMinus")
     val projectMinus: String?,

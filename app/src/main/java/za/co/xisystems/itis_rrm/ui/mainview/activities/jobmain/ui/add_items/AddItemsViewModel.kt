@@ -2,10 +2,7 @@ package za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items
 
 import android.app.Application
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.room.Transaction
 import kotlinx.coroutines.*
 import timber.log.Timber
@@ -17,6 +14,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
+import za.co.xisystems.itis_rrm.domain.ContractVoSelector
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.JobItemEstimateSize
@@ -56,11 +54,23 @@ class AddItemsViewModel(
     }
 
 
-    suspend fun getContractNoForId(contractVoId: String?): String {
+    suspend fun getContractNoForId(contractId: String?): String {
         return withContext(dispatchers.io()) {
-            jobCreationDataRepository.getContractNoForId(contractVoId)
+            jobCreationDataRepository.getContractNoForId(contractId)
         }
     }
+
+
+
+    suspend fun getContractVoData(contractVoId: String): LiveData<List<ContractVoSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getContractVoData(contractVoId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
 
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(dispatchers.io()) {
@@ -243,6 +253,16 @@ class AddItemsViewModel(
                 photoUtil.photoExist(photoStart.filename) && photoUtil.photoExist(photoEnd.filename)
             }
         }
+    }
+
+
+//    fun deleteItemList(jobId: String) {
+//        jobCreationDataRepository.deleteItemList(jobId)
+//    }
+
+    fun deleteItemFromList(itemId: String, estimateId: String?) = viewModelScope.launch(ioContext) {
+        val recordsAffected = jobCreationDataRepository.deleteItemFromList(itemId, estimateId)
+        Timber.d("deleteItemFromList: $recordsAffected deleted.")
     }
 
 

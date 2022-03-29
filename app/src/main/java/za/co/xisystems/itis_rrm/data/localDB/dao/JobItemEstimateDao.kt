@@ -19,6 +19,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
 
 /**
  * Created by Francis Mahlava on 2019/11/21.
@@ -59,6 +60,9 @@ interface JobItemEstimateDao {
 
     @Query("SELECT estimateId FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimateIdForJobId(jobId: String): String
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE projectItemId LIKE :itemId")
+    fun getItemForID(itemId: String): JobItemEstimateDTO
 
     @Query("UPDATE JOB_ITEM_ESTIMATE SET TrackRouteId =:trackRouteId, ActId =:actId  WHERE estimateId = :estimateId")
     fun updateExistingJobItemEstimateWorkflow(
