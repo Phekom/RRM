@@ -35,7 +35,7 @@ object JobDataController {
             job.trackRouteId = null
         }
         job.setContractVoId(DataConversion.toLittleEndian(job.contractVoId))
-        job.setVoId(DataConversion.toLittleEndian(job.voId))
+        job.setContractId(DataConversion.toLittleEndian(job.contractId))
 
         job.jobSections.forEach { jobSection ->
             jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
@@ -53,7 +53,7 @@ object JobDataController {
             } else {
                 jie.trackRouteId = null
             }
-
+            jie.setContractVoId(DataConversion.toLittleEndian(jie.contractVoId))
             jie.setProjectVoId(DataConversion.toLittleEndian(jie.projectVoId))
 
             jie.jobItemEstimatePhotos.forEach { jiep ->
@@ -96,6 +96,10 @@ object JobDataController {
     fun setMsg(uplodmsg: String?): String? {
         return uplodmsg
     }
+}
+
+private fun JobItemEstimateDTO.setContractVoId(toLittleEndian: String?) {
+    this.contractVoId = toLittleEndian
 }
 
 private fun JobItemEstimateDTO.setProjectVoId(toLittleEndian: String?) {
@@ -194,30 +198,30 @@ private fun JobSectionDTO.setJobSectionId(toLittleEndian: String?) {
     this.jobSectionId = toLittleEndian!!
 }
 
-private fun JobDTO.setVoId(toLittleEndian: String?) {
-    this.voId = toLittleEndian
+private fun JobDTO.setContractId(contractId: String?) {
+    this.contractId = contractId
 }
 
-private fun JobDTO.setContractVoId(toLittleEndian: String?) {
-    this.contractVoId = toLittleEndian
+private fun JobDTO.setContractVoId(contractVoId: String?) {
+    this.contractVoId = contractVoId
 }
 
-private fun JobDTO.setTrackRouteId(toLittleEndian: String?) {
-    this.trackRouteId = toLittleEndian
+private fun JobDTO.setTrackRouteId(trackRouteId: String?) {
+    this.trackRouteId = trackRouteId
 }
 
-private fun JobDTO.setProjectVoId(toLittleEndian: String?) {
-    this.projectVoId = toLittleEndian
+private fun JobDTO.setProjectVoId(projectVoId: String?) {
+    this.projectVoId = projectVoId
 }
 
-private fun JobDTO.setPerfitemGroupId(toLittleEndian: String?) {
-    this.perfitemGroupId = toLittleEndian
+private fun JobDTO.setPerfitemGroupId(perfitemGroupId: String?) {
+    this.perfitemGroupId = perfitemGroupId
 }
 
-private fun JobDTO.setProjectId(toLittleEndian: String?) {
-    this.projectId = toLittleEndian
+private fun JobDTO.setProjectId(projectId: String?) {
+    this.projectId = projectId
 }
 
-private fun JobDTO.setJobId(toLittleEndian: String?) {
-    this.jobId = toLittleEndian!!
+private fun JobDTO.setJobId(jobId: String?) {
+    this.jobId = jobId!!
 }

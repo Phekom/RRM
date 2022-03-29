@@ -320,5 +320,14 @@
     <string name="title_select_items">Select Project Item</string>
     <string name="continue_old">UpDate Later</string>
     <string name="you_have_out_standing_jobs">"You have JI's or Measurements not Submitted Please make sure you Submit them first as they can not be recovered after Resetting App "</string>
+    <string name="project_vo">Create VO / WA JI</string>
+    <string name="select_project_vo">Select Project Vo</string>
+    <string name="select_contract_vo">Select Contract Vo Number</string>
+
+    <string name="voNumber">VoNumber</string>
+    <string name="none_vo">None Vo Job</string>
+    <string name="locati_dialog_error">"Please check the accuracy of your GPS on your device prior to taking estimate photos. \n Try to stay still whilst taking pictures, and ensure High Accuracy is enabled  \n  If you are still having issues with your allocated road reserve, please contact your Route Manager "</string>
+    <string name="updating_accuracy">Wait .... Your Location Accuracy !!</string>
+
 
 </resources>

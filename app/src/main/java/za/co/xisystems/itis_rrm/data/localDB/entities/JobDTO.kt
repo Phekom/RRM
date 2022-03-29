@@ -5,8 +5,8 @@
  **/
 
 /**
- * Updated by Shaun McDonald on 2021/05/14
- * Last modified on 2021/05/14, 19:43
+ * Updated by Francis Mahlava on 2022/03/23
+ * Last modified on 2022/03/23, 05:43
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -43,10 +43,17 @@ class JobDTO(
     @NotNull
     @SerializedName("JobId")
     var jobId: String,
+
+    @SerializedName("ContractId")
+    var contractId: String?,
     @SerializedName("ContractVoId")
     var contractVoId: String?,
+
     @SerializedName("ProjectId")
     var projectId: String?,
+    @SerializedName("ProjectVoId")
+    var projectVoId: String?,
+
     @SerializedName("SectionId")
     var sectionId: String?,
     @SerializedName("StartKm")
@@ -114,8 +121,6 @@ class JobDTO(
     @SerializedName("JobStatusId")
     val jobStatusId: Int,
 
-    @SerializedName("ProjectVoId")
-    var projectVoId: String?,
 
     @SerializedName("QtyUpdateAllowed")
     val qtyUpdateAllowed: Int,
@@ -123,8 +128,7 @@ class JobDTO(
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
 
-    @SerializedName("VoId")
-    var voId: String?,
+
 
     @SerializedName("WorkCompleteDate")
     val workCompleteDate: String? = null,
@@ -159,15 +163,21 @@ class JobDTO(
     val isSynced: String?,
 
     @SerializedName("Deleted")
-    var deleted: Int = 0
+    var deleted: Int = 0,
+
+    @SerializedName("Vo_Job")
+    var voJob: String?,
+
 
 ) : Serializable, Parcelable {
 
     constructor(parcel: Parcel) : this(
         actId = parcel.readInt(),
         jobId = parcel.readString()!!,
+        contractId = parcel.readString(),
         contractVoId = parcel.readString(),
         projectId = parcel.readString(),
+        projectVoId = parcel.readString(),
         sectionId = parcel.readString(),
         startKm = parcel.readDouble(),
         endKm = parcel.readDouble(),
@@ -205,10 +215,8 @@ class JobDTO(
         jobDirectionId = parcel.readInt(),
         jobPositionId = parcel.readInt(),
         jobStatusId = parcel.readInt(),
-        projectVoId = parcel.readString(),
         qtyUpdateAllowed = parcel.readInt(),
         recordSynchStateId = parcel.readInt(),
-        voId = parcel.readString(),
         workCompleteDate = parcel.readString(),
         workStartDate = parcel.readString(),
         estimatesActId = parcel.readValue(Int::class.java.classLoader) as? Int,
@@ -220,7 +228,8 @@ class JobDTO(
         sortString = parcel.readString(),
         activityId = parcel.readInt(),
         isSynced = parcel.readString(),
-        deleted = parcel.readInt()
+        deleted = parcel.readInt(),
+        voJob = parcel.readString(),
     )
 
     companion object CREATOR : Creator<JobDTO> {
@@ -330,8 +339,10 @@ class JobDTO(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(actId)
         parcel.writeString(jobId)
+        parcel.writeString(contractId)
         parcel.writeString(contractVoId)
         parcel.writeString(projectId)
+        parcel.writeString(projectVoId)
         parcel.writeString(sectionId)
         parcel.writeDouble(startKm)
         parcel.writeDouble(endKm)
@@ -360,10 +371,9 @@ class JobDTO(
         parcel.writeInt(jobDirectionId)
         parcel.writeInt(jobPositionId)
         parcel.writeInt(jobStatusId)
-        parcel.writeString(projectVoId)
+
         parcel.writeInt(qtyUpdateAllowed)
         parcel.writeInt(recordSynchStateId)
-        parcel.writeString(voId)
         parcel.writeString(workCompleteDate)
         parcel.writeString(workStartDate)
         parcel.writeValue(estimatesActId)
@@ -375,6 +385,7 @@ class JobDTO(
         parcel.writeString(sortString)
         parcel.writeInt(activityId)
         parcel.writeString(isSynced)
+        parcel.writeString(voJob)
         parcel.writeInt(deleted)
         parcel.writeList(jobSections.toList())
         parcel.writeList(jobItemMeasures.toList())

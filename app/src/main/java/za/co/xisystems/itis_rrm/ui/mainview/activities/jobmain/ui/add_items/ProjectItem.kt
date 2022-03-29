@@ -133,7 +133,7 @@ open class ProjectItem(
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirections = AddProjectItemsFragmentDirections
-                        .actionNavigationAddItemsToEstimatePhotoFragment(newJob?.jobId, item.itemId, jobItemEstimate?.estimateId,null)
+                        .actionNavigationAddItemsToEstimatePhotoFragment(newJob?.jobId, item.itemId, jobItemEstimate?.estimateId,newJob?.contractVoId,null)
                 Navigation.findNavController(view)
                     .navigate(navDirections)
             }
@@ -174,21 +174,21 @@ open class ProjectItem(
                 duration = LONG
             )
 
-//            Coroutines.main {
-//                // Get the JobEstimate
-//                val jobItemEstimate = getJobItemEstimate(itemDesc.itemId, job!!.jobId)
-//
-//                // Delete the project item.
-//                createViewModel.deleteItemFromList(itemDesc.itemId, estimateId = jobItemEstimate?.estimateId)
-//
-//                // Set updated job and recalculate costs if applicable
-//                job?.let {
-//                    it.removeJobEstimateByItemId(itemDesc.itemId)
-//                    createViewModel.backupJob(it)
-//                    createViewModel.setJobToEdit(itemDesc.jobId)
-//                    fragment.uiUpdate()
-//                }
-//            }
+            Coroutines.main {
+                // Get the JobEstimate
+                val jobItemEstimate = getJobItemEstimate(tempItem.itemId, job!!.jobId)
+
+                // Delete the project item.
+                addViewModel.deleteItemFromList(tempItem.itemId, estimateId = jobItemEstimate?.estimateId)
+//                addViewModel.deleteItemTempFromList()
+                // Set updated job and recalculate costs if applicable
+                job?.let {
+                    it.removeJobEstimateByItemId(tempItem.itemId)
+                    addViewModel.backupJob(it)
+                    addViewModel.setJobToEdit(tempItem.jobId)
+                    fragment.uiUpdate()
+                }
+            }
         }
         // No button
         itemDeleteBuilder.setNegativeButton(

@@ -14,37 +14,66 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
 interface VoItemDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertVoItems(voItem: VoItemDTO)
+    fun insertProjectVoItem(projectVo: VoItemDTO)
 
-    @Query("INSERT INTO TABLE_JOB_VO_ITEM (projectVoId,itemCode,voDescr,descr,uom,rate,projectItemId,contractVoId, contractVoItemId, projectId) VALUES (:projectVoId,:itemCode, :voDescr,:descr, :uom, :rate,:projectItemId,:contractVoId,:contractVoItemId,:projectId )")
-    fun insertVoItem(
-        projectVoId: String,
-        itemCode: String?,
-        voDescr: String?,
-        descr: String?,
-        uom: String?,
-        rate: Double?,
-        projectItemId: String?,
-        contractVoId: String?,
-        contractVoItemId: String?,
-        projectId: String
-    )
-
-    @Query("SELECT * FROM TABLE_JOB_VO_ITEM ")
-    fun getAllVoltem(): LiveData<List<VoItemDTO>>
-
-//    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE contractVoId = :contractVoId")
-//    fun checkIfVoItemExist(contractVoId: String): LiveData<List<VoItemDTO>>
-
-    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectVoId = :projectVoId")
-    fun checkIfVoItemExist(projectVoId: String): Boolean
+    @Query("SELECT EXiSTS (SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectVoId = :projectVoId)")
+    fun checkIfExistsProjectVoItem(projectVoId: String): Boolean
 
     @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectId = :projectId")
-    fun getVoItemsForProjectId(projectId: String): LiveData<List<VoItemDTO>>
+    fun getProjectVoData(projectId: String): List<VoItemDTO>
 
-    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectItemId = :projectItemId")
-    fun getVoItemForProjectItemId(projectItemId: String): LiveData<VoItemDTO>
+    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE sectionItemId LIKE :sectionItem AND contractVoId LIKE :contractVoId")
+    fun getAllItemsForSectionItemByContractVoId(
+        sectionItem: String,
+        contractVoId: String
+    ): LiveData<List<VoItemDTO>>
 
-    @Query("DELETE FROM TABLE_JOB_VO_ITEM")
-    fun deleteAll()
+    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectVoItemId LIKE :itemId")
+    fun getItemForID(itemId: String): VoItemDTO
+
+
+    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectId = :projectId")
+    fun getContractVoIdForPrjId(projectId: String): List<VoItemDTO>
+
+
+
+
+
+
+
+
+//    @Insert(onConflict = OnConflictStrategy.REPLACE)
+//    fun insertVoItems(voItem: VoItemDTO)
+//
+//    @Query("INSERT INTO TABLE_JOB_VO_ITEM (projectVoId,itemCode,voDescr,descr,uom,rate,projectItemId,contractVoId, contractVoItemId, projectId) VALUES (:projectVoId,:itemCode, :voDescr,:descr, :uom, :rate,:projectItemId,:contractVoId,:contractVoItemId,:projectId )")
+//    fun insertVoItem(
+//        projectVoId: String,
+//        itemCode: String?,
+//        voDescr: String?,
+//        descr: String?,
+//        uom: String?,
+//        rate: Double?,
+//        projectItemId: String?,
+//        contractVoId: String?,
+//        contractVoItemId: String?,
+//        projectId: String
+//    )
+//
+//    @Query("SELECT * FROM TABLE_JOB_VO_ITEM ")
+//    fun getAllVoltem(): LiveData<List<VoItemDTO>>
+//
+////    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE contractVoId = :contractVoId")
+////    fun checkIfVoItemExist(contractVoId: String): LiveData<List<VoItemDTO>>
+//
+//    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectVoId = :projectVoId")
+//    fun checkIfVoItemExist(projectVoId: String): Boolean
+//
+//    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectId = :projectId")
+//    fun getVoItemsForProjectId(projectId: String): LiveData<List<VoItemDTO>>
+//
+//    @Query("SELECT * FROM TABLE_JOB_VO_ITEM WHERE projectItemId = :projectItemId")
+//    fun getVoItemForProjectItemId(projectItemId: String): LiveData<VoItemDTO>
+//
+//    @Query("DELETE FROM TABLE_JOB_VO_ITEM")
+//    fun deleteAll()
 }

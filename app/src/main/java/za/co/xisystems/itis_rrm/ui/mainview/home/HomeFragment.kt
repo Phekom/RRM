@@ -14,13 +14,10 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
-import android.app.AlertDialog
+
 import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
 import android.graphics.Color
 import android.location.LocationManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -28,6 +25,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -36,7 +34,6 @@ import com.skydoves.progressview.ProgressView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.BuildConfig
@@ -44,8 +41,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.constants.Constants.THIRTY_SECONDS
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
-import za.co.xisystems.itis_rrm.custom.errors.ReceptionException
-import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration.LONG
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
@@ -55,13 +50,11 @@ import za.co.xisystems.itis_rrm.custom.results.getPercentageComplete
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.databinding.FragmentHomeBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeFragment : BaseFragment() {
@@ -87,6 +80,9 @@ class HomeFragment : BaseFragment() {
             handleBigSync(it)
         }
     }
+    private var pinAlert: AlertDialog? = null
+    private var syncDialog: AlertDialog.Builder? = null
+
 
     private val pvComplete = HashMap<String, Runnable>()
 
@@ -511,11 +507,8 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun promptUserToSync() = Coroutines.ui {
-        val syncDialog: AlertDialog.Builder =
-            AlertDialog.Builder(activity) // android.R.style.Theme_DeviceDefault_Dialog
-                .setTitle(
-                    "Initial Synchronisation"
-                )
+         syncDialog = AlertDialog.Builder(requireContext()) // android.R.style.Theme_DeviceDefault_Dialog
+                .setTitle("Initial Synchronisation" )
                 .setMessage(getString(R.string.needs_dbsynch))
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_baseline_cloud_download_24)
@@ -525,7 +518,7 @@ class HomeFragment : BaseFragment() {
                     }
                 }
 
-        syncDialog.show()
+        syncDialog?.show()
     }
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {

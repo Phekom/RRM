@@ -11,26 +11,7 @@ package za.co.xisystems.itis_rrm.utils
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import za.co.xisystems.itis_rrm.data.localDB.entities.ActivityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.InfoClassDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.LookupOptionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.PrimaryKeyValueDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ToDoListEntityDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserRoleDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkFlowRouteDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import java.util.Collections
 
 @Suppress("UNCHECKED_CAST")
@@ -507,8 +488,48 @@ class Converters {
     }
 
     // ===========================================================================
+    @TypeConverter
+    fun storedStringToContractVoDTO(data: String?): ArrayList<ContractVoDTO> {
+        val gson = Gson()
+        if (data == null) {
+            return Collections.EMPTY_LIST as ArrayList<ContractVoDTO>
+        }
+        val listType = object : TypeToken<ArrayList<ContractVoDTO>>() {
+        }.type
+        return gson.fromJson(data, listType)
+    }
 
+    @TypeConverter
+    fun contractVoDTOToStoredString(myObjects: ArrayList<ContractVoDTO>?): String {
+        val gson = Gson()
+        return if (myObjects == null) {
+            "[]"
+        } else {
+            gson.toJson(myObjects)
+        }
+    }
     // ===========================================================================
+//    @TypeConverter
+//    fun storedStringToProjectVoDTO(data: String?): ArrayList<ProjectVoDTO> {
+//        val gson = Gson()
+//        if (data == null) {
+//            return Collections.EMPTY_LIST as ArrayList<ProjectVoDTO>
+//        }
+//        val listType = object : TypeToken<ArrayList<ProjectVoDTO>>() {
+//        }.type
+//        return gson.fromJson(data, listType)
+//    }
+//
+//    @TypeConverter
+//    fun projectVoDTOToStoredString(myObjects: ArrayList<ProjectVoDTO>?): String {
+//        val gson = Gson()
+//        return if (myObjects == null) {
+//            "[]"
+//        } else {
+//            gson.toJson(myObjects)
+//        }
+//    }
+//    // ===========================================================================
 
     @TypeConverter
     fun JobItemEstimateToStoredString(myObjects: JobItemEstimateDTO?): String? {

@@ -5,9 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -35,6 +33,12 @@ class SelectItemsViewModel(
         }
     }
 
+    suspend fun getSectionItemsForProject2(contractVoId: String): LiveData<List<SectionItemDTO>> {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getAllSectionItemsForProject2(contractVoId)
+        }
+    }
+
 
     suspend fun getAllItemsForSectionItemByProjectId(
         sectionItemId: String,
@@ -44,6 +48,16 @@ class SelectItemsViewModel(
             jobCreationDataRepository.getAllItemsForSectionItemByProject(sectionItemId, projectId)
         }
     }
+
+    suspend fun getAllItemsForSectionItemByContractVoId(
+        sectionItemId: String,
+        contractVoId: String
+    ): LiveData<List<VoItemDTO>> {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getAllItemsForSectionItemByContractVoId(sectionItemId, contractVoId)
+        }
+    }
+
 
 }
 

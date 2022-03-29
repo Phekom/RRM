@@ -14,6 +14,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import org.jetbrains.annotations.Nullable
 import java.io.Serializable
 
 /**
@@ -34,10 +35,18 @@ const val TABLE_JOB_VO_ITEM = "TABLE_JOB_VO_ITEM"
     ]
 )
 data class VoItemDTO(
-    @PrimaryKey
-    val id: Int,
     @SerializedName("ProjectVoId")
+    @PrimaryKey
     val projectVoId: String,
+    @SerializedName("ProjectItemId")
+    val projectVoItemId: String?,
+    @SerializedName("ContractVoId")
+    val contractVoId: String?,
+    @SerializedName("ContractVoItemId")
+    val contractVoItemId: String?,
+    @SerializedName("ProjectId")
+    @ColumnInfo(name = "projectId", index = true)
+    val projectId: String, // 2A74D6A6D69842D1A2ADFD54BF7308CD
     @SerializedName("ItemCode")
     val itemCode: String?,
     @SerializedName("VoDescr")
@@ -47,44 +56,59 @@ data class VoItemDTO(
     @SerializedName("Uom")
     val uom: String?,
     @SerializedName("Rate")
-    val rate: Double?,
-    @SerializedName("ProjectItemId")
-    val projectItemId: String?,
-    @SerializedName("ContractVoId")
-    val contractVoId: String?,
-    @SerializedName("ContractVoItemId")
-    val contractVoItemId: String?,
-    @SerializedName("ProjectId")
-    @ColumnInfo(name = "projectId", index = true)
-    val projectId: String
+    val tenderValue: Double?,
+    @SerializedName("Uomdescr")
+    var uomdescr: String?,
+    @SerializedName("WorkflowId")
+    var workflowId: Int = 0,
+    var sectionItemId: String?,
+    val quantity: Double = 0.toDouble(),
+    val estimateId: String?,
+    @Nullable
+    @SerializedName("ItemSections")
+    val itemSections: ArrayList<ItemSectionDTO> = ArrayList()
 
-) : Serializable, Parcelable {
+    ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
+       // parcel.readInt(),
+        parcel.readString()!!,
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readString(),
         parcel.readString()!!,
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
-        parcel.readValue(Double::class.java.classLoader) as? Double,
+        parcel.readDouble(),
         parcel.readString(),
-        parcel.readString(),
-        parcel.readString(),
-        parcel.readString()!!
+        workflowId = parcel.readInt(),
+        sectionItemId = parcel.readString(),
+        quantity = parcel.readDouble(),
+        estimateId = parcel.readString(),
+        itemSections = arrayListOf<ItemSectionDTO>().apply {
+            parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
+        },
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
+       // parcel.writeInt(id)
         parcel.writeString(projectVoId)
+        parcel.writeString(projectVoItemId)
+        parcel.writeString(contractVoId)
+        parcel.writeString(contractVoItemId)
+        parcel.writeString(projectId)
         parcel.writeString(itemCode)
         parcel.writeString(voDescr)
         parcel.writeString(descr)
         parcel.writeString(uom)
-        parcel.writeValue(rate)
-        parcel.writeString(projectItemId)
-        parcel.writeString(contractVoId)
-        parcel.writeString(contractVoItemId)
-        parcel.writeString(projectId)
+        parcel.writeValue(tenderValue)
+        parcel.writeString(uomdescr)
+        parcel.writeValue(workflowId)
+        parcel.writeString(sectionItemId)
+        parcel.writeDouble(quantity)
+        parcel.writeString(estimateId)
+        parcel.writeList(itemSections.toList())
     }
 
     override fun describeContents(): Int {

@@ -7,16 +7,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioButton
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.*
+import androidx.lifecycle.Observer
 import androidx.navigation.Navigation
-import com.github.razir.progressbutton.ProgressButtonUtils.Companion.showProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.instance
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
@@ -27,18 +27,21 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.OfflineListener
 import za.co.xisystems.itis_rrm.databinding.FragmentCreationHomeBinding
 import za.co.xisystems.itis_rrm.domain.ContractSelector
+import za.co.xisystems.itis_rrm.domain.ContractVoSelector
 import za.co.xisystems.itis_rrm.domain.ProjectSelector
+import za.co.xisystems.itis_rrm.domain.ProjectVoSelector
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
-import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.new_job_utils.SpinnerHelper
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.utils.*
 import java.util.*
-import kotlin.coroutines.cancellation.CancellationException
 
 
 class CreationHomeFragment : BaseFragment(), OfflineListener {
+
 
     private lateinit var creationViewModel: CreationViewModel
     private val factory: CreationViewModelFactory by instance()
@@ -50,6 +53,7 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
     internal var selectedContract: ContractSelector? = null
     private lateinit var useR: UserDTO
     internal var selectedProject: ProjectSelector? = null
+    internal var selectedContractVoNmbr: ContractVoSelector? = null
     private var newJob: JobDTO? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesWorksList: ArrayList<JobEstimateWorksDTO>
@@ -58,6 +62,7 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
     private lateinit var jobItemSectionArrayList: ArrayList<JobSectionDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
     private var networkEnabled: Boolean = false
+    private var selectedVoJobYesNo: String? = null
 
     private val backClickListener = View.OnClickListener {
         setBackPressed()
@@ -91,6 +96,8 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
+        jOB_ACTIVITY.navigationView.visibility = View.VISIBLE
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Intent(requireContext(), MainActivity::class.java).also { home ->
@@ -124,7 +131,6 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
                  _ui?.descriptionEditText?.filters = arrayOf(ValidateInputs.EMOJI_FILTER)
                  _ui?.createJobBtn?.setOnClickListener { view ->
                      Coroutines.main {
-
                          var description = ""
                          if (!ValidateInputs.isValidInputText(_ui?.descriptionEditText?.text.toString())) {
                              _ui?.descriptionEditText?.error = getString(R.string.invalid_char)+ " Or ( $&+~;=\\?@|/'<>^*()%!- )"
@@ -135,25 +141,47 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
                          if (description.isEmpty()) {
                              extensionToast(message = "Please Enter Description", style = ToastStyle.WARNING)
                              _ui?.descriptionEditText?.startAnimation(BaseFragment.shake)
+                         } else if (selectedVoJobYesNo == null) {
+                             extensionToast(message = "Please Indicate If It's a Variation Job Or Not", style = ToastStyle.WARNING)
+                             _ui?.voJobLin?.startAnimation(BaseFragment.shake)
                          } else {
                              activity?.hideKeyboard()
-                             newJob = createNewJob(
-                                 selectedContract!!.contractId,
-                                 selectedProject!!.projectId,
-                                 useR.userId.toInt(),
-                                 newJobItemEstimatesList,
-                                 jobItemMeasureArrayList,
-                                 jobItemSectionArrayList,
-                                 description
-                             )
-                             creationViewModel.backupJob(newJob!!)
-                             setContractAndProjectSelection(newJob, view)
+                             if (selectedVoJobYesNo == getString(R.string.yes)){
+                                 Coroutines.main {
+                                     newJob = createNewJob(
+                                         selectedContract!!.contractId,
+                                         selectedProject!!.projectId,
+                                         useR.userId.toInt(),
+                                         newJobItemEstimatesList,
+                                         jobItemMeasureArrayList,
+                                         jobItemSectionArrayList,
+                                         description,
+                                         selectedContractVoNmbr?.contractVoId,
+                                     )
+                                     creationViewModel.backupJob(newJob!!)
+                                     setContractAndProjectSelection(newJob, view)
+                                 }
+                             }else{
+                                 newJob = createNewJob(
+                                     selectedContract!!.contractId,
+                                     selectedProject!!.projectId,
+                                     useR.userId.toInt(),
+                                     newJobItemEstimatesList,
+                                     jobItemMeasureArrayList,
+                                     jobItemSectionArrayList,
+                                     description,
+                                     null
+                                 )
+                                 creationViewModel.backupJob(newJob!!)
+                                 setContractAndProjectSelection(newJob, view)
+                             }
                          }
-
                      }
-
                  }
+
+                 variationOrderJob()
                  setContract()
+
             } catch (t: Throwable) {
                 val errorMessage = "Failed to download remote data: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, errorMessage)
@@ -273,7 +301,8 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
         newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>,
         jobItemMeasureArrayList: ArrayList<JobItemMeasureDTO>,
         jobItemSectionArrayList: ArrayList<JobSectionDTO>,
-        description: String?
+        description: String?,
+        contractVoId: String?
     ): JobDTO {
         val newJobId: String = SqlLitUtils.generateUuid()
         val today = Date()
@@ -281,8 +310,10 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
         val createdJob = JobDTO(
             actId = 0,
             jobId = newJobId,
-            contractVoId = contractID,
+            contractId = contractID,
+            contractVoId = contractVoId,
             projectId = projectID,
+            projectVoId = null,
             sectionId = null,
             startKm = 0.0,
             endKm = 0.0,
@@ -314,10 +345,8 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             jobDirectionId = 0,
             jobPositionId = 0,
             jobStatusId = 0,
-            projectVoId = null,
             qtyUpdateAllowed = 0,
             recordSynchStateId = 0,
-            voId = null,
             workCompleteDate = null,
             workStartDate = null,
             estimatesActId = null,
@@ -325,8 +354,8 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             worksActId = 0,
             sortString = null,
             activityId = 0,
-            isSynced = null
-
+            isSynced = null,
+            voJob = selectedVoJobYesNo
         )
         extensionToast(message = "New job created", style = ToastStyle.SUCCESS)
         return createdJob
@@ -339,7 +368,7 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = CreationHomeFragmentDirections
-                    .actionNavigationCreateToNavigationAddItems(newJob?.projectId!!, newJob.jobId)
+                    .actionNavigationCreateToNavigationAddItems(newJob?.projectId!!, newJob.jobId, newJob.contractVoId)
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
@@ -358,14 +387,13 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             Coroutines.main {
                 _ui?.dataLoading?.show()
                 val contractData = creationViewModel.getContractSelectors()
-                contractData.observe(viewLifecycleOwner, { contractList ->
+                contractData.observe(this, Observer { contractList ->
                     val allData = contractList.count()
                     if (contractList.size == allData) {
                         val contractIndices = arrayOfNulls<String>(contractList.size)
                         for (contract in contractList.indices) {
                             contractIndices[contract] = contractList[contract].contractNo
                         }
-
                         Timber.d("Thread completed.")
                         SpinnerHelper.setSpinner(
                             requireContext().applicationContext,
@@ -374,9 +402,8 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
                             contractIndices,
                             object : SpinnerHelper.SelectionListener<ContractSelector> {
                                 override fun onItemSelected(position: Int, item: ContractSelector) {
-                                    selectedContract = item
-                                    setProjects(item.contractId)
-
+                                       selectedContract = item
+                                       setProjects(item.contractId)
                                 }
                             }
                         )
@@ -397,11 +424,41 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
 
     private fun retryContracts() {
         IndefiniteSnackbar.hide()
+        variationOrderJob()
         setContract()
     }
 
-    private fun setProjects(contractId: String?) {
+    private fun variationOrderJob() {
+        Coroutines.main {
+            when {
+                newJob?.voJob.equals("Yes") -> {
+                    _ui?.voJobYes?.isChecked = true
+                    selectedVoJobYesNo = getString(R.string.yes)
+                    ui.voJobSelectLin.visibility = View.VISIBLE
+                }
+                newJob?.voJob.equals("No") -> {
+                    _ui?.voJobNo?.isChecked = true
+                    selectedVoJobYesNo = getString(R.string.no)
+                    ui.voJobSelectLin.visibility = View.GONE
+                }
+                else -> {
+                    _ui?.voJobYes?.isChecked = false
+                    _ui?.voJobNo?.isChecked = false
+                    ui.voJobSelectLin.visibility = View.GONE
+                }
+            }
 
+            _ui?.voJobRadioGroup?.setOnCheckedChangeListener { _, checkedId ->
+                val radio: RadioButton = ui.root.findViewById(checkedId)
+                selectedVoJobYesNo = "${radio.text}"
+                if (radio.text.equals(getString(R.string.yes))){
+                    ui.voJobSelectLin.visibility = View.VISIBLE
+                }else{ui.voJobSelectLin.visibility = View.GONE}
+            }
+        }
+    }
+    
+    private fun setProjects(contractId: String?) {
         Coroutines.main {
             val projects = creationViewModel.getProjectSelectors(contractId!!)
             _ui?.dataLoading?.show()
@@ -420,7 +477,21 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
                         projectNmbr, // null)
                         object : SpinnerHelper.SelectionListener<ProjectSelector> {
                             override fun onItemSelected(position: Int, item: ProjectSelector) {
-                                selectedProject = item
+                                Coroutines.main {
+                                    selectedProject = item
+                                    val projectVoData = creationViewModel.getProjectVoData(item.projectId)
+                                    projectVoData.observe(requireActivity(), Observer { projectVoDta ->
+                                        if(projectVoDta.isEmpty()){
+                                            ui.voJobLin.visibility = View.GONE
+                                            ui.voJobSelectLin.visibility = View.GONE
+                                            selectedVoJobYesNo = getString(R.string.no)
+                                        }else{
+                                            ui.voJobLin.visibility = View.VISIBLE
+                                            setContractVoNumber(item.contractId)
+                                        }
+                                    })
+                                }
+
                             }
                         }
                     )
@@ -428,6 +499,40 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
                     _ui?.dataLoading?.hide()
                 }
             })
+        }
+    }
+
+    private fun setContractVoNumber(contractId: String) {
+        Coroutines.main {
+                val contractVoNumbers = creationViewModel.getContractVoSelectors(contractId)
+                _ui?.dataLoading?.show()
+                contractVoNumbers.observe(viewLifecycleOwner, { projectVoList ->
+                    //val newList = projectVoList.distinctBy { it.voNumber }
+                    val allData = projectVoList.count()
+                    if (projectVoList.size == allData) {
+
+                        val projectVoNmbr = arrayOfNulls<String>(projectVoList.size)
+                        for (project in projectVoList.indices) {
+                            projectVoNmbr[project] = projectVoList[project].voNumber
+                        }
+                        SpinnerHelper.setSpinner(
+                            requireContext().applicationContext,
+                            _ui?.contractVoSpinner!!,
+                            projectVoList,
+                            projectVoNmbr, // null)
+                            object : SpinnerHelper.SelectionListener<ContractVoSelector> {
+                                override fun onItemSelected(position: Int, item: ContractVoSelector) {
+                                    Coroutines.main {
+                                        selectedContractVoNmbr = item
+                                    }
+
+                                }
+                            }
+                        )
+
+                        _ui?.dataLoading?.hide()
+                    }
+                })
         }
     }
 

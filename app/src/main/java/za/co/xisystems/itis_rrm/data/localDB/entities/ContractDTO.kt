@@ -33,7 +33,7 @@ data class ContractDTO(
     @SerializedName("ContractId")
     @PrimaryKey
     @NotNull
-    val contractId: String,
+    val contractId: String,  // E4626638B8B34A34822A2722DC6809B7
 
     @SerializedName("Descr")
     val descr: String?,
@@ -42,18 +42,29 @@ data class ContractDTO(
     val shortDescr: String?,
 
     @SerializedName("ContractNo")
-    val contractNo: String?,
+    val contractNo: String?, // N.002-012-2016/1
 
     @SerializedName("Projects")
-    val projects: ArrayList<ProjectDTO> = ArrayList()
+    val projects: ArrayList<ProjectDTO> = ArrayList(),
 
-) : Serializable, Parcelable {
+    @SerializedName("ContractShortCode")
+    var contractShortCode: String?,
+
+    @SerializedName("ContractVos")
+    var contractVos: ArrayList<ContractVoDTO> = ArrayList(),
+
+
+    ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
         contractId = parcel.readString()!!,
         descr = parcel.readString(),
         shortDescr = parcel.readString(),
         contractNo = parcel.readString(),
+        contractShortCode = parcel.readString(),
         projects = arrayListOf<ProjectDTO>().apply {
+            parcel.writeList(this.toList())
+        },
+        contractVos = arrayListOf<ContractVoDTO>().apply {
             parcel.writeList(this.toList())
         }
     )
@@ -62,7 +73,9 @@ data class ContractDTO(
         parcel.writeString(descr)
         parcel.writeString(shortDescr)
         parcel.writeString(contractNo)
+        parcel.writeString(contractShortCode)
         parcel.writeList(projects.toList())
+        parcel.writeList(contractVos.toList())
     }
 
     override fun describeContents(): Int {

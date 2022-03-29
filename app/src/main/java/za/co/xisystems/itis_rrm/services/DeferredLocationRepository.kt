@@ -22,7 +22,7 @@ class DeferredLocationRepository(
 ) : SafeApiRequest() {
 
     companion object {
-        const val DISTANCE = 50.0
+        const val DISTANCE = 500.0
         const val IN_BUFFER = -1.0
     }
 

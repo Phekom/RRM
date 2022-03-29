@@ -2,6 +2,7 @@ package za.co.xisystems.itis_rrm.ui.base
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,7 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val builder = AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog)
         // Plug in the SharedViewModel
         this.sharedViewModel = this.run {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)

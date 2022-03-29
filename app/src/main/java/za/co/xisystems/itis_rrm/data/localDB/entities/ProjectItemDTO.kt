@@ -60,17 +60,17 @@ data class ProjectItemDTO(
     val uom: String?,
     @SerializedName("WorkflowId")
     val workflowId: Int?,
-
     val sectionItemId: String?,
-
     val quantity: Double = 0.toDouble(),
-
     val estimateId: String?,
-
     @SerializedName("ProjectId")
     @NotNull
     @ColumnInfo(name = "projectId", index = true)
-    val projectId: String?
+    val projectId: String?,
+    @SerializedName("ContractVoId")
+    var contractVoId: String?,
+    @SerializedName("ProjectVoId")
+    var projectVoId: String?
 
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
@@ -87,7 +87,9 @@ data class ProjectItemDTO(
         sectionItemId = parcel.readString(),
         quantity = parcel.readDouble(),
         estimateId = parcel.readString(),
-        projectId = parcel.readString()
+        projectId = parcel.readString(),
+        contractVoId = parcel.readString(),
+        projectVoId = parcel.readString()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -102,6 +104,8 @@ data class ProjectItemDTO(
         parcel.writeDouble(quantity)
         parcel.writeString(estimateId)
         parcel.writeString(projectId)
+        parcel.writeString(contractVoId)
+        parcel.writeString(projectVoId)
         parcel.writeList(itemSections.toList())
     }
 

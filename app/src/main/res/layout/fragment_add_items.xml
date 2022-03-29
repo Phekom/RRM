@@ -111,6 +111,34 @@
                             app:layout_constraintEnd_toStartOf="@+id/resetButton"
                             app:layout_constraintStart_toEndOf="@+id/projectLabel"
                             app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
+
+                        <TextView
+                            android:id="@+id/vOLabel"
+                            style="@style/_orangeTextLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/small"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/voNumber"
+                            app:layout_constraintEnd_toStartOf="@+id/selectedVoTextView"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/projectLabel" />
+
+                        <TextView
+                            android:id="@+id/selectedVoTextView"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/small"
+                            android:layout_marginTop="8dp"
+
+                            android:ellipsize="end"
+                            android:hint="@string/project_vo"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                            app:layout_constraintStart_toEndOf="@+id/vOLabel"
+                            app:layout_constraintTop_toBottomOf="@+id/selectedProjectTextView" />
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -205,7 +233,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/last_lin"
+                android:id="@+id/lastLin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -262,7 +290,7 @@
                     android:layout_marginLeft="@dimen/xsmall"
                     android:layout_marginTop="@dimen/small"
                     android:layout_marginRight="@dimen/xsmall"
-                    android:layout_marginBottom="@dimen/small"
+                    android:layout_marginBottom="@dimen/dimen_10dp"
                     android:animateLayoutChanges="true"
                     tools:visibility="visible">
 
@@ -295,20 +323,21 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <Button
+                    android:id="@+id/submitButton"
+                    style="@style/_button"
+                    android:layout_height="@dimen/button_size"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/submit"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
 
             </LinearLayout>
 
-            <Button
-                android:id="@+id/submitButton"
-                style="@style/_button"
-                android:layout_height="@dimen/button_size"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginBottom="16dp"
-                android:text="@string/submit"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+
 
         </LinearLayout>
 

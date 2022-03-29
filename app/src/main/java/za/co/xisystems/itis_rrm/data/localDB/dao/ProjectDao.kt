@@ -69,6 +69,6 @@ interface ProjectDao {
     @Query("SELECT projectCode FROM PROJECT_TABLE WHERE projectId LIKE :projectId")
     fun getProjectCodeForId(projectId: String?): String
 
-    @Query("SELECT projectId, projectCode, descr FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
+    @Query("SELECT projectId, contractId, projectCode, descr FROM PROJECT_TABLE WHERE contractId = :contractId ORDER BY projectCode")
     fun getProjectSelectorsForContractId(contractId: String): List<ProjectSelector>
 }

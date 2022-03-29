@@ -46,6 +46,8 @@ data class JobItemEstimateDTO(
     var jobItemMeasure: ArrayList<JobItemMeasureDTO> = ArrayList(),
     @SerializedName("ProjectItemId")
     var projectItemId: String?,
+    @SerializedName("ContractVoId")
+    var contractVoId: String?,
     @SerializedName("ProjectVoId")
     var projectVoId: String?,
     @SerializedName("Qty")
@@ -86,6 +88,7 @@ data class JobItemEstimateDTO(
             parcel.readList(this.toList(), JobItemMeasureDTO::class.java.classLoader)
         },
         projectItemId = parcel.readString(),
+        contractVoId = parcel.readString(),
         projectVoId = parcel.readString(),
         qty = parcel.readDouble(),
         recordSynchStateId = parcel.readInt(),
@@ -144,6 +147,7 @@ data class JobItemEstimateDTO(
         parcel.writeString(jobItemEstimateSize)
         parcel.writeString(projectItemId)
         parcel.writeString(projectVoId)
+        parcel.writeString(contractVoId)
         parcel.writeDouble(qty)
         parcel.writeInt(recordSynchStateId)
         parcel.writeInt(recordVersion)

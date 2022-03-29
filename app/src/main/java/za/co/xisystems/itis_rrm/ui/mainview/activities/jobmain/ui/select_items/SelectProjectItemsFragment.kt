@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.select_items
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -17,12 +18,10 @@ import kotlinx.coroutines.launch
 import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.BaseFragment
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemSectionDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectItemDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.SectionItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.databinding.FragmentSelectItemsBinding
 import za.co.xisystems.itis_rrm.databinding.ProjectItemBinding
+import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.new_job_utils.SpinnerHelper
 import java.util.*
 import java.util.concurrent.CancellationException
@@ -39,6 +38,12 @@ class SelectProjectItemsFragment : BaseFragment() {
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     private lateinit var itemSections: ArrayList<ItemSectionDTO>
     internal var selectedSectionItem: SectionItemDTO? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
+        jOB_ACTIVITY.navigationView.visibility = View.GONE
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,7 +64,58 @@ class SelectProjectItemsFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         itemSections = ArrayList()
         newJobItemEstimatesList = ArrayList()
-        setItemsBySections(projectItemArgsData.projectId!!)
+        if (projectItemArgsData.contractVoId.isNullOrEmpty()){
+            setItemsBySections(projectItemArgsData.projectId!!)
+        } else{
+            setItemsBySections2(projectItemArgsData.contractVoId!!)
+        }
+
+
+    }
+
+    private fun setItemsBySections2(contractVoId: String) {
+        uiScope.launch(context = uiScope.coroutineContext) {
+            val sectionItems = selectItemsViewModel.getSectionItemsForProject2(contractVoId)
+            binding.dataLoading2.visibility = View.VISIBLE
+
+            sectionItems.observe(viewLifecycleOwner, { sectionData ->
+                val sectionSelections = arrayOfNulls<String?>(sectionData.size)
+                binding.dataLoading2.visibility = View.GONE
+                for (item in sectionData.indices) {
+                    sectionSelections[item] = sectionData[item].description
+                }
+
+                SpinnerHelper.setSpinner(
+                    requireContext().applicationContext,
+                    binding.sectionItemSpinner,
+                    sectionData,
+                    sectionSelections,
+                    object : SpinnerHelper.SelectionListener<SectionItemDTO> {
+
+                        override fun onItemSelected(position: Int, item: SectionItemDTO) {
+                            if (animate) {
+                                binding.sectionItemSpinner.startAnimation(bounce_750)
+                                binding.itemRecyclerView.startAnimation(bounce_1000)
+                            }
+                            selectedSectionItem = item
+                            setRecyclerItems2(contractVoId, item.sectionItemId, )
+                        }
+                    }
+                )
+                binding.sectionItemSpinner.setOnTouchListener { view, motionEvent ->
+                    when (motionEvent.action) {
+                        MotionEvent.ACTION_UP -> {
+                            view.performClick()
+                        }
+                        else -> {
+                            // MotionEvent.ACTION_DOWN happened
+                        }
+                    }
+                    animate = true
+                    false
+                }
+            })
+        }
     }
 
     private fun setItemsBySections(projectId: String) {
@@ -118,9 +174,26 @@ class SelectProjectItemsFragment : BaseFragment() {
         }
     }
 
+    private fun setRecyclerItems2(contractVoId: String, sectionItemId: String) {
+        uiScope.launch(context = uiScope.coroutineContext) {
+            val projectsItems =
+                selectItemsViewModel.getAllItemsForSectionItemByContractVoId(sectionItemId, contractVoId)
+            projectsItems.observe(viewLifecycleOwner, { projectItemList ->
+                binding.groupLoading.visibility = View.GONE
+                initRecyclerView2(projectItemList.toContractVoItems(contractVoId))
+            })
+        }
+    }
+
+    private fun List<VoItemDTO>.toContractVoItems(contractVoId: String): List<SectionVoItem> {
+        return this.map { projectItem ->
+            SectionVoItem(projectItem, itemSections, projectItemArgsData,contractVoId, selectItemsViewModel)
+        }
+    }
+
     private fun List<ProjectItemDTO>.toProjectItems(projectId: String): List<SectionProjectItem> {
         return this.map { projectItem ->
-            SectionProjectItem(projectItem, itemSections, projectItemArgsData.jobId,projectId, selectItemsViewModel)
+            SectionProjectItem(projectItem, itemSections, projectItemArgsData,projectId, selectItemsViewModel)
         }
     }
 
@@ -139,6 +212,20 @@ class SelectProjectItemsFragment : BaseFragment() {
 
     }
 
+    private fun initRecyclerView2(items: List<SectionVoItem>) {
+        val groupAdapter = GroupAdapter<GroupieViewHolder<ProjectItemBinding>>().apply {
+            addAll(items)
+            notifyItemRangeChanged(0, items.size)
+        }
+
+        binding.itemRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = groupAdapter
+            adapter!!.stateRestorationPolicy =
+                RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+        }
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

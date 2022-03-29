@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--<layout xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    xmlns:tools="http://schemas.android.com/tools">-->
-
-<!--    <data>-->
-
-<!--        <variable-->
-<!--            name="viewmodel"-->
-<!--            type="za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel" />-->
-
-<!--    </data>-->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -223,7 +211,5 @@
             android:contentDescription="@string/sanral_logo" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-<!--</layout>-->
 
 
