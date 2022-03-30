@@ -421,12 +421,12 @@ class EstimatePhotoFragment : LocationFragment() {
         location.apply {
             when {
                 hasAccuracy() -> {
-                    if (accuracy < 14.5F ){
+                    if (accuracy < 25.0F ){
                         _ui?.group13loading?.visibility = View.GONE
                         _ui?.linearlayouthorizon?.visibility = View.VISIBLE
                         _ui?.lowBtns?.visibility = View.VISIBLE
                         _ui?.photoLin?.visibility = View.VISIBLE
-                        ToastUtils().toastShort(requireContext(), location.accuracy.toString())
+                        // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
                     }else{
                         _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
                         _ui?.lowBtns?.visibility = View.INVISIBLE
