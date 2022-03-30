@@ -327,7 +327,7 @@
     <string name="voNumber">VoNumber</string>
     <string name="none_vo">None Vo Job</string>
     <string name="locati_dialog_error">"Please check the accuracy of your GPS on your device prior to taking estimate photos. \n Try to stay still whilst taking pictures, and ensure High Accuracy is enabled  \n  If you are still having issues with your allocated road reserve, please contact your Route Manager "</string>
-    <string name="updating_accuracy">Wait .... Your Location Accuracy !!</string>
+    <string name="updating_accuracy">Wait .... Getting Your GPS Location Accuracy Stable!!</string>
 
 
 </resources>

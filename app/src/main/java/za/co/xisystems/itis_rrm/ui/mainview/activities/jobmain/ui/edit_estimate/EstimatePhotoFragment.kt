@@ -433,20 +433,16 @@ class EstimatePhotoFragment : LocationFragment() {
                         _ui?.group13loading?.visibility = View.VISIBLE
                         _ui?.textViewloading?.setText(R.string.updating_accuracy)
                         extensionToast(
-                            message = "Location Accuracy is $accuracy and Not Good For Validation!\n Please Stand In One Position",
+                            message = "GPS Location Accuracy is $accuracy \n and Not Good For Validation!\n Please Stand In One Position",
                             style = ToastStyle.WARNING,
                             position = ToastGravity.BOTTOM
                         )
                     }
                 }
                 else ->
-                    ToastUtils().toastShort(requireContext(), "Location Accuracy Not Available At this place")
+                    ToastUtils().toastShort(requireContext(), "GPS Location Accuracy Not Available At this place")
             }
         }
-
-
-
-
     }
 
     private fun pullData() = uiScope.launch(uiScope.coroutineContext) {
