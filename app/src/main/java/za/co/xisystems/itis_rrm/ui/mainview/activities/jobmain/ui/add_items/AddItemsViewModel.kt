@@ -12,6 +12,7 @@ import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractVoSelector
@@ -100,6 +101,36 @@ class AddItemsViewModel(
         withContext(mainContext) {
             jobId.value = job.jobId
             setJobToEdit(job.jobId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoStart(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getJobEstimationItemsPhotoStart(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getJobEstimationItemsPhotoStartPath(estimateId)
+        }
+    }
+
+    suspend fun getJobItemEstimatePhotosForEstimateId(estimateId: String): List<JobItemEstimatesPhotoDTO> {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getJobItemEstimatePhotosForEstimateId(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoEnd(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getJobEstimationItemsPhotoEnd(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getJobEstimationItemsPhotoEndPath(estimateId)
         }
     }
 

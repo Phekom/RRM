@@ -5,15 +5,24 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog.Builder
 import android.app.Dialog
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.provider.Settings
-import android.view.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RadioButton
 import androidx.activity.OnBackPressedCallback
@@ -35,7 +44,7 @@ import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadErrorListener
 import com.mapbox.maps.plugin.gestures.OnMapClickListener
-import com.mapbox.maps.plugin.gestures.getGesturesSettings
+import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
@@ -83,10 +92,10 @@ import za.co.xisystems.itis_rrm.utils.image_capture.model.RootDirectory
 import za.co.xisystems.itis_rrm.utils.image_capture.registerImagePicker
 import za.co.xisystems.itis_rrm.utils.zoomage.ZoomageView
 import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
 import java.text.DecimalFormat
 import kotlin.collections.set
-import android.view.MotionEvent
-import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 
 
 /**
@@ -178,6 +187,15 @@ class EstimatePhotoFragment : LocationFragment() {
         if (isSaved) {
             uiScope.launch(dispatchers.io()) {
                 imageUri?.let { realUri ->
+
+                    // implemented below
+                    val bitmap = getScreenShotFromView(ui.estimatemapview)
+
+                    // if bitmap is not null then save it to gallery
+                    if (bitmap != null) {
+                        saveMediaToStorage(bitmap)
+                    }
+
                     processAndSetImage(realUri, "CAMERA")
                 }
             }
@@ -193,6 +211,51 @@ class EstimatePhotoFragment : LocationFragment() {
                     }
                 }
             }
+        }
+    }
+
+    //this method saves the image to gallery
+    private fun saveMediaToStorage(bitmap: Bitmap) {
+        //Generating a file name
+        val filename = "${System.currentTimeMillis()}.jpg"
+
+        //Output stream
+        var fos: OutputStream? = null
+
+        //For devices running android >= Q
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            //getting the contentResolver
+            requireActivity().contentResolver?.also { resolver ->
+
+                //Content resolver will process the contentvalues
+                val contentValues = ContentValues().apply {
+
+                    //putting file information in content values
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                }
+
+                //Inserting the contentValues to contentResolver and getting the Uri
+                val imageUri: Uri? =
+                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+                //Opening an outputstream with the Uri that we got
+                fos = imageUri?.let { resolver.openOutputStream(it) }
+            }
+        } else {
+            //These for devices running on android < Q
+            val imagesDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val image = File(imagesDir, filename)
+            fos = FileOutputStream(image)
+        }
+
+        fos?.use {
+            //Finally writing the bitmap to the output stream that we opened
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+          //  Toast.makeText(requireContext() , "Captured View and saved to Gallery" , Toast.LENGTH_SHORT).show()
+
         }
     }
 
@@ -255,6 +318,19 @@ class EstimatePhotoFragment : LocationFragment() {
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
+    }
+
+    private fun getScreenShotFromView(v: View): Bitmap? {
+        // create a bitmap object
+        var screenshot: Bitmap? = null
+        try {
+            screenshot = Bitmap.createBitmap(v.measuredWidth, v.measuredHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(screenshot)
+            v.draw(canvas)
+        } catch (e: Exception) {
+            Timber.e("Failed to capture screenshot because:%s", e.message)
+        }
+        return screenshot
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -421,12 +497,12 @@ class EstimatePhotoFragment : LocationFragment() {
         location.apply {
             when {
                 hasAccuracy() -> {
-                    if (accuracy < 25.0F ){
+                    if (accuracy < 20.0F ){
                         _ui?.group13loading?.visibility = View.GONE
                         _ui?.linearlayouthorizon?.visibility = View.VISIBLE
                         _ui?.lowBtns?.visibility = View.VISIBLE
                         _ui?.photoLin?.visibility = View.VISIBLE
-                        // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
+                    // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
                     }else{
                         _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
                         _ui?.lowBtns?.visibility = View.INVISIBLE
@@ -523,13 +599,10 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun onItemFound(itemDTO: ItemDTOTemp?): ItemDTOTemp? {
         if (itemDTO != null) {
             item = itemDTO
-            _ui?.titleTextView?.text =
-                getString(R.string.pair, item!!.itemCode, item!!.descr)
+            _ui?.titleTextView?.text = getString(R.string.pair, item!!.itemCode, item!!.descr)
             tenderRate = item!!.tenderRate
         } else {
-            toast(
-                "item is null in " + javaClass.simpleName
-            )
+            toast("item is null in " + javaClass.simpleName )
             return item
         }
 
@@ -915,8 +988,11 @@ class EstimatePhotoFragment : LocationFragment() {
                 throw e
             }
         } else {
-
-            try { //  Location of picture
+        /* *
+         *  provider == "GALLERY"
+         *  Location of picture
+         */
+       try {
 
                 val estimatephotodata = estimatePhotoViewModel.getEstimatePhotoByName(images[0].name)
                 if (estimatephotodata != null) {
@@ -1090,7 +1166,7 @@ class EstimatePhotoFragment : LocationFragment() {
         val newpic = estimatePhotoViewModel.checkIfPhotoExists(imageFileName)
         if (newpic){
             if (PhotoType.START.name == "END"){
-                photo = estimatePhotoViewModel.createItemEstimatePhoto(
+                photo = estimatePhotoViewModel.createItemEstimatePhoto2(
                     itemEst = newJobItemEstimate!!,
                     filePath = filePath,
                     currentLocation = currentLocation,
@@ -1098,12 +1174,24 @@ class EstimatePhotoFragment : LocationFragment() {
                     pointLocation = -1.0
                 )
             }else {
-                photo = estimatePhotoViewModel.getEstimatePhotoByName(imageFileName)
-                photo?.descr =  "" //" Used as ${ itemIdPhotoType["type"]} photo"
-                photo?.estimateId = newJobItemEstimate?.estimateId!!
-                photo?.isPhotostart = isPhotoStart
+                val newpic2 = estimatePhotoViewModel.checkIfPhotoExistsByNameAndEstimateId(imageFileName,newJobItemEstimate?.estimateId!! )
+                if (newpic2){
+                    photo = estimatePhotoViewModel.createItemEstimatePhoto2(
+                        itemEst = newJobItemEstimate!!,
+                        filePath = filePath,
+                        currentLocation = currentLocation,
+                        itemIdPhotoType = itemidPhototype,
+                        pointLocation = -1.0
+                    )
+                }else{
+                    photo = estimatePhotoViewModel.getEstimatePhotoByName(imageFileName)
+                    photo?.descr =  "" //" Used as ${ itemIdPhotoType["type"]} photo"
+                    photo?.estimateId = newJobItemEstimate?.estimateId!!
+                    photo?.isPhotostart = isPhotoStart
 
-                estimatePhotoViewModel.backupEstimatePhoto(photo!!)
+                    estimatePhotoViewModel.backupEstimatePhoto(photo!!)
+                }
+
             }
 
         }else {
@@ -1237,6 +1325,7 @@ class EstimatePhotoFragment : LocationFragment() {
         _ui?.updateButton?.visibility = View.GONE
     }
 
+    @SuppressLint("SetTextI18n")
     private fun calculateCost() {
         val item: ItemDTOTemp? = item
 

@@ -23,8 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:text="@string/item_number"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/black" />
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <LinearLayout
                 android:layout_width="match_parent"
@@ -36,8 +35,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/project"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black" />
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
 
             <TextView
                     android:id="@+id/unsubmitted_section_textView"
@@ -52,7 +50,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/black"
                 tools:text="@string/description" />
 
         </LinearLayout>
@@ -77,7 +74,6 @@
         style="?borderlessButtonStyle"
         android:layout_width="44dp"
         android:layout_height="44dp"
-        android:padding="@dimen/xsmall"
         android:src="@drawable/ic_baseline_delete_outline_24px"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"

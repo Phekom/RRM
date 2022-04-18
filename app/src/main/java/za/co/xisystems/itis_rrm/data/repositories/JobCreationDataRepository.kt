@@ -355,6 +355,36 @@ class JobCreationDataRepository(
         }
     }
 
+    suspend fun getJobEstimationItemsPhotoStartPath(estimateId: String): String {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStartPath(estimateId)
+        }
+    }
+
+    suspend fun getJobItemEstimatePhotosForEstimateId(estimateId: String): List<JobItemEstimatesPhotoDTO> {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimatePhotoDao().getJobItemEstimatePhotosForEstimateId(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoStart(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoStart(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoEndPath(estimateId: String): String {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEndPath(estimateId)
+        }
+    }
+
+    suspend fun getJobEstimationItemsPhotoEnd(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimatePhotoDao().getJobEstimationItemsPhotoEnd(estimateId)
+        }
+    }
+
     private fun setWorkflowJobBigEndianGuids(job: WorkflowJobDTO): WorkflowJobDTO {
 
         // Job + WorkflowItems + EstimateWorks
@@ -729,6 +759,12 @@ class JobCreationDataRepository(
     suspend fun checkIfPhotoExists(imageFileName: String):
             Boolean = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByName(imageFileName)
+    }
+
+    @Transaction
+    suspend fun checkIfPhotoExistsByNameAndEstimateId(imageFileName: String, estimateId: String):
+            Boolean = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByNameAndEstimateId(imageFileName,estimateId)
     }
 
     suspend fun getServiceHealth(): Boolean {

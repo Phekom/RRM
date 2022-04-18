@@ -207,7 +207,7 @@
     <string name="location_service_indicator">Location Service Indicator</string>
     <string name="needs_dbsynch">No RRM data detected. Please synchronise the local database for contract and project information.</string>
     <string name="please_enable_location_services">Please enable Location Services …</string>
-    <string name="welcome_greeting">Welcome %1$s</string>
+    <string name="welcome_greeting">Welcome </string>
     <string name="cellular_data_indicator">Cellular Data Indicator</string>
     <string name="services_indicator">Services Indicator</string>
     <string name="approve_job_in_progress">Approving Job …</string>
@@ -224,7 +224,7 @@
     <string name="end_photo_preview">End Photo Preview</string>
     <string name="adjust_estimate_button">adjust estimate button</string>
     <string name="estimate_chevron">estimate chevron</string>
-    <string name="click_to_edit_estimate">(Click to )</string>
+    <string name="click_to_edit_estimate">(Click to edit)</string>
     <string name="application_settings">application settings</string>
     <string name="tender_rate">Tender Rate</string>
     <string name="image_kb">$1%d KB</string>
@@ -328,6 +328,23 @@
     <string name="none_vo">None Vo Job</string>
     <string name="locati_dialog_error">"Please check the accuracy of your GPS on your device prior to taking estimate photos. \n Try to stay still whilst taking pictures, and ensure High Accuracy is enabled  \n  If you are still having issues with your allocated road reserve, please contact your Route Manager "</string>
     <string name="updating_accuracy">Wait .... Getting Your GPS Location Accuracy Stable!!</string>
+    <string name="idList">No:..</string>
+    <string name="jobtyp">Job Type</string>
+    <string name="estimate_item_details">Estimate Item Details</string>
+    <string name="item_name">Item Name</string>
+    <string name="_00_00">00.00</string>
+    <string name="lati">Lat</string>
+    <string name="longi">Long</string>
 
+    <string-array name="styling_options">
+        <item>hide status bar</item>
+        <item>images margin</item>
+        <item>container padding</item>
+        <item>transitions</item>
+        <item>swipe-to-dismiss</item>
+        <item>zooming</item>
+        <item>show overlay</item>
+        <item>random background</item>
+    </string-array>
 
 </resources>

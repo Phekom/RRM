@@ -24,7 +24,11 @@ import za.co.xisystems.itis_rrm.data.network.responses.*
 /**
  * Created by Francis Mahlava on 2019/10/23.
  */
-
+/**
+ * Updated by Francis Mahlava on 2022/04/14
+ * Last modified on 2022/05/18, 11:18
+ * Copyright (c) 2021.  XI Systems  - All rights reserved
+ */
 interface BaseConnectionApi {
 
     @FormUrlEncoded

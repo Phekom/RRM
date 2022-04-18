@@ -155,6 +155,10 @@ class EstimatePhotoViewModel(
         return@withContext jobCreationDataRepository.checkIfPhotoExists(imageFileName)
     }
 
+    suspend fun checkIfPhotoExistsByNameAndEstimateId(imageFileName: String, estimateId: String) = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.checkIfPhotoExistsByNameAndEstimateId(imageFileName,estimateId )
+    }
+
 
     fun setSectionId(inSectionId: String) {
         sectionId.value = inSectionId
@@ -241,6 +245,46 @@ class EstimatePhotoViewModel(
         jobCreationDataRepository.saveNewJob(newJob)
     }
 
+
+    suspend fun createItemEstimatePhoto2(
+        itemEst: JobItemEstimateDTO,
+        filePath: Map<String, String>,
+        currentLocation: LocationModel,
+        itemIdPhotoType: Map<String, String>,
+        pointLocation: Double
+    ): JobItemEstimatesPhotoDTO = withContext(ioContext) {
+
+        val isPhotoStart = itemIdPhotoType["type"] == PhotoType.START.name
+
+//        val existingPhotoPair = itemEst.getJobItemEstimatePhoto(isPhotoStart)
+//        existingPhotoPair.second?.let { existingPhoto ->
+//            // Delete the existing photo from storage and db
+//            eraseExistingPhoto(existingPhoto.photoId, existingPhoto.filename, existingPhoto.photoPath)
+//        }
+
+        val photoId = SqlLitUtils.generateUuid()
+
+        return@withContext JobItemEstimatesPhotoDTO(
+            descr = "",
+            estimateId = itemEst.estimateId,
+            filename = filePath["filename"] ?: error(""),
+            photoDate = DateUtil.dateToString(Date())!!,
+            photoId = photoId,
+            photoStart = null,
+            photoEnd = null,
+            startKm = pointLocation,
+            endKm = pointLocation,
+            photoLatitude = currentLocation.latitude,
+            photoLongitude = currentLocation.longitude,
+            photoLatitudeEnd = currentLocation.latitude,
+            photoLongitudeEnd = currentLocation.longitude,
+            photoPath = filePath["path"] ?: error(""),
+            recordSynchStateId = 0,
+            recordVersion = 0,
+            isPhotostart = isPhotoStart,
+            sectionMarker = currentLocation.toString()
+        )
+    }
 
     suspend fun createItemEstimatePhoto(
         itemEst: JobItemEstimateDTO,

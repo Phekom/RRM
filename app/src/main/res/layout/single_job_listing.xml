@@ -34,7 +34,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="?android:attr/textColorSecondary"
             android:layout_margin="@dimen/xsmall"
             tools:text="What's hot"
             android:layout_marginBottom="@dimen/xsmall"/>
@@ -44,7 +43,6 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="?android:attr/textColorSecondary"
             android:layout_margin="@dimen/xsmall"
             tools:text="What's hot" />
 

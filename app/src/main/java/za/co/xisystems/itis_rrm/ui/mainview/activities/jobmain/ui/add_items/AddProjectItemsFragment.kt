@@ -179,9 +179,9 @@ class AddProjectItemsFragment : BaseFragment() {
                     job.voJob = "No"
                 } else {
                     val voNumber = addViewModel.getContractVoData(projectArgsData.contractVoId!!)
-                    voNumber.observe(viewLifecycleOwner, { voNumberList ->
+                    voNumber.observe(viewLifecycleOwner) { voNumberList ->
                         binding.selectedVoTextView.text = voNumberList[0].voNumber
-                    })
+                    }
                 }
 
             }
@@ -533,6 +533,10 @@ class AddProjectItemsFragment : BaseFragment() {
 
 
     private fun popViewOnJobSubmit() {
+        Intent(requireContext(), MainActivity::class.java).also { home ->
+            home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(home)
+        }
         // Delete Items data from the database after success upload
         // onResetClicked(this.requireView())
         // addViewModel.setJobToEdit("null")
@@ -540,12 +544,12 @@ class AddProjectItemsFragment : BaseFragment() {
         //            val direction = MobileNavigationDirections.actionGlobalNavHome()
 //            Navigation.findNavController(this@AddProjectItemsFragment.requireView())
 //                .navigate(direction)
-        HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
-            Intent(requireContext(), MainActivity::class.java).also { home ->
-                home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(home)
-            }
-        }, null, TWO_SECONDS)
+//        HandlerCompat.postDelayed(Handler(Looper.getMainLooper()), {
+//            Intent(requireContext(), MainActivity::class.java).also { home ->
+//                home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+//                startActivity(home)
+//            }
+//        }, null, TWO_SECONDS)
     }
 
     private fun setDueDateTextView(year: Int, month: Int, dayOfMonth: Int) {
@@ -651,41 +655,41 @@ class AddProjectItemsFragment : BaseFragment() {
 
     private suspend fun initValidationListener() = withContext(dispatchers.main()) {
         deferredLocationViewModel.geoCodingResult.observeOnce(
-            viewLifecycleOwner, { result ->
-                result.getContentIfNotHandled()?.let { outcome ->
-                    uiScope.launch {
-                        processLocationResult(outcome)
-                    }
+            viewLifecycleOwner
+        ) { result ->
+            result.getContentIfNotHandled()?.let { outcome ->
+                uiScope.launch {
+                    processLocationResult(outcome)
                 }
             }
-        )
+        }
 
         addViewModel.jobForValidation.observeOnce(
-            viewLifecycleOwner, { job ->
-                job.getContentIfNotHandled()?.let { realJob ->
-                    if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
-                        uiScope.launch {
-                            validateEstimates(realJob)
-                        }
-                    } else {
-                        uiScope.launch {
-                            geoLocationFailed()
-                        }
+            viewLifecycleOwner
+        ) { job ->
+            job.getContentIfNotHandled()?.let { realJob ->
+                if (!realJob.sectionId.isNullOrBlank() && JobUtils.isGeoCoded(realJob)) {
+                    uiScope.launch {
+                        validateEstimates(realJob)
+                    }
+                } else {
+                    uiScope.launch {
+                        geoLocationFailed()
                     }
                 }
             }
-        )
+        }
 
         addViewModel.jobForSubmission.observeOnce(
-            viewLifecycleOwner, { unsubmittedEvent ->
-                unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
-                    uiScope.launch {
-                        addViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
-                        submitJob(submissionJob)
-                    }
+            viewLifecycleOwner
+        ) { unsubmittedEvent ->
+            unsubmittedEvent.getContentIfNotHandled()?.let { submissionJob ->
+                uiScope.launch {
+                    addViewModel.backupSubmissionJob.value = XIEvent(submissionJob)
+                    submitJob(submissionJob)
                 }
             }
-        )
+        }
     }
 
 
@@ -797,60 +801,60 @@ class AddProjectItemsFragment : BaseFragment() {
 
     private fun initCurrentJobListener() {
         addViewModel.jobToEdit.distinctUntilChanged().observe(
-            viewLifecycleOwner, { jobRecord ->
-                jobRecord?.let { jobToEdit ->
-                    job = jobToEdit
-                    jobId = job.jobId
-                    jobBound = true
-                    Coroutines.main {
+            viewLifecycleOwner
+        ) { jobRecord ->
+            jobRecord?.let { jobToEdit ->
+                job = jobToEdit
+                jobId = job.jobId
+                jobBound = true
+                Coroutines.main {
 
-                        val contractNo =
-                            addViewModel.getContractNoForId(job.contractId)
-                        val projectCode =
-                            addViewModel.getProjectCodeForId(job.projectId)
-                        _binding?.selectedContractTextView?.text = contractNo
-                        _binding?.selectedProjectTextView?.text = projectCode
+                    val contractNo =
+                        addViewModel.getContractNoForId(job.contractId)
+                    val projectCode =
+                        addViewModel.getProjectCodeForId(job.projectId)
+                    _binding?.selectedContractTextView?.text = contractNo
+                    _binding?.selectedProjectTextView?.text = projectCode
 
-                        _binding?.infoTextView?.visibility = View.GONE
-                        _binding?.lastLin?.visibility = View.VISIBLE
-                        _binding?.totalCostTextView?.visibility = View.VISIBLE
-                        _binding?.submitButton?.visibility = View.VISIBLE
-                        // Set Job Start & Completion Dates
-                        job.dueDate?.let {
-                            _binding?.dueDateTextView?.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                            dueDate = DateUtil.stringToDate(it)!!
+                    _binding?.infoTextView?.visibility = View.GONE
+                    _binding?.lastLin?.visibility = View.VISIBLE
+                    _binding?.totalCostTextView?.visibility = View.VISIBLE
+                    _binding?.submitButton?.visibility = View.VISIBLE
+                    // Set Job Start & Completion Dates
+                    job.dueDate?.let {
+                        _binding?.dueDateTextView?.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        dueDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    job.startDate?.let {
+                        _binding?.startDateTextView?.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
+                        startDate = DateUtil.stringToDate(it)!!
+                    }
+
+                    addViewModel.tempProjectItem.observe(viewLifecycleOwner) {
+                        it.getContentIfNotHandled()?.let {
+                            _binding?.infoTextView?.visibility = View.GONE
+                            _binding?.lastLin?.visibility = View.VISIBLE
+                            _binding?.totalCostTextView?.visibility = View.VISIBLE
+                            _binding?.submitButton?.visibility = View.VISIBLE
                         }
+                    }
 
-                        job.startDate?.let {
-                            _binding?.startDateTextView?.text = DateUtil.toStringReadable(DateUtil.stringToDate(it))
-                            startDate = DateUtil.stringToDate(it)!!
-                        }
-
-                        addViewModel.tempProjectItem.observe(viewLifecycleOwner, {
-                            it.getContentIfNotHandled()?.let {
-                                _binding?.infoTextView?.visibility = View.GONE
-                                _binding?.lastLin?.visibility = View.VISIBLE
-                                _binding?.totalCostTextView?.visibility = View.VISIBLE
-                                _binding?.submitButton?.visibility = View.VISIBLE
-                            }
-                        })
-
-                        bindProjectItems()
-                        if (job.actId == 1) {
-                            _binding?.addItemButton?.visibility = View.INVISIBLE
-                            _binding?.submitButton?.text = getString(R.string.complete_upload)
-                        }
+                    bindProjectItems()
+                    if (job.actId == 1) {
+                        _binding?.addItemButton?.visibility = View.INVISIBLE
+                        _binding?.submitButton?.text = getString(R.string.complete_upload)
                     }
                 }
             }
-        )
+        }
     }
 
 
     private fun bindProjectItems() = uiScope.launch(uiScope.coroutineContext) {
         val projectItems =
             addViewModel.getAllProjectItems(job.projectId!!, job.jobId)
-        projectItems.observe(viewLifecycleOwner, { itemList ->
+        projectItems.observe(viewLifecycleOwner) { itemList ->
             when {
                 itemList.isEmpty() -> {
                     clearProjectItems()
@@ -859,7 +863,7 @@ class AddProjectItemsFragment : BaseFragment() {
                     populateProjectItemView(itemList)
                 }
             }
-        })
+        }
     }
 
 
@@ -910,24 +914,24 @@ class AddProjectItemsFragment : BaseFragment() {
 
 
     private fun bindCosting() = uiScope.launch(dispatchers.ui()) {
-        addViewModel.totalJobCost.observe(viewLifecycleOwner, { costingRecord ->
+        addViewModel.totalJobCost.observe(viewLifecycleOwner) { costingRecord ->
             costingRecord?.let {
                 _binding?.totalCostTextView?.text = it
             }
-        })
+        }
     }
 
 
     private fun resubmitJob() {
         IndefiniteSnackbar.hide()
-        addViewModel.backupSubmissionJob.observeOnce(viewLifecycleOwner, { retryJobSubmission ->
+        addViewModel.backupSubmissionJob.observeOnce(viewLifecycleOwner) { retryJobSubmission ->
             retryJobSubmission.getContentIfNotHandled()?.let { repeatJob ->
                 uiScope.launch(uiScope.coroutineContext) {
                     resetValidationListener()
                     validateJob(repeatJob)
                 }
             }
-        })
+        }
     }
 
     override fun onDestroyView() {

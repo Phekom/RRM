@@ -77,28 +77,28 @@
         android:contentDescription="@string/edit_quantity_button" />
 
     <LinearLayout
+        android:id="@+id/twins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="2dp"
-        android:id="@+id/twins"
         android:orientation="horizontal"
         android:padding="@dimen/dimen_8dp">
 
-            <ImageView
-                android:id="@+id/photoPreviewStart"
-                android:layout_width="@dimen/image_xmedium"
-                android:layout_height="@dimen/image_xmedium"
-                android:layout_marginEnd="@dimen/xsmall"
-                tools:src="@drawable/logo_new_medium"
-                android:contentDescription="@string/start_photo_preview" />
+        <ImageView
+            android:id="@+id/photoPreviewStart"
+            android:layout_width="@dimen/image_xmedium"
+            android:layout_height="@dimen/image_xmedium"
+            android:layout_marginEnd="@dimen/xsmall"
+            android:contentDescription="@string/start_photo_preview"
+            tools:src="@drawable/logo_new_medium" />
 
-            <ImageView
-                android:id="@+id/photoPreviewEnd"
-                android:layout_width="@dimen/image_xmedium"
-                android:layout_height="@dimen/image_xmedium"
-                android:layout_marginStart="@dimen/xsmall"
-                tools:src="@drawable/logo_new_medium"
-                android:contentDescription="@string/end_photo_preview" />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/photoPreviewEnd"
+            android:layout_width="@dimen/image_xmedium"
+            android:layout_height="@dimen/image_xmedium"
+            android:layout_marginStart="@dimen/xsmall"
+            android:contentDescription="@string/end_photo_preview"
+            tools:src="@drawable/logo_new_medium" />
+    </LinearLayout>
 </RelativeLayout>
