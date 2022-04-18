@@ -22,60 +22,9 @@ class DeferredLocationRepository(
 ) : SafeApiRequest() {
 
     companion object {
-        const val DISTANCE = 500.0
+        const val DISTANCE = 100.0
         const val IN_BUFFER = -1.0
     }
-
-//    @Suppress("MagicNumber", "TooGenericExceptionCaught")
-//    suspend fun getRouteSectionPoint(
-//        locationQuery: LocationValidation
-//    ): RouteSectionPointResponse = withContext(dispatchers.io()) {
-//
-//        val routeSectionPointResponse: RouteSectionPointResponse =
-//            apiRequest {
-//                api.getRouteSectionPoint(
-//                    distance = DISTANCE.toDouble(),
-//                    buffer = IN_BUFFER,
-//                    latitude = locationQuery.latitude,
-//                    longitude = locationQuery.longitude,
-//                    userId = locationQuery.userId
-//                )
-//            }
-//        routeSectionPointResponse.apply {
-//            Timber.d("$routeSectionPointResponse")
-//            if (errorMessage.isNullOrBlank()) {
-//                // Interim fix until buffered routes
-//                val bufferLocations =
-//                    bufferLocation.split(";", ignoreCase = true, limit = 0)
-//                        .map { item -> item.trim() }.firstOrNull { item ->
-//                            !item.contains("xxx" as CharSequence, ignoreCase = true) && item != ""
-//                        }
-//
-//                if (linearId.contains("xxx" as CharSequence, ignoreCase = true)
-//                        .or(linearId.isBlank()).or(bufferLocations.isNullOrEmpty())
-//                ) {
-//                    notEvenWrongException(locationQuery)
-//                } else {
-//                    routeSectionPointResponse.apply {
-//                        val routeSectionPointResult = locationQuery.copy(
-//                            direction = this.direction, route = this.linearId, pointLocation = this.pointLocation,
-//                            sectionId = this.sectionId.toString()
-//                        ).setBufferLocation(this.bufferLocation)
-//                         XIResult.Success(routeSectionPointResult)
-//                    }
-//                }
-//            } else {
-//                if (errorMessage.contains("point not on line" as CharSequence, ignoreCase = true)) {
-//                    throw notEvenWrongException(locationQuery)
-//                } else {
-//                    throw ServiceException(errorMessage)
-//                }
-//            }
-//        }
-//
-//        return@withContext routeSectionPointResponse
-//    }
-//
 
 
     @Suppress("MagicNumber", "TooGenericExceptionCaught")

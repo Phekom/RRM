@@ -32,6 +32,15 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT photoPath FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 1 ")
     fun getJobEstimationItemsPhotoStartPath(estimateId: String): String
 
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId")
+    fun getJobItemEstimatePhotosForEstimateId(estimateId: String): List<JobItemEstimatesPhotoDTO>
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 0 ")
+    fun getJobEstimationItemsPhotoEnd(estimateId: String): JobItemEstimatesPhotoDTO
+
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId AND isPhotostart LIKE 1 ")
+    fun getJobEstimationItemsPhotoStart(estimateId: String): JobItemEstimatesPhotoDTO
+
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE photoId = :photoId")
     fun getJobItemEstimatePhoto(photoId: String): JobItemEstimatesPhotoDTO
 
@@ -68,5 +77,8 @@ interface JobItemEstimatePhotoDao {
 
     @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename)")
     fun checkIfJobItemEstimatePhotoExistsByName(filename: String): Boolean
+
+    @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename AND  estimateId = :estimateId)")
+    fun checkIfJobItemEstimatePhotoExistsByNameAndEstimateId(filename: String, estimateId: String): Boolean
 
 }

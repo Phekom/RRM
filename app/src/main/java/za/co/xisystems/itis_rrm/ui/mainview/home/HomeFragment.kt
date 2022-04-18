@@ -15,6 +15,7 @@
 package za.co.xisystems.itis_rrm.ui.mainview.home
 
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.location.LocationManager
@@ -139,7 +140,7 @@ class HomeFragment : BaseFragment() {
                 user.observe(viewLifecycleOwner, { userInstance ->
                     userInstance.let {
                         userDTO = it
-                        _ui?.welcome?.text = getString(R.string.welcome_greeting, it.userName)?:""
+                        _ui?.welcome?.text = it.userName //getString(R.string.welcome_greeting, it.userName)?:""
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()
@@ -314,6 +315,7 @@ class HomeFragment : BaseFragment() {
         }
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun checkConnectivity(): Boolean {
         var result = true
         val lm = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager

@@ -33,8 +33,10 @@
 
     <dimen name="dimen_18sp">18sp</dimen>
     <dimen name="dimen_160dp">160dp</dimen>
-
-
+    <dimen name="dimen_120dp">120dp</dimen>
+    <dimen name="activity_margin">16dp</dimen>
+    <dimen name="image_margin">48dp</dimen>
+    <dimen name="card_padding">40dp</dimen>
     <dimen name="progressMargin">10dp</dimen>
     <dimen name="smallRadius">7.5dp</dimen>
     <dimen name="stroke3">2.5dp</dimen>
