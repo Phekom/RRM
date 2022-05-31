@@ -262,7 +262,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
     }
 
     private fun initApprovalHeader() {
-        approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner, { job ->
+        approveViewModel.jobApprovalItem.distinctUntilChanged().observe(viewLifecycleOwner) { job ->
             Coroutines.main {
                 getEstimateItems(job.jobDTO.jobId)
                 val description = approveViewModel.getDescForProjectId(job.jobDTO.projectId!!)
@@ -275,7 +275,7 @@ class JobInfoFragment : BaseFragment(), DIAware {
                 _ui?.startKmDescriptionTextView?.text = (job.jobDTO.startKm.toString())
                 _ui?.endKmDescriptionTextView?.text = (job.jobDTO.endKm.toString())
             }
-        })
+        }
     }
 
     private fun initVeiledRecyclerView() {

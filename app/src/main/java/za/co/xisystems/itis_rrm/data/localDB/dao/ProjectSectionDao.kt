@@ -7,6 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
 import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
+import za.co.xisystems.itis_rrm.domain.ProjectSectionSelector
+import za.co.xisystems.itis_rrm.domain.ProjectSelector
 import za.co.xisystems.itis_rrm.domain.SectionBorder
 
 /**
@@ -110,4 +112,7 @@ interface ProjectSectionDao {
 
     @Query("SELECT * FROM PROJECT_SECTION_TABLE WHERE sectionId = :projectSectionId")
     fun getProjectSection(projectSectionId: String): ProjectSectionDTO
+
+    @Query("SELECT projectId, sectionId, route, section,direction FROM PROJECT_SECTION_TABLE WHERE projectId = :projectId ORDER BY section")
+    fun getProjectSectionsSelectors(projectId: String): List<ProjectSectionSelector>
 }

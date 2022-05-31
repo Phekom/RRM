@@ -5,7 +5,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ContractDTO
 
 data class ContractsResponse(
     @SerializedName("Contracts")
-    val contracts: List<ContractDTO>,
+    val contracts: ArrayList<ContractDTO>,
 
     @SerializedName("ErrorMessage")
     val errorMessage: String

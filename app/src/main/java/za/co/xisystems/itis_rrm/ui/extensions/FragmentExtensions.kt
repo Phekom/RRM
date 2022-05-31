@@ -40,6 +40,7 @@ fun Fragment.crashGuard(
                 Constants.TWO_SECONDS
             )
         }
+
         else -> {
             this.extensionToast(
                 title = throwable.topic,

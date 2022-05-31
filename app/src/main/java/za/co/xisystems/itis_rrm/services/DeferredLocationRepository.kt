@@ -34,7 +34,7 @@ class DeferredLocationRepository(
         var result: XIResult<LocationValidation>? = null
 
         try {
-
+            val sectiondata = appDb.getProjectSectionDao().getSection(locationQuery.sectionId!!)
             val routeSectionPointResponse: RouteSectionPointResponse =
                 apiRequest {
                     api.getRouteSectionPoint(
@@ -42,19 +42,44 @@ class DeferredLocationRepository(
                         buffer = IN_BUFFER,
                         latitude = locationQuery.latitude,
                         longitude = locationQuery.longitude,
+                        linearId = sectiondata.route!!,
+                        sectionId = sectiondata.section!!,
+                        direction = sectiondata.direction!!,
                         userId = locationQuery.userId
                     )
                 }
 
             if (routeSectionPointResponse.errorMessage.isNullOrBlank()) {
                 // Interim fix until buffered routes
-                val bufferLocations = routeSectionPointResponse.bufferLocation.split(";", ignoreCase = true, limit = 0)
-                    .map { item -> item.trim() }.firstOrNull { item ->
-                        !item.contains("XXXX" as CharSequence, ignoreCase = true) && item != ""
-                    }
-                if (routeSectionPointResponse.linearId.contains("XXX" as CharSequence, ignoreCase = true).or(routeSectionPointResponse.linearId.isBlank())
-                        .or(bufferLocations.isNullOrEmpty())) {
-                    throw  notEvenWrongException()
+
+
+//                val bufferLocations = routeSectionPointResponse.bufferLocation.split(";", ignoreCase = true, limit = 0)
+//                    .map { item -> item.trim() }.firstOrNull { item ->
+//                        !item.contains("XXXX" as CharSequence, ignoreCase = true) && item != ""
+//                    }
+//                if (routeSectionPointResponse.linearId.contains("XXX" as CharSequence, ignoreCase = true).or(routeSectionPointResponse.linearId.isBlank())
+//                        .or(bufferLocations.isNullOrEmpty())
+//                ) {
+//                    throw  notEvenWrongException()
+//                } else {
+//                    routeSectionPointResponse.apply {
+//                        val routeSectionPointResult = locationQuery.copy(
+//                            direction = this.direction, route = this.linearId, pointLocation = this.pointLocation,
+//                            sectionId = this.sectionId.toString()
+//                        ).setBufferLocation(this.bufferLocation)
+//                        result = XIResult.Success(routeSectionPointResult)
+//                    }
+//                }
+
+                if (routeSectionPointResponse.linearId == null ) { //&& routeSectionPointResponse.bufferLocation.contains("XXXX")
+                    throw  notEvenCloseException(routeSectionPointResponse.distanceParameter)
+                } else if (routeSectionPointResponse.linearId != (sectiondata.route)) {
+                    throw  wrongRoadDetectedException(routeSectionPointResponse.linearId, sectiondata.route!!)
+                } else if (routeSectionPointResponse.sectionId.toString() != (sectiondata.section)) {
+                    throw  wrongSectionException(routeSectionPointResponse.sectionId, routeSectionPointResponse.linearId, sectiondata.section!!, sectiondata.route)
+                }
+                else if (routeSectionPointResponse.direction != (sectiondata.direction)) {
+                    throw  wrongDirectionException(routeSectionPointResponse.direction, sectiondata.direction)
                 } else {
                     routeSectionPointResponse.apply {
                         val routeSectionPointResult = locationQuery.copy(
@@ -74,7 +99,6 @@ class DeferredLocationRepository(
             }
 
 
-
         } catch (e: Throwable) {
             result = XIResult.Error(e, "${e.message}")
         }
@@ -83,8 +107,24 @@ class DeferredLocationRepository(
     }
 
 
+    private fun wrongRoadDetectedException(linearId: String, route: String): LocationException {
+        return LocationException("You are on $linearId and you Selected $route")
+    }
+
+    private fun wrongSectionException(section: Int, linearId: String, yourSection: String, route: String): LocationException {
+        return LocationException("Photo Captured on $linearId Section $section and you Selected $route Section $yourSection")
+    }
+
+    private fun wrongDirectionException(direction: String, yourDirection: String?): LocationException {
+        return LocationException("You are on the Wrong Traffic Flow Direction ($direction)")
+    }
+
     private fun notEvenWrongException(): LocationException {
         return LocationException("One or more images not within your allocated road reserve.")
+    }
+
+    private fun notEvenCloseException(distanceParameter: String): LocationException {
+        return LocationException("One or more images not within your allocated road reserve. Tried at $distanceParameter Buffer Distance")
     }
 
     @Suppress("MagicNumber")
@@ -114,12 +154,13 @@ class DeferredLocationRepository(
                             jobId
                         )
                 }
-                appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
+//                if (!appDb.getProjectSectionDao().checkSectionExists(section.sectionId)) {
+//                    appDb.getProjectSectionDao().updateSectionDirection(direction, projectId)
+//                }
+
                 projectSectionId = appDb.getProjectSectionDao()
                     .getSectionByRouteSectionProject(sectionId.toString(), route!!, projectId, pointLocation!!)
 
-                // Deal with SectionDirection combinations.
-                // S.McDonald 2021/05/14
                 if (projectSectionId.isNullOrBlank()) {
                     projectSectionId = appDb.getProjectSectionDao().getSectionByRouteSectionProject(
                         sectionId.toString().plus(direction),
@@ -133,16 +174,10 @@ class DeferredLocationRepository(
 
         Timber.d("^*^ ProjectSectionId: $projectSectionId")
         if (!projectSectionId.isNullOrBlank()) {
-            return@withContext validateRouteSection(
-                routeSectionQuery.projectId,
-                routeSectionQuery
-            )
+            return@withContext validateRouteSection(routeSectionQuery.projectId, routeSectionQuery )
         } else {
-            return@withContext findNearestSection(
-                routeSectionQuery.route!!,
-                routeSectionQuery.pointLocation!!,
-                routeSectionQuery.direction!!
-            )
+            return@withContext findNearestSection(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!,
+                routeSectionQuery.direction!! )
         }
     }
 

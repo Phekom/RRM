@@ -40,6 +40,7 @@
                 android:id="@+id/selectProjectLayout"
                 style="@style/_linear_layout">
 
+
                 <TextView
                     style="@style/_orangeTextLabel"
                     android:layout_marginStart="@dimen/xsmall"
@@ -49,7 +50,8 @@
                 <Spinner
                     android:id="@+id/contractSpinner"
                     style="@style/_default"
-                    android:layout_marginTop="@dimen/xsmall" />
+                    android:layout_marginTop="@dimen/xsmall"
+                    android:minHeight="48dp" />
 
                 <View style="@style/_hline" />
 
@@ -63,10 +65,113 @@
                 <Spinner
                     android:id="@+id/projectSpinner"
                     style="@style/_default"
-                    android:layout_marginTop="@dimen/xsmall" />
+                    android:layout_marginTop="@dimen/xsmall"
+                    android:minHeight="48dp" />
 
                 <View style="@style/_hline" />
 
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:id="@+id/selectjLayout"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="@dimen/dimen_10dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/_orangeTextLabel"
+                            android:layout_marginStart="@dimen/xsmall"
+                            android:layout_marginTop="@dimen/small"
+                            android:text="@string/select_job_cat" />
+
+                        <Spinner
+                            android:id="@+id/jobCatSpinner"
+                            style="@style/_default"
+                            android:layout_marginTop="@dimen/xsmall"
+                            android:minHeight="48dp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/selectj2Layout"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/_orangeTextLabel"
+                            android:layout_marginStart="@dimen/xsmall"
+                            android:layout_marginTop="@dimen/small"
+                            android:text="@string/select_job_pos" />
+
+                        <Spinner
+                            android:id="@+id/jobPosSpinner"
+                            style="@style/_default"
+                            android:layout_marginTop="@dimen/xsmall"
+                            android:minHeight="48dp" />
+
+                    </LinearLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <View style="@style/_hline" />
+
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:id="@+id/selectCntLayout"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginEnd="@dimen/dimen_10dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/SectionLabel"
+                            style="@style/_orangeTextLabel"
+                            android:layout_marginStart="@dimen/xsmall"
+                            android:layout_marginTop="@dimen/dimen_8"
+                            android:text="@string/select_project_section" />
+
+                        <Spinner
+                            android:id="@+id/sectionSpinner"
+                            style="@style/_default"
+                            android:layout_marginTop="@dimen/xsmall" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/selectjDrLayout"
+                        android:layout_weight="1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/_orangeTextLabel"
+                            android:layout_marginStart="@dimen/xsmall"
+                            android:layout_marginTop="@dimen/small"
+                            android:text="@string/select_job_dir" />
+
+                        <Spinner
+                            android:id="@+id/jobDirSpinner"
+                            style="@style/_default"
+                            android:layout_marginTop="@dimen/xsmall"
+                            android:minHeight="48dp" />
+
+                    </LinearLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <View style="@style/_hline" />
 
 
                 <androidx.appcompat.widget.AppCompatEditText
@@ -78,6 +183,7 @@
                     android:backgroundTint="@color/itis_burnt_orange"
                     android:hint="@string/description"
                     android:inputType="textShortMessage"
+                    android:minHeight="48dp"
                     android:shadowColor="@color/red"
                     android:textColorHighlight="@color/red" />
 
@@ -88,7 +194,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
@@ -143,7 +249,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     android:layout_marginTop="@dimen/small"
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginBottom="@dimen/medium"
@@ -162,7 +268,8 @@
                     <Spinner
                         android:id="@+id/contractVoSpinner"
                         style="@style/_default2"
-                        android:layout_marginTop="@dimen/xsmall" />
+                        android:layout_marginTop="@dimen/xsmall"
+                        tools:ignore="TouchTargetSizeCheck" />
 
                 </LinearLayout>
 
@@ -172,7 +279,7 @@
                 <Button
                     android:id="@+id/createJobBtn"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/dimen_40dp"
+                    android:layout_height="48dp"
                     android:layout_margin="@dimen/small"
                     android:background="@drawable/buttonshape_clear"
                     android:text="@string/confirm_project_selection"

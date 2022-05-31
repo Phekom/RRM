@@ -6,14 +6,10 @@ import kotlinx.coroutines.*
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.VoItemDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
-import za.co.xisystems.itis_rrm.domain.ContractSelector
-import za.co.xisystems.itis_rrm.domain.ContractVoSelector
-import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.domain.ProjectVoSelector
+import za.co.xisystems.itis_rrm.domain.*
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
@@ -66,6 +62,15 @@ class CreationViewModel(
         }
     }
 
+    suspend fun getProjectSectionsSelectors(projectId: String): LiveData<List<ProjectSectionSelector>> = liveData {
+        withContext(ioContext) {
+            val data = jobCreationDataRepository.getProjectSectionsSelectors(projectId)
+            withContext(mainContext) {
+                emit(data)
+            }
+        }
+    }
+
     suspend fun getContractVoSelectors(contractId: String): LiveData<List<ContractVoSelector>> = liveData {
         withContext(ioContext) {
             val data = jobCreationDataRepository.getContractVoSelectors(contractId)
@@ -75,9 +80,23 @@ class CreationViewModel(
         }
     }
 
-    suspend fun getContractVoIdForPrjId(projectId: String): List<VoItemDTO> {
-        val contractVoIds = jobCreationDataRepository.getContractVoIdForPrjId(projectId)
+    suspend fun getJobCategories(): List<JobCategoryDTO> {
+        val contractVoIds = jobCreationDataRepository.getJobCategories()
        return withContext(dispatchers.io()) {
+            contractVoIds
+        }
+    }
+
+    suspend fun getJobPositions(): List<JobPositionDTO> {
+        val contractVoIds = jobCreationDataRepository.getJobPositions()
+        return withContext(dispatchers.io()) {
+            contractVoIds
+        }
+    }
+
+    suspend fun getJobDirections(): List<JobDirectionDTO> {
+        val contractVoIds = jobCreationDataRepository.getJobDirections()
+        return withContext(dispatchers.io()) {
             contractVoIds
         }
     }

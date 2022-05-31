@@ -173,8 +173,6 @@ open class ProjectItem(
                     .navigate(navDirections)
             }
         }
-
-
     }
 
     private suspend fun getJobItemEstimate(itemId: String, jobId: String):
@@ -190,8 +188,7 @@ open class ProjectItem(
 
     private fun buildDeleteDialog(view: View) {
         val itemDeleteBuilder =
-            Builder(
-                view.context // , android.R.style
+            Builder( view.context // , android.R.style
                 // .Theme_DeviceDefault_Dialog
             )
         itemDeleteBuilder.setTitle(R.string.confirm)

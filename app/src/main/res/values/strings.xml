@@ -319,7 +319,8 @@
     <string name="title_add_items">Add Project Items</string>
     <string name="title_select_items">Select Project Item</string>
     <string name="continue_old">UpDate Later</string>
-    <string name="you_have_out_standing_jobs">"You have JI's or Measurements not Submitted Please make sure you Submit them first as they can not be recovered after Resetting App "</string>
+    <string name="you_have_out_standing_jobs">"You have JI's not Submitted Please make sure you Submit them first as they can not be recovered after Resetting App "</string>
+    <string name="you_have_out_standing_measures">"You have Measurements not Submitted Please make sure you Submit them first as they can not be recovered after Resetting App "</string>
     <string name="project_vo">Create VO / WA JI</string>
     <string name="select_project_vo">Select Project Vo</string>
     <string name="select_contract_vo">Select Contract Vo Number</string>
@@ -335,6 +336,10 @@
     <string name="_00_00">00.00</string>
     <string name="lati">Lat</string>
     <string name="longi">Long</string>
+    <string name="select_project_section">Select Section</string>
+    <string name="select_job_cat">Select Job Category</string>
+    <string name="select_job_pos">Select Job Position</string>
+    <string name="select_job_dir">Select Job Direction</string>
 
     <string-array name="styling_options">
         <item>hide status bar</item>

@@ -122,8 +122,8 @@ class AddProjectItemsFragment : BaseFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
-        jOB_ACTIVITY.navigationView.visibility = View.GONE
+        val jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
+        jOB_ACTIVITY.navigationView?.visibility = View.GONE
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToCreate(this@AddProjectItemsFragment.requireView())
@@ -142,7 +142,7 @@ class AddProjectItemsFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentAddItemsBinding.inflate(inflater, container, false)
         _binding?.toolbar?.apply {
             setOnBackClickListener(backClickListener)
@@ -165,6 +165,8 @@ class AddProjectItemsFragment : BaseFragment() {
                 addViewModel.getContractNoForId(job.contractId)
             val projectCode =
                 addViewModel.getProjectCodeForId(job.projectId)
+            val projectSection =
+                addViewModel.getProjectSectionForId(job.sectionId)
             if (job.voJob == getString(R.string.no)) {
                 binding.selectedVoTextView.text = getString(R.string.none_vo)
 
@@ -185,8 +187,10 @@ class AddProjectItemsFragment : BaseFragment() {
                 }
 
             }
+            val selectedSec = projectSection.route + projectSection.section + projectSection.direction
             binding.selectedContractTextView.text = contractNo
             binding.selectedProjectTextView.text = projectCode
+            binding.selectedSecTextView.text = selectedSec
 
             when {
                 !projectArgsData.jobId.isNullOrBlank() -> {
@@ -231,7 +235,7 @@ class AddProjectItemsFragment : BaseFragment() {
 
     private fun bindProjectItems(job: JobDTO) = uiScope.launch(uiScope.coroutineContext) {
         val projectItems = addViewModel.getAllProjectItems(job.projectId!!, job.jobId)
-        projectItems.observe(viewLifecycleOwner, { itemList ->
+        projectItems.observe(viewLifecycleOwner) { itemList ->
             when {
                 itemList.isEmpty() -> {
                     clearProjectItems()
@@ -240,7 +244,7 @@ class AddProjectItemsFragment : BaseFragment() {
                     populateProjectItemView(itemList)
                 }
             }
-        })
+        }
     }
 
 
@@ -255,11 +259,11 @@ class AddProjectItemsFragment : BaseFragment() {
     }
 
     private fun initCurrentUserObserver() {
-        addViewModel.loggedUser.observe(viewLifecycleOwner, { userId ->
+        addViewModel.loggedUser.observe(viewLifecycleOwner) { userId ->
             userId?.let {
                 this@AddProjectItemsFragment.userId = it.toString()
             }
-        })
+        }
     }
 
     private fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -421,7 +425,7 @@ class AddProjectItemsFragment : BaseFragment() {
     }
 
     private fun initReUploadListener() {
-        addViewModel.jobForReUpload.observeOnce(viewLifecycleOwner, { reUploadEvent ->
+        addViewModel.jobForReUpload.observeOnce(viewLifecycleOwner) { reUploadEvent ->
             reUploadEvent.getContentIfNotHandled()?.let { reUploadJob ->
                 Coroutines.main {
                     val result = addViewModel.reUploadJob(
@@ -431,7 +435,7 @@ class AddProjectItemsFragment : BaseFragment() {
                     handleUploadResult(result)
                 }
             }
-        })
+        }
     }
 
     private fun handleUploadResult(result: XIResult<Boolean>) {
@@ -654,6 +658,7 @@ class AddProjectItemsFragment : BaseFragment() {
 
 
     private suspend fun initValidationListener() = withContext(dispatchers.main()) {
+
         deferredLocationViewModel.geoCodingResult.observeOnce(
             viewLifecycleOwner
         ) { result ->
@@ -674,7 +679,7 @@ class AddProjectItemsFragment : BaseFragment() {
                     }
                 } else {
                     uiScope.launch {
-                        geoLocationFailed()
+//                        geoLocationFailed(result)
                     }
                 }
             }
@@ -719,7 +724,7 @@ class AddProjectItemsFragment : BaseFragment() {
             throwable = result,
             refreshAction = { Coroutines.main { this@AddProjectItemsFragment.validateJob(job) } }
         )
-        geoLocationFailed()
+        geoLocationFailed(result)
     }
 
 
@@ -728,18 +733,18 @@ class AddProjectItemsFragment : BaseFragment() {
         addViewModel.setJobToValidate(geoCodedJobId)
     }
 
-    private suspend fun geoLocationFailed() = withContext(Dispatchers.Main.immediate) {
+    private suspend fun geoLocationFailed(result: XIResult.Error) = withContext(Dispatchers.Main.immediate) {
         _binding?.submitButton?.failProgress("Locations not verified ...")
         toggleLongRunning(false)
         _binding?.itemsCardView?.startAnimation(shake_long)
-        showErrorDialod()
+        showErrorDialod(result)
         onGeoLocationFailed()
     }
 
-    private fun showErrorDialod() = Coroutines.ui {
+    private fun showErrorDialod(result: XIResult.Error) = Coroutines.ui {
         syncDialog = AlertDialog.Builder(requireContext()) // android.R.style.Theme_DeviceDefault_Dialog
             .setTitle("Ji Locations Verification Failed")
-            .setMessage(getString(R.string.locati_dialog_error))
+            .setMessage(result.message+" Please Correct and Retry")
             .setCancelable(false)
             .setIcon(R.drawable.ic_warning_yellow)
             .setPositiveButton(R.string.ok) { dialog, _ ->

@@ -41,11 +41,11 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
         JobItemMeasureDTO::class, ToDoListEntityDTO::class, ChildLookupDTO::class,
         JobEstimateWorksDTO::class, JobEstimateWorksPhotoDTO::class, SectionItemDTO::class,
         WorkFlowsDTO::class, WfWorkStepDTO::class, UnallocatedPhotoDTO::class, ContractVoDTO::class,
-       // ProjectVoDTO::class
+        JobCategoryDTO::class, JobPositionDTO::class, JobDirectionDTO::class,
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 34
+    version = 35
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)
@@ -56,6 +56,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         private const val MAX_DB_VERSIONS = 999_999_999
         private const val DB_NAME = "myRRM_Release.db"
+
         @Volatile
         internal var instance: AppDatabase? = null
         private val LOCK = Any()
@@ -121,7 +122,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getContractVoDao(): ContractVoDao
     abstract fun getVoItemDao(): VoItemDao
     abstract fun getProjectDao(): ProjectDao
-//    abstract fun getProjectVoDao(): ProjectVoDao
     abstract fun getPrimaryKeyValueDao(): PrimaryKeyValueDao
     abstract fun getLookupOptionDao(): LookupOptionDao
     abstract fun getLookupDao(): LookupDao
@@ -142,4 +142,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun getSectionPointDao(): SectionPointDao
     abstract fun getWorkStepDao(): WorkStepDao
     abstract fun getUnallocatedPhotoDao(): UnallocatedPhotoDao
+    abstract fun getJobDirectionDao(): JobDirectionDao
+    abstract fun getJobCategoryDao(): JobCategoryDao
+    abstract fun getJobPositionDao(): JobPositionDao
+
+
 }

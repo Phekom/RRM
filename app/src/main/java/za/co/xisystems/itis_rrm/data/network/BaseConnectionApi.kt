@@ -23,8 +23,6 @@ import za.co.xisystems.itis_rrm.data.network.responses.*
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
- */
-/**
  * Updated by Francis Mahlava on 2022/04/14
  * Last modified on 2022/05/18, 11:18
  * Copyright (c) 2021.  XI Systems  - All rights reserved
@@ -52,6 +50,7 @@ interface BaseConnectionApi {
     suspend fun healthCheck(
         @Field("UserLogon") userLogon: String
     ): Response<HealthCheckResponse>
+
 
     @FormUrlEncoded
     @POST("UpdateEstQty")
@@ -91,6 +90,24 @@ interface BaseConnectionApi {
     suspend fun lookupsRefresh(
         @Field("UserId") userId: String
     ): Response<LookupResponse>
+
+    @FormUrlEncoded
+    @POST("GetJobDirections")
+    suspend fun getJobDirections(
+        @Field("UserId") userId: String
+    ): Response<JobDirectionResponse>
+
+    @FormUrlEncoded
+    @POST("GetJobPositions")
+    suspend fun getJobPositions(
+        @Field("UserId") userId: String
+    ): Response<JobPositionResponse>
+
+    @FormUrlEncoded
+    @POST("GetJobCategories")
+    suspend fun getJobCategories(
+        @Field("UserId") userId: String
+    ): Response<JobCategoryResponse>
 
     @FormUrlEncoded
     @POST("GetUserTaskList")
@@ -142,6 +159,9 @@ interface BaseConnectionApi {
         @Field("MustBeInBuffer") buffer: Double,
         @Field("Latitude") latitude: Double,
         @Field("Longitude") longitude: Double,
+        @Field("LinearId") linearId: String,
+        @Field("SectionId") sectionId: String,
+        @Field("Direction") direction: String,
         @Field("UserId") userId: String
     ): Response<RouteSectionPointResponse>
 
@@ -191,10 +211,10 @@ interface BaseConnectionApi {
         ): BaseConnectionApi {
             val okkHttpclient = OkHttpClient
                 .Builder().apply {
-                    callTimeout(10, TimeUnit.MINUTES)
-                    readTimeout(5, TimeUnit.MINUTES)
-                    writeTimeout(5, TimeUnit.MINUTES)
-                    connectTimeout(5, TimeUnit.MINUTES)
+                    callTimeout(20, TimeUnit.MINUTES)
+                    readTimeout(10, TimeUnit.MINUTES)
+                    writeTimeout(10, TimeUnit.MINUTES)
+                    connectTimeout(10, TimeUnit.MINUTES)
                     protocols(listOf(Protocol.HTTP_1_1))
                         .pingInterval(10000, TimeUnit.MILLISECONDS)
 

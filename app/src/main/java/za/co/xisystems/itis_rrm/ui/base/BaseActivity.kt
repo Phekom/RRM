@@ -33,13 +33,13 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
             ViewModelProvider(this, shareFactory).get(SharedViewModel::class.java)
         }
 
-        sharedViewModel.longRunning.observe(this, {
+        sharedViewModel.longRunning.observe(this) {
             armoury.writeFutureTimestamp()
             when (it) {
                 true -> this.startLongRunningTask()
                 false -> this.endLongRunningTask()
             }
-        })
+        }
 
         if (savedInstanceState == null) {
             armoury.writeFutureTimestamp()
@@ -61,12 +61,12 @@ abstract class BaseActivity : AppCompatActivity(), DIAware {
         ) {
             Coroutines.main {
                 val user = sharedViewModel.currentUser.await()
-                user.observe(this, { user ->
+                user.observe(this) { user ->
                     when (user.authd) {
                         true -> logoutApplication()
                         else -> exitApplication()
                     }
-                })
+                }
 
             }
         }

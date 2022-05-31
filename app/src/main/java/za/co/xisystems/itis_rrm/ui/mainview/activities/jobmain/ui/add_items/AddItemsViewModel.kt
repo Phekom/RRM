@@ -9,10 +9,7 @@ import timber.log.Timber
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractVoSelector
@@ -76,6 +73,12 @@ class AddItemsViewModel(
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(dispatchers.io()) {
             jobCreationDataRepository.getProjectCodeForId(projectId)
+        }
+    }
+
+    suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getProjectSectionForId(sectionId)
         }
     }
 

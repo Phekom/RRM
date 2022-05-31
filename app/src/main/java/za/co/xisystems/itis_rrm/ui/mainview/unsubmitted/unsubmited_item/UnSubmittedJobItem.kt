@@ -51,7 +51,10 @@ class UnSubmittedJobItem(
             iTemID.text = getItemId(position + 1).toString()
             Coroutines.main {
                 val descri = viewModel.getDescForProjectId(jobDTO.projectId!!)
+                val prjSction = viewModel.getProjectSectionForId(jobDTO.sectionId!!)
+                val section = prjSction.route+prjSction.section+prjSction.direction
                 unsubmittedProjectTextView.text = descri
+                unsubmittedSectionTextView.text = section
             }
             unsubmittedDescriptionTextView.text = jobDTO.descr
 

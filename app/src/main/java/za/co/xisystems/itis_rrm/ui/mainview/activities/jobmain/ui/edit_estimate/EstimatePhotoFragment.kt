@@ -428,7 +428,7 @@ class EstimatePhotoFragment : LocationFragment() {
         super.onAttach(context)
          locationWarning = false
         var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
-        jOB_ACTIVITY.navigationView.visibility = View.GONE
+        jOB_ACTIVITY.navigationView?.visibility = View.GONE
         val callback: OnBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 navToAddProject(this@EstimatePhotoFragment.requireView())
@@ -526,14 +526,14 @@ class EstimatePhotoFragment : LocationFragment() {
         withContext(uiScope.coroutineContext) {
             var myUserId: Int?
             estimatePhotoViewModel.loggedUser.distinctUntilChanged().observe(
-                viewLifecycleOwner,
-                { user ->0
-                    user?.let {
-                        myUserId = it
-                        onUserFound(myUserId)
-                    }
+                viewLifecycleOwner
+            ) { user ->
+                0
+                user?.let {
+                    myUserId = it
+                    onUserFound(myUserId)
                 }
-            )
+            }
         }
 
         withContext(uiScope.coroutineContext) {
@@ -808,8 +808,7 @@ class EstimatePhotoFragment : LocationFragment() {
         val directions = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToNavigationAddItems(
             editEstimateData.itemId!!,
             editEstimateData.jobId!!,
-            editEstimateData.contractVoId?:""
-        )
+            editEstimateData.contractVoId?:"")
         Navigation.findNavController(view).navigate(directions)
     }
 
@@ -993,6 +992,7 @@ class EstimatePhotoFragment : LocationFragment() {
          *  Location of picture
          */
        try {
+           
 
                 val estimatephotodata = estimatePhotoViewModel.getEstimatePhotoByName(images[0].name)
                 if (estimatephotodata != null) {
