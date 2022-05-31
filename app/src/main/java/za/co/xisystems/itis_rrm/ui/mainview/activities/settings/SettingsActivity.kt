@@ -23,6 +23,7 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 class SettingsActivity : AppCompatActivity(), DIAware {
     private var canResert: Boolean = false
+    private var canResertApp: Boolean = false
     override val di by lazy { (applicationContext as MainApp).di }
 
     private lateinit var settingsViewModel: SettingsViewModel
@@ -51,46 +52,52 @@ class SettingsActivity : AppCompatActivity(), DIAware {
 
         Coroutines.main {
             val loggedInUser = settingsViewModel.user.await()
-            loggedInUser.observe(this, { user ->
+            loggedInUser.observe(this) { user ->
                 // Register the user
                 if (user != null) {
                     binding.username1.text = user.userName
                 }
-            })
+            }
         }
 
         binding.buttonResetApp.setOnClickListener {
             Coroutines.main {
                 val jobList = settingsViewModel.checkUnsubmittedList(ActivityIdConstants.JOB_ESTIMATE )
                 val measureList = settingsViewModel.checkUnsubmittedMeasureList(ActivityIdConstants.JOB_ESTIMATE)
-                canResert = jobList.isEmpty() && measureList.isEmpty()
+                canResert = jobList.isEmpty()
+                canResertApp = measureList.isEmpty()
 
                 if (canResert){
-                    val builder = AlertDialog.Builder(
-                        this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
-                    )
-                    builder.setTitle(R.string.confirm)
-                    builder.setMessage(R.string.all_data_will_be_deleted_are_you_sure)
-                    // Yes button
-                    builder.setPositiveButton(R.string.yes) { _, _ ->
-                        Coroutines.main {
-                            settingsViewModel.deleteAllData()
-                            // Take user back to the Registration screen
-                            Intent(this, RegisterActivity::class.java).also { home ->
-                                home.flags =
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                                startActivity(home)
+
+                    if (canResertApp){
+                        val builder = AlertDialog.Builder(
+                            this@SettingsActivity, android.R.style.Theme_DeviceDefault_Dialog
+                        )
+                        builder.setTitle(R.string.confirm)
+                        builder.setMessage(R.string.all_data_will_be_deleted_are_you_sure)
+                        // Yes button
+                        builder.setPositiveButton(R.string.yes) { _, _ ->
+                            Coroutines.main {
+                                settingsViewModel.deleteAllData()
+                                // Take user back to the Registration screen
+                                Intent(this, RegisterActivity::class.java).also { home ->
+                                    home.flags =
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                                    startActivity(home)
+                                }
                             }
                         }
+                        // No button
+                        builder.setNegativeButton(R.string.no) { dialog, _ ->
+                            // Do nothing but close dialog
+                            dialog.dismiss()
+                        }
+                        val alert = builder.create()
+                        alert.show()
+                    }else{
+                        promptUserToSubmitMeasuresFirst()
                     }
-                    // No button
-                    builder.setNegativeButton(R.string.no) { dialog, _ ->
-                        // Do nothing but close dialog
-                        dialog.dismiss()
-                    }
-                    val alert = builder.create()
-                    alert.show()
-                }else{
+                } else {
                     promptUserToSubmitJobsFirst()
                 }
             }
@@ -110,6 +117,20 @@ class SettingsActivity : AppCompatActivity(), DIAware {
             AlertDialog.Builder(this)
                 .setTitle("Resetting App Not Possible")
                 .setMessage(getString(R.string.you_have_out_standing_jobs))
+                .setCancelable(false)
+                .setIcon(R.drawable.ic_warning_yellow)
+                .setPositiveButton(R.string.ok) { _, _ ->
+                    startActivity(Intent(baseContext, MainActivity::class.java))
+                }
+
+        syncDialog.show()
+    }
+
+    private fun promptUserToSubmitMeasuresFirst() = Coroutines.ui {
+        val syncDialog: AlertDialog.Builder =
+            AlertDialog.Builder(this)
+                .setTitle("Resetting App Not Possible")
+                .setMessage(getString(R.string.you_have_out_standing_measures))
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_warning_yellow)
                 .setPositiveButton(R.string.ok) { _, _ ->

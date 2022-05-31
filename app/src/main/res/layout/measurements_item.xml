@@ -50,7 +50,6 @@
         android:id="@+id/measure_item_price_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-
         android:hint="R 0.00"
         android:layout_marginStart="10dp"
         android:textAppearance="@style/ItisText"

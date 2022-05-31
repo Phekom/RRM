@@ -34,17 +34,16 @@ const val PROJECT_SECTION_TABLE = "PROJECT_SECTION_TABLE"
     ]
 )
 data class ProjectSectionDTO(
-    @PrimaryKey
-    val id: Int,
 
     @SerializedName("SectionId")
+    @PrimaryKey
     val sectionId: String,
 
     @SerializedName("Route")
-    val route: String,
+    val route: String?,
 
     @SerializedName("Section")
-    val section: String,
+    val section: String?,
 
     @SerializedName("StartKm")
     val startKm: Double,
@@ -59,7 +58,6 @@ data class ProjectSectionDTO(
     val projectId: String?
 ) : Serializable, Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
@@ -70,7 +68,6 @@ data class ProjectSectionDTO(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(id)
         parcel.writeString(sectionId)
         parcel.writeString(route)
         parcel.writeString(section)

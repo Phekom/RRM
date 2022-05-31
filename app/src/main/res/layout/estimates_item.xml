@@ -26,12 +26,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/measure_item_description_textView"
         android:layout_alignParentStart="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-
-        android:maxWidth="160dp"
         android:layout_marginStart="10dp"
+        android:maxWidth="160dp"
         android:text="@string/qty_123"
-        android:textColor="@android:color/black"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textSize="14sp" />
 
     <TextView
@@ -40,12 +38,11 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/estimation_item_quantity_textView"
         android:layout_alignParentStart="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small"
-        android:layout_marginTop="@dimen/dimen_8dp"
-        android:maxWidth="160dp"
         android:layout_marginStart="10dp"
+        android:layout_marginTop="@dimen/dimen_8dp"
         android:hint="@string/uom"
-        android:textColor="@android:color/black"
+        android:maxWidth="160dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
         android:textSize="14sp" />
 
     <TextView
@@ -59,7 +56,6 @@
         android:hint="@string/pricing_hint"
         android:layout_marginStart="10dp"
         android:layout_marginTop="@dimen/dimen_8dp"
-        android:textColor="@android:color/black"
         android:textSize="14sp" />
 
 

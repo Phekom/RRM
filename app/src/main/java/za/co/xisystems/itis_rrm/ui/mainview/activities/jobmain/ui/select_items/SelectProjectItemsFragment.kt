@@ -42,7 +42,7 @@ class SelectProjectItemsFragment : BaseFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         var jOB_ACTIVITY: JobCreationActivity = context as JobCreationActivity
-        jOB_ACTIVITY.navigationView.visibility = View.GONE
+        jOB_ACTIVITY.navigationView?.visibility = View.GONE
     }
 
     override fun onCreateView(

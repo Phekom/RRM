@@ -24,10 +24,7 @@ import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.domain.ContractSelector
-import za.co.xisystems.itis_rrm.domain.ContractVoSelector
-import za.co.xisystems.itis_rrm.domain.ProjectSelector
-import za.co.xisystems.itis_rrm.domain.ProjectVoSelector
+import za.co.xisystems.itis_rrm.domain.*
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -614,7 +611,7 @@ class JobCreationDataRepository(
         pointLocation: Double
     ): SectionMarker {
         val data = appDb.getProjectSectionDao().findRealSectionStartKm(
-            projectSectionDTO.route,
+            projectSectionDTO.route!!,
             pointLocation
         )
 
@@ -627,7 +624,7 @@ class JobCreationDataRepository(
     ): SectionMarker {
         return withContext(dispatchers.default()) {
             appDb.getProjectSectionDao().findRealSectionEndKm(
-                projectSectionDTO.route,
+                projectSectionDTO.route!!,
                 pointLocation
             )
         }
@@ -636,6 +633,12 @@ class JobCreationDataRepository(
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(dispatchers.io()) {
             appDb.getProjectDao().getProjectCodeForId(projectId)
+        }
+    }
+
+    suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getProjectSectionDao().getSection(sectionId!!)
         }
     }
 
@@ -672,15 +675,26 @@ class JobCreationDataRepository(
         return appDb.getProjectDao().getProjectSelectorsForContractId(contractId)
     }
 
+    fun getProjectSectionsSelectors(projectId: String): List<ProjectSectionSelector> {
+        return appDb.getProjectSectionDao().getProjectSectionsSelectors(projectId)
+    }
+
     fun getContractVoSelectors(contractId: String): List<ContractVoSelector> {
         return appDb.getContractVoDao().getContractVoSelectorsForId(contractId)
     }
 
 
-    suspend fun getContractVoIdForPrjId(projectId: String): List<VoItemDTO> = withContext(dispatchers.io()) {
-        return@withContext appDb.getVoItemDao().getContractVoIdForPrjId(projectId)
+    suspend fun getJobCategories(): List<JobCategoryDTO> = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobCategoryDao().getJobCategories()
     }
 
+    suspend fun getJobPositions(): List<JobPositionDTO> = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobPositionDao().getJobPositions()
+    }
+
+    suspend fun getJobDirections(): List<JobDirectionDTO> = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobDirectionDao().getJobDirections()
+    }
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
         return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)

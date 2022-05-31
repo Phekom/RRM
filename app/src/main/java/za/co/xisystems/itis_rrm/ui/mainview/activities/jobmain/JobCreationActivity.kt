@@ -35,7 +35,7 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
         const val FRAG_ID = "FRAG_ID"
         const val FRAGMNT = "FRAGMNT"
     }
-    lateinit var navigationView: BottomNavigationView
+    var navigationView: BottomNavigationView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +45,7 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
         this.mainActivityViewModel = ViewModelProvider(this, factory)[JobCreationViewModel::class.java]
         navigationView  = binding.navviewbottom
         navController = findNavController(R.id.nav_host_fragment_activity_job_creation)
-        NavigationUI.setupWithNavController(navigationView, navController!!)
+        NavigationUI.setupWithNavController(navigationView!!, navController!!)
 
 
         if (intent.extras != null && intent.extras!!.containsKey(FRAGMNT)) {
@@ -56,7 +56,7 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
 
                 when (selectedFragmnetID) {
                     "navigation_un_submitted" -> {
-                        navigationView.visibility =  View.GONE
+                        navigationView?.visibility =  View.GONE
                         navController?.navigate(R.id.navigation_un_submitted)
                     }
 
@@ -74,7 +74,7 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
 
                 }
             }
-        } else{
+        } else {
 
         }
 
@@ -88,75 +88,75 @@ class JobCreationActivity : BaseActivity(), NavigationView.OnNavigationItemSelec
     private fun getUserRoles() {
         Coroutines.main {
             // Initially disable all menu options
-            val menuNav = navigationView.menu
+            val menuNav = navigationView?.menu
 
-            val navCreate = menuNav.findItem(R.id.navigation_create)
-            navCreate.isEnabled = false
+            val navCreate = menuNav?.findItem(R.id.navigation_create)
+            navCreate?.isEnabled = false
 
-            val navWork = menuNav.findItem(R.id.navigation_work)
-            navWork.isEnabled = false
+            val navWork = menuNav?.findItem(R.id.navigation_work)
+            navWork?.isEnabled = false
 
 
-            val navEstMeasures = menuNav.findItem(R.id.navigation_measure_est)
-            navEstMeasures.isEnabled = false
+            val navEstMeasures = menuNav?.findItem(R.id.navigation_measure_est)
+            navEstMeasures?.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(this, { roleList ->
+            userRoles.observe(this) { roleList ->
 
                 for (role in roleList) {
                     val roleID = role.roleDescription
                     when {
                         roleID.equals(MainActivity.PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-                            navEstMeasures.isEnabled = false
-                            navEstMeasures.isVisible = false
+                            navCreate?.isEnabled = true
+                            navCreate?.isVisible = true
+                            navWork?.isEnabled = false
+                            navWork?.isVisible = false
+                            navEstMeasures?.isEnabled = false
+                            navEstMeasures?.isVisible = false
                         }
 
                         roleID.equals(MainActivity.PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = false
-                            navCreate.isVisible = false
-                            navWork.isEnabled = true
-                            navWork.isVisible = true
-                            navEstMeasures.isEnabled = false
-                            navEstMeasures.isVisible = false
+                            navCreate?.isEnabled = false
+                            navCreate?.isVisible = false
+                            navWork?.isEnabled = true
+                            navWork?.isVisible = true
+                            navEstMeasures?.isEnabled = false
+                            navEstMeasures?.isVisible = false
 
                         }
 
                         roleID.equals(MainActivity.PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-                            navWork.isEnabled = true
-                            navWork.isVisible = true
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
+                            navCreate?.isEnabled = true
+                            navCreate?.isVisible = true
+                            navWork?.isEnabled = true
+                            navWork?.isVisible = true
+                            navEstMeasures?.isEnabled = true
+                            navEstMeasures?.isVisible = true
 
                         }
 
                         roleID.equals(MainActivity.PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
+                            navCreate?.isEnabled = true
+                            navCreate?.isVisible = true
+                            navWork?.isEnabled = false
+                            navWork?.isVisible = false
+                            navEstMeasures?.isEnabled = true
+                            navEstMeasures?.isVisible = true
 
                         }
 
                         roleID.equals(MainActivity.PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
+                            navCreate?.isEnabled = true
+                            navCreate?.isVisible = true
+                            navWork?.isEnabled = false
+                            navWork?.isVisible = false
+                            navEstMeasures?.isEnabled = true
+                            navEstMeasures?.isVisible = true
 
                         }
                     }
                 }
-            })
+            }
         }
     }
 

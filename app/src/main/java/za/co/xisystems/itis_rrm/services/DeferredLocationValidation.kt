@@ -92,7 +92,8 @@ class DeferredLocationViewModel(
                     estimateId = uncheckedEstimate.estimateId,
                     userId = locationJob.userId.toString(),
                     longitude = uncheckedPhoto.photoLongitude!!.round(8),
-                    latitude = uncheckedPhoto.photoLatitude!!.round(8)
+                    latitude = uncheckedPhoto.photoLatitude!!.round(8),
+                    sectionId =  locationJob.sectionId
                 )
                 val routeSectionResponse = getRouteSectionPoint(
                     locationQuery
@@ -116,6 +117,7 @@ class DeferredLocationViewModel(
                         val projectSectionIdResponse = deferredLocationRepository.saveRouteSectionPoint(
                             routeSectionQuery
                         )
+
                         processAndPersist(
                             locationResult = projectSectionIdResponse,
                             job = locationJob,
@@ -130,7 +132,6 @@ class DeferredLocationViewModel(
                             validProjectSectionId.isNullOrBlank()
                         ) {
                             validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
-
 
                         }
                     }
@@ -182,6 +183,7 @@ class DeferredLocationViewModel(
             Timber.e(e, message)
             handleLocationError(XIResult.Error(e, message))
         }
+
     }
 
 
@@ -201,8 +203,8 @@ class DeferredLocationViewModel(
             estIndex = estIndex,
             phIndex = phIndex
         )
-
-        if (routeSectionResponse.exception is LocationException) {
+//        if (routeSectionResponse.exception is LocationException) {
+        if (routeSectionResponse.message.isNullOrEmpty()) {
             return // Process the next photo
         } else {
             pushNonLocationException(routeSectionResponse)

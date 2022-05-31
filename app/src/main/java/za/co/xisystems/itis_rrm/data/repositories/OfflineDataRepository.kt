@@ -1,24 +1,18 @@
 /**
  * Updated by Shaun McDonald on 2021/05/19
- * Last modified on 2021/05/18, 16:50
+ * Last modified on 2022/05/18, 16:50
+ * by Francis Mahlava
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
 package za.co.xisystems.itis_rrm.data.repositories
 
-// import sun.security.krb5.Confounder.bytes
-
-// import android.app.Activity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
-import androidx.room.ColumnInfo
 import androidx.room.Transaction
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.Nullable
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -32,11 +26,8 @@ import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DataConversion
-import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
+import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
+import za.co.xisystems.itis_rrm.utils.*
 import java.io.File
 import java.util.regex.Pattern
 
@@ -57,6 +48,9 @@ class OfflineDataRepository(
     private val sectionItems = MutableLiveData<ArrayList<String>>()
     private val job = MutableLiveData<JobDTO>()
     private val workFlow = MutableLiveData<WorkFlowsDTO>()
+    private val category = MutableLiveData<ArrayList<JobCategoryDTO>>()
+    private val positions = MutableLiveData<ArrayList<JobPositionDTO>>()
+    private val directions = MutableLiveData<ArrayList<JobDirectionDTO>>()
     private val lookups = MutableLiveData<ArrayList<LookupDTO>>()
     private val toDoListGroups = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
     private val workflows = MutableLiveData<ArrayList<ToDoGroupsDTO>>()
@@ -131,6 +125,31 @@ class OfflineDataRepository(
         photoUpload.observeForever {
             sendMSg(it)
         }
+
+        workFlow.observeForever {
+            Coroutines.default {
+                saveWorkFlowsInfo(it)
+            }
+        }
+
+        category.observeForever {
+            Coroutines.default {
+                saveCategoryItems(it)
+            }
+        }
+
+        positions.observeForever {
+            Coroutines.default {
+                savePositionItems(it)
+            }
+        }
+
+        directions.observeForever {
+            Coroutines.default {
+                saveDirectionItems(it)
+            }
+        }
+
     }
 
     companion object {
@@ -225,7 +244,11 @@ class OfflineDataRepository(
         }
     }
 
-
+    suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getProjectSectionDao().getSection(sectionId!!)
+        }
+    }
 
     suspend fun getProjectDescription(projectId: String): String {
         return withContext(dispatchers.io()) {
@@ -294,6 +317,43 @@ class OfflineDataRepository(
         }
     }
 
+    private fun saveCategoryItems(categories: ArrayList<JobCategoryDTO>) {
+        try {
+            categories.forEach { category ->
+                appDb.getJobCategoryDao().insertJobCategory(category)
+                // postEvent(XIResult.ProgressUpdate("positions", sectionCount.toFloat() / sectionSize.toFloat()))
+            }
+            postEvent(XIResult.ProgressUpdate("categories", -1.0f))
+        } catch (throwable: Throwable) {
+            Timber.e(throwable, "Exception caught saving categories items: ${throwable.message}")
+        }
+    }
+
+    private fun saveDirectionItems(directions: ArrayList<JobDirectionDTO>) {
+        try {
+            directions.forEach { direction ->
+                appDb.getJobDirectionDao().insertJobDirection(direction)
+                // postEvent(XIResult.ProgressUpdate("positions", sectionCount.toFloat() / sectionSize.toFloat()))
+            }
+            postEvent(XIResult.ProgressUpdate("directions", -1.0f))
+        } catch (throwable: Throwable) {
+            Timber.e(throwable, "Exception caught saving directions items: ${throwable.message}")
+        }
+    }
+
+    private fun savePositionItems( positions: ArrayList<JobPositionDTO>) {
+        try {
+            positions?.forEach { position ->
+                appDb.getJobPositionDao().insertJobPosition(position)
+               // postEvent(XIResult.ProgressUpdate("positions", sectionCount.toFloat() / sectionSize.toFloat()))
+            }
+            postEvent(XIResult.ProgressUpdate("positions", -1.0f))
+        } catch (throwable: Throwable) {
+            Timber.e(throwable, "Exception caught saving positions items: ${throwable.message}")
+        }
+    }
+
+
     private fun saveSectionsItems(sections: ArrayList<String>?) {
         var sectionSize: Int = sections?.size ?: 0
         var sectionCount = 0
@@ -339,47 +399,51 @@ class OfflineDataRepository(
         projectMax = 0
 
         createWorkflowSteps()
-
-        try {
-            val validContracts = contracts.filter { contract ->
-                contract.projects.isNotEmpty() && contract.contractId.isNotBlank()
-            }
-                .distinctBy { contract -> contract.contractId }
-            contractMax += validContracts.count()
-            validContracts.forEach { contract ->
-                if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
-                    appDb.getContractDao().insertContract(contract)
-                    contractCount++
-                    newContracts = true
-
-                    val validProjects =
-                        contract.projects.filter { project ->
-                            project.projectId.isNotBlank()
-                        }.distinctBy { project -> project.projectId }
-
-                    if (!validProjects.isNullOrEmpty()) {
-                        saveProjects(validProjects, contract)
-                    }
-
-                    val validContractVos =
-                        contract.contractVos.filter { contractVos ->
-                            contractVos.contractVoId.isNotBlank()
-                        }.distinctBy { contractVos -> contractVos.contractVoId }
-
-                    if (!validContractVos.isNullOrEmpty()) {
-                        saveContractVos(validContractVos, contract)
-                    }
-
-                } else {
-                    contractMax--
+        if (contracts.isEmpty()){
+            Timber.e("Error saving contracts: NO Contracts Available")
+        }else{
+            try {
+                val validContracts = contracts.filter { contract ->
+                    contract.projects.isNotEmpty() && contract.contractId.isNotBlank()
                 }
+                    .distinctBy { contract -> contract.contractId }
+                contractMax += validContracts.count()
+                validContracts.forEach { contract ->
+                    if (!appDb.getContractDao().checkIfContractExists(contract.contractId)) {
+                        appDb.getContractDao().insertContract(contract)
+                        contractCount++
+                        newContracts = true
 
-                Timber.d("cr**: $contractCount / $contractMax contracts")
-                Timber.d("cr**: $projectCount / $projectMax projects")
+                        val validProjects =
+                            contract.projects.filter { project ->
+                                project.projectId.isNotBlank()
+                            }.distinctBy { project -> project.projectId }
+
+                        if (!validProjects.isNullOrEmpty()) {
+                            saveProjects(validProjects, contract)
+                        }
+
+                        val validContractVos =
+                            contract.contractVos.filter { contractVos ->
+                                contractVos.contractVoId.isNotBlank()
+                            }.distinctBy { contractVos -> contractVos.contractVoId }
+
+                        if (!validContractVos.isNullOrEmpty()) {
+                            saveContractVos(validContractVos, contract)
+                        }
+
+                    } else {
+                        contractMax--
+                    }
+
+                    Timber.d("cr**: $contractCount / $contractMax contracts")
+                    Timber.d("cr**: $projectCount / $projectMax projects")
+                }
+            } catch (ex: Exception) {
+                Timber.e(ex, "Error saving contracts: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}")
             }
-        } catch (ex: Exception) {
-            Timber.e(ex, "Error saving contracts: ${ex.message ?: XIErrorHandler.UNKNOWN_ERROR}")
         }
+
     }
 
 
@@ -629,8 +693,8 @@ class OfflineDataRepository(
                 try {
                     appDb.getProjectSectionDao().insertSection(
                         section.sectionId,
-                        section.route,
-                        section.section,
+                        section.route!!,
+                        section.section!!,
                         section.startKm,
                         section.endKm,
                         section.direction,
@@ -948,8 +1012,6 @@ class OfflineDataRepository(
 
                 }
             }
-
-
         }
     }
 
@@ -1137,7 +1199,6 @@ class OfflineDataRepository(
     }
 
     private suspend fun getPhotoForJobItemMeasure(filename: String) {
-
         val photoMeasure = apiRequest { api.getPhotoMeasure(filename) }
         postValue(photoMeasure.photo, filename)
     }
@@ -1265,6 +1326,12 @@ class OfflineDataRepository(
     suspend fun loadActivitySections(userId: String) {
         postStatus("Fetching Activity Sections")
         val activitySectionsResponse = apiRequest { api.activitySectionsRefresh(userId) }
+        val jobCategoryResponse = apiRequest { api.getJobCategories(userId) }
+        val jobDirectionResponse = apiRequest { api.getJobDirections(userId) }
+        val jobPositionResponse = apiRequest { api.getJobPositions(userId) }
+        directions.postValue(jobDirectionResponse.jobDirection)
+        positions.postValue(jobPositionResponse.jobPosition)
+        category.postValue(jobCategoryResponse.jobCategory)
         saveSectionsItems(activitySectionsResponse.activitySections)
     }
 
@@ -1272,6 +1339,7 @@ class OfflineDataRepository(
         postStatus("Updating Workflows")
         val workFlowResponse = apiRequest { api.workflowsRefresh(userId) }
         workFlow.postValue(workFlowResponse.workFlows)
+
     }
 
     suspend fun loadLookups(userId: String) {
@@ -1289,7 +1357,7 @@ class OfflineDataRepository(
     suspend fun loadContracts(userId: String) {
         postStatus("Updating Contracts")
         val contractsResponse = apiRequest { api.getAllContractsByUserId(userId) }
-        // conTracts.postValue(contractsResponse.contracts)
+//         conTracts.postValue(contractsResponse.contracts)
         saveContracts(contractsResponse.contracts)
     }
 

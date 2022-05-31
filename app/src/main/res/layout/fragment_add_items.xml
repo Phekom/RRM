@@ -48,38 +48,160 @@
                     android:visibility="visible"
                     tools:visibility="visible">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_height="wrap_content"
+                    <LinearLayout
                         android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
 
-                        android:padding="@dimen/xsmall">
-
-                        <TextView
-                            android:id="@+id/contractLabel"
-                            style="@style/_orangeTextLabel"
-                            android:layout_width="0dp"
-                            android:layout_margin="@dimen/small"
-                            android:text="@string/contract"
-                            app:layout_constraintStart_toStartOf="parent"
-                            tools:ignore="MissingConstraints" />
-
-                        <TextView
-                            android:id="@+id/selectedContractTextView"
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:ellipsize="end"
-                            android:hint="@string/contract_hint"
-                            android:textStyle="bold"
+                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="@dimen/dimen_10dp"
                             app:layout_constraintEnd_toStartOf="@+id/resetButton"
-                            app:layout_constraintStart_toEndOf="@+id/contractLabel"
-                            tools:ignore="MissingConstraints" />
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
+
+                                <TextView
+                                    android:id="@+id/contractLabel"
+                                    style="@style/_orangeTextLabel"
+                                    android:layout_width="80dp"
+                                    android:layout_marginStart="@dimen/small"
+                                    android:text="@string/contract"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    tools:ignore="MissingConstraints" />
+
+                                <TextView
+                                    android:id="@+id/selectedContractTextView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/small"
+                                    android:ellipsize="end"
+                                    android:hint="@string/contract_hint"
+                                    android:textStyle="bold"
+                                    app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                    app:layout_constraintStart_toEndOf="@+id/contractLabel"
+                                    tools:ignore="MissingConstraints" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="@dimen/small"
+                                app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
+
+                                <TextView
+                                    android:id="@+id/projectLabel"
+                                    style="@style/_orangeTextLabel"
+                                    android:layout_width="80dp"
+                                    android:layout_marginStart="@dimen/small"
+                                    android:text="@string/project"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    tools:ignore="MissingConstraints" />
+
+                                <TextView
+                                    android:id="@+id/selectedProjectTextView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/small"
+                                    android:ellipsize="end"
+                                    android:hint="@string/contract_hint"
+                                    android:textStyle="bold"
+                                    app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                    app:layout_constraintStart_toEndOf="@+id/contractLabel"
+                                    tools:ignore="MissingConstraints" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="@dimen/small"
+                                app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
+
+                                <TextView
+                                    android:id="@+id/secLabel"
+                                    style="@style/_orangeTextLabel"
+                                    android:layout_width="80dp"
+                                    android:layout_marginStart="@dimen/small"
+                                    android:text="@string/section"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    tools:ignore="MissingConstraints" />
+
+                                <TextView
+                                    android:id="@+id/selectedSecTextView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/small"
+                                    android:ellipsize="end"
+                                    android:hint="@string/contract_hint"
+                                    android:textStyle="bold"
+                                    app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                    tools:ignore="MissingConstraints" />
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="@dimen/small"
+                                app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/selectedContractTextView">
+
+                                <TextView
+                                    android:id="@+id/vOLabel"
+                                    style="@style/_orangeTextLabel"
+                                    android:layout_width="80dp"
+                                    android:layout_marginStart="@dimen/small"
+                                    android:text="@string/voNumber"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    tools:ignore="MissingConstraints" />
+
+                                <TextView
+                                    android:id="@+id/selectedVoTextView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="@dimen/small"
+                                    android:ellipsize="end"
+                                    android:hint="@string/contract_hint"
+                                    android:textStyle="bold"
+                                    app:layout_constraintEnd_toStartOf="@+id/resetButton"
+                                    app:layout_constraintStart_toEndOf="@+id/contractLabel"
+                                    tools:ignore="MissingConstraints" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
 
                         <ImageButton
                             android:id="@+id/resetButton"
                             style="@style/Base.Widget.AppCompat.Button.Borderless"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
+                            android:layout_marginEnd="@dimen/dimen_10dp"
                             android:contentDescription="@string/cancel"
                             android:src="@drawable/ic_baseline_cancel_24px"
                             app:layout_constraintBottom_toBottomOf="parent"
@@ -87,61 +209,9 @@
                             app:layout_constraintTop_toTopOf="parent"
                             app:tint="@color/sanral_orange_red" />
 
-                        <TextView
-                            android:id="@+id/projectLabel"
-                            style="@style/_orangeTextLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/project"
-                            app:layout_constraintEnd_toStartOf="@+id/selectedProjectTextView"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/contractLabel" />
+                    </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/selectedProjectTextView"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:layout_marginTop="8dp"
 
-                            android:ellipsize="end"
-                            android:hint="@string/contract"
-                            android:textStyle="bold"
-                            app:layout_constraintEnd_toStartOf="@+id/resetButton"
-                            app:layout_constraintStart_toEndOf="@+id/projectLabel"
-                            app:layout_constraintTop_toBottomOf="@+id/selectedContractTextView" />
-
-                        <TextView
-                            android:id="@+id/vOLabel"
-                            style="@style/_orangeTextLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/voNumber"
-                            app:layout_constraintEnd_toStartOf="@+id/selectedVoTextView"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/projectLabel" />
-
-                        <TextView
-                            android:id="@+id/selectedVoTextView"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="@dimen/small"
-                            android:layout_marginTop="8dp"
-
-                            android:ellipsize="end"
-                            android:hint="@string/project_vo"
-                            android:textStyle="bold"
-                            app:layout_constraintEnd_toStartOf="@+id/resetButton"
-                            app:layout_constraintStart_toEndOf="@+id/vOLabel"
-                            app:layout_constraintTop_toBottomOf="@+id/selectedProjectTextView" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
                 </androidx.cardview.widget.CardView>
 
                 <LinearLayout
@@ -164,6 +234,7 @@
                         style="@style/Base.Widget.AppCompat.Button.Borderless"
                         android:layout_width="56dp"
                         android:layout_height="44dp"
+                        android:layout_marginEnd="@dimen/dimen_10dp"
                         android:contentDescription="@string/add_item"
                         android:src="@drawable/ic_baseline_add_box_24px"
                         app:tint="@color/sanral_orange_red" />
@@ -209,7 +280,7 @@
                             android:paddingStart="@dimen/dimen_8dp"
                             android:paddingEnd="@dimen/dimen_8dp"
                             android:visibility="visible"
-                            tools:listitem="new_job_item"
+                            tools:listitem="@layout/new_job_item"
                             tools:visibility="visible" />
 
                         <View
@@ -263,7 +334,7 @@
 
                         <TextView
                             style="@style/_orangeTextLabel"
-                            android:layout_width="wrap_content"
+                            android:layout_width="150dp"
                             android:layout_margin="@dimen/small"
                             android:gravity="start"
                             android:paddingLeft="@dimen/xsmall"
@@ -275,12 +346,11 @@
                             style="@style/_default"
                             android:layout_margin="@dimen/small"
                             android:ellipsize="end"
-                            android:gravity="start"
+                            android:gravity="center"
                             android:hint="@string/click_to_select_date"
                             android:maxLines="1"
                             android:paddingLeft="@dimen/xsmall"
                             android:paddingRight="@dimen/xsmall"
-                            android:textColor="@color/black"
                             android:textColorHint="@color/silver"
                             app:drawableEndCompat="@drawable/ic_baseline_chevron_right_24px" />
                     </LinearLayout>
@@ -302,7 +372,7 @@
 
                         <TextView
                             style="@style/_orangeTextLabel"
-                            android:layout_width="wrap_content"
+                            android:layout_width="150dp"
                             android:layout_margin="@dimen/small"
                             android:gravity="start"
                             android:paddingLeft="@dimen/xsmall"
@@ -314,12 +384,11 @@
                             style="@style/_default"
                             android:layout_margin="@dimen/small"
                             android:ellipsize="end"
-                            android:gravity="start"
+                            android:gravity="center"
                             android:hint="@string/click_to_select_date"
                             android:maxLines="1"
                             android:paddingLeft="@dimen/xsmall"
                             android:paddingRight="@dimen/xsmall"
-                            android:textColor="@color/black"
                             android:textColorHint="@color/silver"
                             app:drawableEndCompat="@drawable/ic_baseline_chevron_right_24px" />
                     </LinearLayout>

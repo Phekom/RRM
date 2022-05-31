@@ -94,7 +94,6 @@
         android:layout_marginEnd="8dp"
         android:gravity="end"
         android:hint="Incomplete Estimate ..."
-        android:textAppearance="@style/ItisText.ListItemItemTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewItem"
         tools:ignore="HardcodedText" />

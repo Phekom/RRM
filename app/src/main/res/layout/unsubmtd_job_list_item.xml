@@ -43,7 +43,7 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/section"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black" />
+                />
 
             <TextView
                 android:id="@+id/unsubmitted_description_textView"

@@ -67,14 +67,14 @@ class EstimatesItem(
             Coroutines.main {
                 val estimate =
                     approveViewModel.getJobEstimationItemByEstimateId(jobItemEstimateDTO.estimateId)
-                estimate.observe(viewLifecycleOwner, {
+                estimate.observe(viewLifecycleOwner) {
                     it?.let {
                         viewBinding.estimationItemPriceTextView.text =
                             activity?.getString(R.string.pair, "R", (it.qty * it.lineRate).round(2).toString())
                         viewBinding.estimationItemQuantityTextView.text =
                             activity?.getString(R.string.pair, "Qty:", it.qty.toString())
                     }
-                })
+                }
 
                 val descr =
                     approveViewModel.getDescForProjectItemId(jobItemEstimateDTO.projectItemId!!)
@@ -116,8 +116,7 @@ class EstimatesItem(
         jobItemEstimateDTO: JobItemEstimateDTO
     ) {
 
-        val textEntryView: View =
-            activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
+        val textEntryView: View = activity!!.layoutInflater.inflate(R.layout.estimate_dialog, null)
         val quantityEntry = textEntryView.findViewById<View>(R.id.new_qty) as EditText
         val rate = textEntryView.findViewById<View>(R.id.current_rate) as TextView
         val totalEntry = textEntryView.findViewById<View>(R.id.new_total) as TextView
@@ -226,8 +225,7 @@ class EstimatesItem(
     private fun showZoomedImage(imageUrl: String?) {
         val dialog = Dialog(activity!!, R.style.dialog_full_screen)
         dialog.setContentView(R.layout.new_job_photo)
-        val zoomageView =
-            dialog.findViewById<ZoomageView>(R.id.zoomedImage)
+        val zoomageView = dialog.findViewById<ZoomageView>(R.id.zoomedImage)
         GlideApp.with(activity)
             .load(imageUrl)
             .into(zoomageView)

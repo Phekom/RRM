@@ -125,28 +125,28 @@ class HomeFragment : BaseFragment() {
 
     private suspend fun getOfflineSectionItems() = withContext(uiScope.coroutineContext) {
         val sectionQuery = homeViewModel.offlineSectionItems.await()
-        sectionQuery.observe(viewLifecycleOwner, { mSectionItem ->
+        sectionQuery.observe(viewLifecycleOwner) { mSectionItem ->
             val allData = mSectionItem.count()
             if (mSectionItem.size == allData) {
                 _ui?.group2Loading?.visibility = View.GONE
             }
-        })
+        }
     }
 
     private suspend fun acquireUser() {
         try {
             val userJob = uiScope.launch(uiScope.coroutineContext) {
                 val user = homeViewModel.user.await()
-                user.observe(viewLifecycleOwner, { userInstance ->
+                user.observe(viewLifecycleOwner) { userInstance ->
                     userInstance.let {
                         userDTO = it
-                        _ui?.welcome?.text = it.userName //getString(R.string.welcome_greeting, it.userName)?:""
+                         //getString(R.string.welcome_greeting, it.userName)?:""
                         checkConnectivity()
                         if (networkEnabled) {
                             servicesHealthCheck()
                         }
                     }
-                })
+                }
             }
             userJob.join()
         } catch (t: Throwable) {
@@ -191,6 +191,7 @@ class HomeFragment : BaseFragment() {
         activity?.hideKeyboard()
         // Init viewBinding - note the use of inflater here
         _ui = FragmentHomeBinding.inflate(inflater, container, false)
+        _ui?.user?.text = userDTO?.userName
         return ui.root
     }
 
@@ -211,6 +212,7 @@ class HomeFragment : BaseFragment() {
         _ui?.serverTextView?.setOnClickListener {
             ToastUtils().toastServerAddress(requireContext())
         }
+        _ui?.user?.text = userDTO?.userName
 
         _ui?.imageView7?.setOnClickListener {
             ToastUtils().toastVersion(requireContext())
@@ -288,12 +290,12 @@ class HomeFragment : BaseFragment() {
 
     private fun isAppDbSynched() {
         uiScope.launch(uiScope.coroutineContext) {
-            homeViewModel.bigSyncDone.observe(viewLifecycleOwner, {
+            homeViewModel.bigSyncDone.observe(viewLifecycleOwner) {
                 Timber.d("Synced: $it")
                 if (!it) {
                     promptUserToSync()
                 }
-            })
+            }
             homeViewModel.bigSyncCheck()
         }
     }
@@ -345,7 +347,7 @@ class HomeFragment : BaseFragment() {
                 }
             )
             updateServiceHealth(result)
-            _ui?.welcome?.text = getString(R.string.welcome_greeting, userDTO?.userName)
+            _ui?.user?.text = userDTO?.userName
 
         }
 
@@ -525,11 +527,11 @@ class HomeFragment : BaseFragment() {
 
     private fun servicesHealthCheck() = uiScope.launch(uiScope.coroutineContext) {
         if (!activity?.isFinishing!! && userDTO != null && networkEnabled) {
-            homeViewModel.healthState.observe(viewLifecycleOwner, { outcome ->
+            homeViewModel.healthState.observe(viewLifecycleOwner) { outcome ->
                 outcome.getContentIfNotHandled()?.let { result ->
                     processHealthCheck(result)
                 }
-            })
+            }
             homeViewModel.healthCheck()
         }
     }
