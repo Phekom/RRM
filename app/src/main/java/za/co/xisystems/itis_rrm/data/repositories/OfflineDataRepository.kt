@@ -1206,6 +1206,7 @@ class OfflineDataRepository(
     private suspend fun getPhotoForJobItemEstimate(filename: String) {
         val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
         savePhoto(photoEstimate.photo, filename)
+        
     }
 
     private fun sendMSg(uploadResponse: String?) {

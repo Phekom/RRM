@@ -110,7 +110,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                 val measurementsSubscription =
                     approveViewModel.getJobApproveMeasureForActivityId(ActivityIdConstants.MEASURE_COMPLETE)
 
-                measurementsSubscription.distinctUntilChanged().observeOnce(viewLifecycleOwner, { measurementData ->
+                measurementsSubscription.distinctUntilChanged().observeOnce(viewLifecycleOwner) { measurementData ->
 
                     if (measurementData.isNullOrEmpty()) {
                         _binding?.noData?.visibility = View.VISIBLE
@@ -125,7 +125,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                         }
                         initRecyclerView(jobHeaders.toApproveListItems())
                     }
-                })
+                }
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch Measurements")
                 val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -159,7 +159,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
         Coroutines.main {
             try {
                 val freshJobs = approveViewModel.offlineUserTaskList.await()
-                freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
+                freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner) {
                     if (it.isNullOrEmpty()) {
 
                         _binding?.noData?.visibility = View.VISIBLE
@@ -167,7 +167,7 @@ class ApproveMeasureFragment : BaseFragment(), DIAware {
                     } else {
                         loadJobHeaders()
                     }
-                })
+                }
             } catch (t: Throwable) {
                 Timber.e(t, "Unable to fetch remote jobs")
                 val measureErr = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)

@@ -78,9 +78,10 @@ class DeferredLocationRepository(
                 } else if (routeSectionPointResponse.sectionId.toString() != (sectiondata.section)) {
                     throw  wrongSectionException(routeSectionPointResponse.sectionId, routeSectionPointResponse.linearId, sectiondata.section!!, sectiondata.route)
                 }
-                else if (routeSectionPointResponse.direction != (sectiondata.direction)) {
-                    throw  wrongDirectionException(routeSectionPointResponse.direction, sectiondata.direction)
-                } else {
+//                else if (routeSectionPointResponse.direction != (sectiondata.direction)) {
+//                    throw  wrongDirectionException(routeSectionPointResponse.direction, sectiondata.direction)
+//                }
+                else {
                     routeSectionPointResponse.apply {
                         val routeSectionPointResult = locationQuery.copy(
                             direction = this.direction, route = this.linearId, pointLocation = this.pointLocation,
