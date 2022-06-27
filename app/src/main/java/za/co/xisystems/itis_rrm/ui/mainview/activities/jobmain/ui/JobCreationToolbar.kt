@@ -8,7 +8,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
 
 /**
  * Created by Francis Mahlava on 2021/11/23.

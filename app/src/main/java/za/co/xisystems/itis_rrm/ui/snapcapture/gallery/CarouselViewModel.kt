@@ -10,6 +10,7 @@ import androidx.room.Transaction
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import za.co.xisystems.itis_rrm.data._commons.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
@@ -18,7 +19,6 @@ import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import java.util.Date
 

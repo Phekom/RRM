@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:windowIsTranslucent="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/dimen_16"
+        tools:ignore="UselessParent">
+
+        <ImageView
+            android:id="@+id/image_photo"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dimen_200dp"
+            android:fitsSystemWindows="true"
+            android:src="@drawable/logo_new_medium"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/sanral_logo" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/imageDatarecyclerview"
+            android:scrollbars="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+</LinearLayout>

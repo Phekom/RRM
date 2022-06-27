@@ -34,7 +34,7 @@ class PosterOverlayView @JvmOverloads constructor(
             posterLong?.text = "Longitude : ${poster.longitude}"
             posterCommet?.text = poster.description
             val posterShare = this?.findViewById<ImageView>(R.id.posterOverlayShareButton)
-            //posterShare?.setOnClickListener { context.sendShareIntent(poster.url) }
+//            posterShare?.setOnClickListener { context.sendShareIntent(poster.url) }
             val posterDelete = this?.findViewById<ImageView>(R.id.posterOverlayDeleteButton)
             posterDelete?.setOnClickListener { onDeleteClick(poster) }
         }

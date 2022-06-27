@@ -35,9 +35,9 @@ import za.co.xisystems.itis_rrm.ui.mainview.work.INSET_TYPE_KEY
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.GlideApp
 import za.co.xisystems.itis_rrm.utils.JobUtils
-import za.co.xisystems.itis_rrm.utils.image_capture.zooming.Poster
-import za.co.xisystems.itis_rrm.utils.image_capture.zooming.PosterOverlayView
-import za.co.xisystems.itis_rrm.utils.image_capture.zooming.StylingOptions
+//import za.co.xisystems.itis_rrm.utils.image_capture.zooming.Poster
+//import za.co.xisystems.itis_rrm.utils.image_capture.zooming.PosterOverlayView
+//import za.co.xisystems.itis_rrm.utils.image_capture.zooming.StylingOptions
 import java.io.File
 
 /**
@@ -55,9 +55,9 @@ open class ProjectItem(
     init {
         extras[INSET_TYPE_KEY] = INSET
     }
-    private var options = StylingOptions()
-    private var overlayView: PosterOverlayView? = null
-    private var viewer: StfalconImageViewer<Poster>? = null
+//    private var options = StylingOptions()
+//    private var overlayView: PosterOverlayView? = null
+//    private var viewer: StfalconImageViewer<Poster>? = null
     private var clickListener: ((ProjectItem) -> Unit)? = null
     override fun getLayout() = R.layout.new_job_item
     private var theJobItemEstimate: JobItemEstimateDTO? = null
@@ -252,9 +252,9 @@ open class ProjectItem(
         val endlat = textEntryView.findViewById<View>(R.id.endlat) as TextView
         val endlong = textEntryView.findViewById<View>(R.id.endlong) as TextView
         val sectionEnd = textEntryView.findViewById<View>(R.id.sectionEnd) as TextView
-        var clickListener = ::onImageClickAction
-
-        val uriString = ArrayList<Poster>()
+//        var clickListener = ::onImageClickAction
+//
+//        val uriString = ArrayList<Poster>()
 
 
 
@@ -276,7 +276,7 @@ open class ProjectItem(
                val estimatePhotosList = addViewModel.getJobItemEstimatePhotosForEstimateId(theJobItemEstimate?.estimateId!!)
 
                 estimatePhotosList.forEach { photo ->
-                    uriString.add(Poster(photo.photoPath, "${photo.photoLatitude}", "${photo.photoLongitude}", "${photo.sectionMarker}"))
+//                    uriString.add(Poster(photo.photoPath, "${photo.photoLatitude}", "${photo.photoLongitude}", "${photo.sectionMarker}"))
                 }
 
                 val enter = alert.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -313,10 +313,10 @@ open class ProjectItem(
                     .into(photoPreviewEnd)
 
                 photoPreviewStart.setOnClickListener {
-                    clickListener.invoke(photoPreviewEnd, uriString, 0)
+//                    clickListener.invoke(photoPreviewEnd, uriString, 0)
                 }
                 photoPreviewEnd.setOnClickListener {
-                    clickListener.invoke(photoPreviewEnd, uriString, 0)
+//                    clickListener.invoke(photoPreviewEnd, uriString, 0)
                 }
                     enter.setOnClickListener {
                     dialog.dismiss()
@@ -329,66 +329,66 @@ open class ProjectItem(
 
 
 
-    private fun onImageClickAction(
-        imageView: ImageView,
-        uriString: ArrayList<Poster>,
-        startPosition: Int,
-    ) {
-        val posters = uriString.toMutableList()
-        val builder = StfalconImageViewer.Builder<Poster>(fragment.requireContext(), posters, ::loadPosterImage)
-            .withStartPosition(startPosition)
-            .withImageChangeListener { position ->
-                if (options.isPropertyEnabled(StylingOptions.Property.SHOW_TRANSITION)) {
-                    // updateTransitionImage(imageView[position])
-                }
-                overlayView?.update(posters[position], fragment.requireContext())
-            }
-        // .withDismissListener { showShortToast(R.string.message_on_dismiss) }
-
-        builder.withHiddenStatusBar(options.isPropertyEnabled(StylingOptions.Property.HIDE_STATUS_BAR))
-
-        if (options.isPropertyEnabled(StylingOptions.Property.IMAGES_MARGIN)) {
-            builder.withImagesMargin(R.dimen.image_margin)
-        }
-
-        if (options.isPropertyEnabled(StylingOptions.Property.CONTAINER_PADDING)) {
-            builder.withContainerPadding(R.dimen.image_margin)
-        }
-
-        if (options.isPropertyEnabled(StylingOptions.Property.SHOW_TRANSITION)) {
-            builder.withTransitionFrom(imageView)
-        }
-
-        builder.allowSwipeToDismiss(options.isPropertyEnabled(StylingOptions.Property.SWIPE_TO_DISMISS))
-        builder.allowZooming(options.isPropertyEnabled(StylingOptions.Property.ZOOMING))
-
-        if (options.isPropertyEnabled(StylingOptions.Property.SHOW_OVERLAY)) {
-            setupOverlayView(posters, startPosition)
-            builder.withOverlayView(overlayView!!)
-        }
-
-        viewer = builder.show()
-    }
-
-    private fun setupOverlayView(posters: MutableList<Poster>, startPosition: Int) {
-        overlayView = PosterOverlayView(fragment.requireContext()).apply {
-            update(posters[startPosition], fragment.requireContext())
-
-            onDeleteClick = {
-                val currentPosition = viewer?.currentPosition() ?: 0
-                //deletePhoto(inspection.photoId)
-                posters.removeAt(currentPosition)
-                viewer?.updateImages(posters)
-
-                posters.getOrNull(currentPosition)
-                    ?.let { poster -> update(poster, fragment.requireContext()) }
-            }
-        }
-    }
-
-    protected fun loadPosterImage(imageView: ImageView, poster: Poster?) {
-        loadImage(imageView, poster?.url)
-    }
+//    private fun onImageClickAction(
+//        imageView: ImageView,
+//        uriString: ArrayList<Poster>,
+//        startPosition: Int,
+//    ) {
+//        val posters = uriString.toMutableList()
+//        val builder = StfalconImageViewer.Builder<Poster>(fragment.requireContext(), posters, ::loadPosterImage)
+//            .withStartPosition(startPosition)
+//            .withImageChangeListener { position ->
+//                if (options.isPropertyEnabled(StylingOptions.Property.SHOW_TRANSITION)) {
+//                    // updateTransitionImage(imageView[position])
+//                }
+//                overlayView?.update(posters[position], fragment.requireContext())
+//            }
+//        // .withDismissListener { showShortToast(R.string.message_on_dismiss) }
+//
+//        builder.withHiddenStatusBar(options.isPropertyEnabled(StylingOptions.Property.HIDE_STATUS_BAR))
+//
+//        if (options.isPropertyEnabled(StylingOptions.Property.IMAGES_MARGIN)) {
+//            builder.withImagesMargin(R.dimen.image_margin)
+//        }
+//
+//        if (options.isPropertyEnabled(StylingOptions.Property.CONTAINER_PADDING)) {
+//            builder.withContainerPadding(R.dimen.image_margin)
+//        }
+//
+//        if (options.isPropertyEnabled(StylingOptions.Property.SHOW_TRANSITION)) {
+//            builder.withTransitionFrom(imageView)
+//        }
+//
+//        builder.allowSwipeToDismiss(options.isPropertyEnabled(StylingOptions.Property.SWIPE_TO_DISMISS))
+//        builder.allowZooming(options.isPropertyEnabled(StylingOptions.Property.ZOOMING))
+//
+//        if (options.isPropertyEnabled(StylingOptions.Property.SHOW_OVERLAY)) {
+//            setupOverlayView(posters, startPosition)
+//            builder.withOverlayView(overlayView!!)
+//        }
+//
+//        viewer = builder.show()
+//    }
+//
+//    private fun setupOverlayView(posters: MutableList<Poster>, startPosition: Int) {
+//        overlayView = PosterOverlayView(fragment.requireContext()).apply {
+//            update(posters[startPosition], fragment.requireContext())
+//
+//            onDeleteClick = {
+//                val currentPosition = viewer?.currentPosition() ?: 0
+//                //deletePhoto(inspection.photoId)
+//                posters.removeAt(currentPosition)
+//                viewer?.updateImages(posters)
+//
+//                posters.getOrNull(currentPosition)
+//                    ?.let { poster -> update(poster, fragment.requireContext()) }
+//            }
+//        }
+//    }
+//
+//    protected fun loadPosterImage(imageView: ImageView, poster: Poster?) {
+//        loadImage(imageView, poster?.url)
+//    }
 
     protected fun loadImage(imageView: ImageView, url: String?) {
         GlideApp.with(fragment.requireContext().applicationContext)

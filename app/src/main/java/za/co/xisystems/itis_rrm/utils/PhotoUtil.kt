@@ -43,11 +43,7 @@ import za.co.xisystems.itis_rrm.utils.image_capture.camera.OnImageReadyListener
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.DeviceHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
 import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.util.Base64
 import java.util.Date
 import java.util.Locale
@@ -164,8 +160,7 @@ class PhotoUtil private constructor(
             if (!pictureName.lowercase(Locale.ROOT)
                     .contains(".jpg")
             ) "$pictureName.jpg" else pictureName
-        val fileName =
-            pictureFolder.toString().plus(File.separator)
+        val fileName = pictureFolder.toString().plus(File.separator)
                 .plus(pictureName)
         val file = File(fileName)
         return@withContext Uri.fromFile(file)
@@ -287,8 +282,7 @@ class PhotoUtil private constructor(
             lateinit var result: String
             // if uri is content
             if (scaledUri.scheme == "content") {
-                val cursor =
-                    appContext.contentResolver.query(scaledUri, null, null, null, null)
+                val cursor = appContext.contentResolver.query(scaledUri, null, null, null, null)
 
                 cursor?.run {
                     try {
@@ -333,11 +327,6 @@ class PhotoUtil private constructor(
                 calculateInSampleSize(options, actualWidth, actualHeight)
             //      inJustDecodeBounds set to false to load the actual bitmap
             options.inJustDecodeBounds = false
-            //      this options allow android to claim the bitmap memory if it runs low on memory
-
-            // these aren't much use for decodeFile operations
-            // options.inPurgeable = true
-            // options.inInputShareable = true
 
             options.inTempStorage = ByteArray(16 * 1024)
             try { //          load the bitmap from its path
@@ -386,6 +375,65 @@ class PhotoUtil private constructor(
             null
         }
     }
+
+    fun saveImageToInternalStorage2(
+        appContext: Context,
+        imageUri: Uri
+    ): HashMap<String, String>? {
+        var scaledUri = imageUri
+        return try {
+            lateinit var scaledBitmap: Bitmap
+            val options = BitmapFactory.Options()
+            lateinit var result: String
+            // if uri is content
+            if (scaledUri.scheme == "content") {
+                val cursor =
+                    appContext.contentResolver.query(scaledUri, null, null, null, null)
+
+                cursor?.run {
+                    try {
+                        when {
+                            cursor.moveToFirst() -> { // local filesystem
+                                var index = cursor.getColumnIndex("_data")
+                                if (index == -1) { // google drive
+                                    index = cursor.getColumnIndex("_display_name")
+                                }
+                                result = cursor.getString(index)
+                                scaledUri =
+                                    if (result.isBlank()) return null else Uri.parse(result)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e, "Ërror loading photo $scaledUri")
+                    } finally {
+                        cursor.close()
+                    }
+                }
+            }
+            result = scaledUri.path ?: ""
+            // get filename + ext of path
+            val cut = result.lastIndexOf('/')
+            if (cut != -1) result = result.substring(cut + 1)
+            val imageFileName = result
+            val direct =
+                File(instance.pictureFolder.toString())
+            if (!direct.exists()) {
+                direct.mkdirs()
+            }
+            val path = direct.toString() + File.separator + imageFileName
+
+            val map: HashMap<String, String> =
+                HashMap()
+            map["filename"] = imageFileName
+            map["path"] = path
+            map
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Timber.e(e, "error saving photo: $e")
+            null
+        }
+    }
+
 
     private fun applyExifRotation(
         path: String,
@@ -565,7 +613,7 @@ class PhotoUtil private constructor(
                     Pair(uri!!, bmp!!)
                 } catch (t: Throwable) {
                     val message = "Failed to create gallery image: " +
-                        (t.message ?: XIErrorHandler.UNKNOWN_ERROR)
+                            (t.message ?: XIErrorHandler.UNKNOWN_ERROR)
                     Timber.e(t, message)
                     null
                 }
@@ -586,7 +634,7 @@ class PhotoUtil private constructor(
     }
 
     @Throws(IOException::class)
-    private suspend fun createImageFile(): File? = withContext(dispatchers.io()) {
+    suspend fun createImageFile(): File? = withContext(dispatchers.io()) {
         val imageFileName = UUID.randomUUID()
         return@withContext try {
             File(pictureFolder, "$imageFileName.jpg")
@@ -596,13 +644,19 @@ class PhotoUtil private constructor(
         }
     }
 
-    internal fun saveUnAllocatedImage(context: Context, config: ImagePickerConfig, currentFileName: String, rrmFileUri : Uri, imageReadyListener: OnImageReadyListener) {
+
+    internal fun saveUnAllocatedImage(context: Context, config: ImagePickerConfig, currentFileName: String, rrmFileUri: Uri, imageReadyListener: OnImageReadyListener) {
         val contentResolver = context.contentResolver
         var newFileUri: Uri? = null
         val currentFilePath = rrmFileUri.path
         try {
-            if (DeviceHelper.isMinSdk29) {
-                val relativePath = config.rootDirectory.toString() + File.separator + config.subDirectory
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val direct = File(config.rootDirectory.toString())
+                if (!direct.exists()) {
+                    direct.mkdirs()
+                }
+                val relativePath = direct.toString() + File.separator + config.subDirectory
                 val values = ContentValues().apply {
                     put(MediaStore.Images.Media.DISPLAY_NAME, currentFileName)
                     put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
@@ -626,6 +680,15 @@ class PhotoUtil private constructor(
                     }
                     reset(context)
                 }
+            } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {                //These for devices running on android < Q
+                //Output stream
+                var fos: OutputStream? = null
+
+                val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
+                 //   Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                val image = File(imagesDir, currentFileName)
+                fos = FileOutputStream(image)
+
             } else {
                 MediaScannerConnection.scanFile(
                     context,
@@ -633,7 +696,7 @@ class PhotoUtil private constructor(
                     null
                 ) { _, _ ->
                     val images = arrayListOf(
-                        Image(rrmFileUri!!, currentFileName, 0, config.subDirectory!!)
+                        Image(rrmFileUri, currentFileName, 0, config.subDirectory!!)
                     )
                     imageReadyListener.onImageReady(images)
                     reset(context)
@@ -656,10 +719,10 @@ class PhotoUtil private constructor(
     }
 
     private fun reset(context: Context) {
-     //        if (DeviceHelper.isMinSdk29) {
-      //            //deleteFileFromUri(context, rrmFileUri!!)
-     //        }
-      //        revokeAppPermission(context, rrmFileUri!!)
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            //  deleteFileFromUri(context, rrmFileUri!!)
+        }
+        //        revokeAppPermission(context, rrmFileUri!!)
 //        currentFileUri = null
 //        currentFilePath = null
 //        currentFileName = null
@@ -714,14 +777,6 @@ class PhotoUtil private constructor(
             return@withContext null
         }
     }
-
-
-
-
-
-
-
-
 
 
 }

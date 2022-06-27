@@ -9,7 +9,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.estmeasure.submit_measure
 
 import android.Manifest.permission
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
@@ -25,20 +24,19 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
-import java.util.Date
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.instance
 import pereira.agnaldo.previewimgcol.ImageCollectionView
 import timber.log.Timber
-import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
+import za.co.xisystems.itis_rrm.data._commons.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasureDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemMeasurePhotoDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentCaptureItemMeasurePhotoBinding
@@ -51,8 +49,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
+import java.util.*
 
 //
 class CaptureItemMeasurePhotoFragment :
@@ -98,9 +96,6 @@ class CaptureItemMeasurePhotoFragment :
         private const val REQUEST_STORAGE_PERMISSION = 1
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-    }
 
 
 
@@ -130,26 +125,25 @@ class CaptureItemMeasurePhotoFragment :
 
         uiScope.launch(uiScope.coroutineContext) {
             measureViewModel.jobItemMeasure.observe(
-                viewLifecycleOwner,
-                { selectedJobItemM ->
-                    selectedJobItemM?.let { it ->
-                        _ui?.estimateImageCollectionView?.clearImages()
-                        viewPhotosOnly = false
+                viewLifecycleOwner
+            ) { selectedJobItemM ->
+                selectedJobItemM?.let { it ->
+                    _ui?.estimateImageCollectionView?.clearImages()
+                    viewPhotosOnly = false
 
-                        if (measureViewModel.measuredJiNo != it.jimNo) {
-                            this@CaptureItemMeasurePhotoFragment.extensionToast(
-                                message = "Measuring job: ${it.jimNo}",
-                                style = ToastStyle.INFO,
-                                position = ToastGravity.BOTTOM
-                            )
-                            measureViewModel.measuredJiNo = it.jimNo!!
-                        }
-
-                        selectedJobItemMeasure = it
-                        checkForPhotos(selectedJobItemMeasure)
+                    if (measureViewModel.measuredJiNo != it.jimNo) {
+                        this@CaptureItemMeasurePhotoFragment.extensionToast(
+                            message = "Measuring job: ${it.jimNo}",
+                            style = ToastStyle.INFO,
+                            position = ToastGravity.BOTTOM
+                        )
+                        measureViewModel.measuredJiNo = it.jimNo!!
                     }
+
+                    selectedJobItemMeasure = it
+                    checkForPhotos(selectedJobItemMeasure)
                 }
-            )
+            }
 
             measureViewModel.measureGalleryUIState.observe(viewLifecycleOwner, galleryObserver)
         }
@@ -189,7 +183,7 @@ class CaptureItemMeasurePhotoFragment :
             _ui?.estimateImageCollectionView?.clearImages()
             val photoFetch =
                 measureViewModel.getMeasureItemPhotos(selectedJobItemMeasure.itemMeasureId)
-            photoFetch.observe(viewLifecycleOwner, {
+            photoFetch.observe(viewLifecycleOwner) {
                 it?.let {
                     if (it.isEmpty()) {
                         takeMeasurePhoto()
@@ -199,7 +193,7 @@ class CaptureItemMeasurePhotoFragment :
                         jobItemMeasurePhotoArrayList = it as ArrayList<JobItemMeasurePhotoDTO>
                     }
                 }
-            })
+            }
         }
     }
 
@@ -396,8 +390,8 @@ class CaptureItemMeasurePhotoFragment :
 
     private fun retryGallery() {
         IndefiniteSnackbar.hide()
-        measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner, {
+        measureViewModel.galleryBackup.observeOnce(viewLifecycleOwner) {
             it?.let { measureViewModel.generateGalleryUI(it) }
-        })
+        }
     }
 }

@@ -50,8 +50,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
 import za.co.xisystems.itis_rrm.utils.*
-import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
-import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
+//import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
+//import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -65,8 +65,8 @@ class AddProjectItemsFragment : BaseFragment() {
     private lateinit var deferredLocationViewModel: DeferredLocationViewModel
     private val unsubFactory: UnSubmittedViewModelFactory by instance()
     private val deferredLocationFactory: DeferredLocationViewModelFactory by instance()
-    private lateinit var viewModel: ImagePickerViewModel
-    private val captureFactory: ImagePickerViewModelFactory by instance()
+//    private lateinit var viewModel: ImagePickerViewModel
+//    private val captureFactory: ImagePickerViewModelFactory by instance()
     private var dueDateDialog: DatePickerDialog? = null
     private var startDateDialog: DatePickerDialog? = null
     private lateinit var jobDataController: JobDataController
@@ -229,8 +229,8 @@ class AddProjectItemsFragment : BaseFragment() {
         deferredLocationViewModel =
             ViewModelProvider(this.requireActivity(), deferredLocationFactory)[DeferredLocationViewModel::class.java]
 
-        viewModel =
-            ViewModelProvider(this.requireActivity(), captureFactory)[ImagePickerViewModel::class.java]
+//        viewModel =
+//            ViewModelProvider(this.requireActivity(), captureFactory)[ImagePickerViewModel::class.java]
     }
 
     private fun bindProjectItems(job: JobDTO) = uiScope.launch(uiScope.coroutineContext) {
@@ -878,17 +878,17 @@ class AddProjectItemsFragment : BaseFragment() {
                 toggleLongRunning(false)
                 withContext(Dispatchers.Main.immediate) {
                     addViewModel.eraseUsedAndExpiredPhotos(job)
-                    val images = viewModel.fetchImagesFromExternalStorage()
-                    job.jobItemEstimates.forEach { estimate ->
-                        estimate.jobItemEstimatePhotos.forEach { image ->
-                            images.forEach {
-                                if (image.filename == it.name) {
-                                    deleteFileFromUri(requireContext(), it.uri)
-                                }
-                            }
-                            photoUtil.deleteImageFile(image.photoPath)
-                        }
-                    }
+//                    val images = viewModel.fetchImagesFromExternalStorage()
+//                    job.jobItemEstimates.forEach { estimate ->
+//                        estimate.jobItemEstimatePhotos.forEach { image ->
+//                            images.forEach {
+//                                if (image.filename == it.name) {
+//                                    deleteFileFromUri(requireContext(), it.uri)
+//                                }
+//                            }
+//                            photoUtil.deleteImageFile(image.photoPath)
+//                        }
+//                    }
 
                     this@AddProjectItemsFragment.requireActivity().extensionToast(
                         message = getString(R.string.job_submitted),

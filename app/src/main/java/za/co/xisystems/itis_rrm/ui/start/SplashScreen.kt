@@ -109,17 +109,18 @@ class SplashScreen : AppCompatActivity(), DIAware {
                                     }
                                 } catch (t: Throwable) {
                                    ToastUtils().toastShort(this@SplashScreen, "You Seem To have Little or No Network Connection")
-                                } finally {
-                                    Snackbar.make(
-                                        this@SplashScreen,
-                                        binding.root, "Continue Without Data Connection!!",
-                                        Snackbar.LENGTH_INDEFINITE
-                                    ).setAction(getString(R.string.ok), View.OnClickListener
-                                    // Handle the Retry Button Click
-                                    {
-                                        startActivity(Intent(baseContext, LoginActivity::class.java))
-                                    }).show()
                                 }
+//                                finally {
+//                                    Snackbar.make(
+//                                        this@SplashScreen,
+//                                        binding.root, "Continue Without Data Connection!!",
+//                                        Snackbar.LENGTH_INDEFINITE
+//                                    ).setAction(getString(R.string.ok), View.OnClickListener
+//                                    // Handle the Retry Button Click
+//                                    {
+//                                        startActivity(Intent(baseContext, LoginActivity::class.java))
+//                                    }).show()
+//                                }
 
 
                             }

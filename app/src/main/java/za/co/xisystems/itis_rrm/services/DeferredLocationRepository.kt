@@ -71,7 +71,7 @@ class DeferredLocationRepository(
 //                    }
 //                }
 
-                if (routeSectionPointResponse.linearId == null ) { //&& routeSectionPointResponse.bufferLocation.contains("XXXX")
+                if (routeSectionPointResponse.linearId.isEmpty()) { //&& routeSectionPointResponse.bufferLocation.contains("XXXX")
                     throw  notEvenCloseException(routeSectionPointResponse.distanceParameter)
                 } else if (routeSectionPointResponse.linearId != (sectiondata.route)) {
                     throw  wrongRoadDetectedException(routeSectionPointResponse.linearId, sectiondata.route!!)

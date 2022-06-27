@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
-import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -100,14 +99,12 @@ class ImagePickerAdapter(
     }
 
     private fun setupItemForeground(view: View, isSelected: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            view.foreground = if (isSelected) ColorDrawable(
-                ContextCompat.getColor(
-                    context,
-                    R.color.black_alpha_30
-                )
-            ) else null
-        }
+        view.foreground = if (isSelected) ColorDrawable(
+            ContextCompat.getColor(
+                context,
+                R.color.black_alpha_30
+            )
+        ) else null
     }
 
     private fun selectOrRemoveImage(image: Image, position: Int) {

@@ -177,7 +177,7 @@
 
 
     <!-- ForegroundOnly Location Service -->
-
+    <string name="photo_missing">Please at least add one Photo First</string>
     <string name="badge">(%1$s)</string>
     <string name="pair">%1$s %2$s</string>
     <string name="comment_placeholder">No comment</string>
@@ -234,7 +234,7 @@
     <string name="not_nra_territory">Captured coordinates $1%s are outside of the SANRAL reserve.</string>
     <string name="new_line">\n</string>
     <string name="invalid_route_section">The section you are working in ($1%s) is not part of the selected project.</string>
-    <string name="invalid_marker">The closest active section to this location ($1%s) is $2%s km away, at the $3%s km marker position.</string>
+    <string name="invalid_marker">The closest active section to this location ($1%s) is ($2%s) km away, at the ($3%s) km marker position.</string>
     <string name="for_review_purposes_only">For Review Purposes Only</string>
     <string name="location_general_failure">One or more locations not within your allocated road reserve.</string>
 <!--    <string name="location_general_failure">One or more locations could not be verified.\n Please check estimates for details</string>-->
@@ -340,6 +340,7 @@
     <string name="select_job_cat">Select Job Category</string>
     <string name="select_job_pos">Select Job Position</string>
     <string name="select_job_dir">Select Job Direction</string>
+    <string name="image">Image</string>
 
     <string-array name="styling_options">
         <item>hide status bar</item>

@@ -9,22 +9,16 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.BuildConfig
-import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.DeviceHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
 import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
 import java.io.File
 import java.io.IOException
 import java.io.Serializable
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -73,7 +67,7 @@ class CameraModule : Serializable {
         subDirectory: String
     ): File? {
 
-        val rootDir =   if (DeviceHelper.isMinSdk29) context.getExternalFilesDir(rootDirectory)
+        val rootDir =   if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) context.getExternalFilesDir(rootDirectory)
         else Environment.getExternalStoragePublicDirectory(rootDirectory)
 
         if (rootDir == null) return null
@@ -110,7 +104,7 @@ class CameraModule : Serializable {
         val contentResolver = context.contentResolver
         var newFileUri: Uri? = null
         try {
-            if (DeviceHelper.isMinSdk29) {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
 //                val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
 //                val filePrefix = "IMG_${timeStamp}_"
                 val filePrefix = UUID.randomUUID()
@@ -172,7 +166,7 @@ class CameraModule : Serializable {
     }
 
     private fun reset(context: Context) {
-        if (DeviceHelper.isMinSdk29) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             deleteFileFromUri(context, currentFileUri!!)
         }
         revokeAppPermission(context, currentFileUri!!)

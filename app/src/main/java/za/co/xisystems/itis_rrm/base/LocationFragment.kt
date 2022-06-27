@@ -79,9 +79,9 @@ abstract class LocationFragment : BaseFragment() {
     }
 
     private fun startLocationUpdate() {
-        locationViewModel.getLocationData().observe(this, {
+        locationViewModel.getLocationData().observe(this) {
             currentLocation = it
-        })
+        }
     }
 
     private fun isPermissionsGranted() =

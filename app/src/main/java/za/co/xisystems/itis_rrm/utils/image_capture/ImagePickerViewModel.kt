@@ -2,43 +2,39 @@ package za.co.xisystems.itis_rrm.utils.image_capture
 
 import android.app.Application
 import android.content.ContentUris
+import android.os.Build
 import android.provider.MediaStore
+import android.provider.MediaStore.setRequireOriginal
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.room.Transaction
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
-import za.co.xisystems.itis_rrm.services.LocationModel
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.DateUtil
+import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.model.CallbackStatus
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
-import za.co.xisystems.itis_rrm.utils.image_capture.model.ImageResult
 import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
+import za.co.xisystems.itis_rrm.utils.image_capture.model.ImageResult
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
  */
 
-class ImagePickerViewModel(private val unallocatedRepository: CapturedPictureRepository, application: Application, photoUtil: PhotoUtil) : AndroidViewModel(application) {
+class ImagePickerViewModel(
+    application: Application,
+    var photoUtil: PhotoUtil,
+    val dispatchers: DispatcherProvider
+) : AndroidViewModel(application) {
 
     private val contextRef = WeakReference(application.applicationContext)
     private lateinit var config: ImagePickerConfig
     private var job: Job? = null
-    private var photoUtil = photoUtil
 
     lateinit var selectedImages: MutableLiveData<ArrayList<Image>>
     val result = MutableLiveData(ImageResult(CallbackStatus.IDLE, arrayListOf()))
@@ -72,7 +68,7 @@ class ImagePickerViewModel(private val unallocatedRepository: CapturedPictureRep
     suspend fun fetchImagesFromExternalStorage(): ArrayList<Image> {
         if (contextRef.get() == null) return arrayListOf()
 
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatchers.io()) {
             val projection = arrayOf(
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
@@ -105,13 +101,18 @@ class ImagePickerViewModel(private val unallocatedRepository: CapturedPictureRep
                     val bucketId = cursor.getLong(bucketIdColumn)
                     val bucketName = cursor.getString(bucketNameColumn)
 
-                    val uri = ContentUris.withAppendedId(imageCollectionUri, id)
-                    if (bucketName.equals("RRM App Photos")){
-                        val image = Image(uri, name, bucketId, bucketName)
-                        images.add(image)
+                    var photoUri = ContentUris.withAppendedId(imageCollectionUri, id)
+//                    if (bucketName.equals("RRM Apps Photos")){
+//                        val image = Image(photoUri, name, bucketId, bucketName)
+//                        images.add(image)
+//                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        photoUri = setRequireOriginal(photoUri)
+                    }else{
+                        photoUri = setRequireOriginal(photoUri)
                     }
-//                    val image = Image(uri, name, bucketId, bucketName)
-//                    images.add(image)
+                    val image = Image(photoUri, name, bucketId, bucketName)
+                    images.add(image)
                 }
                 cursor.close()
                 images

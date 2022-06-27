@@ -5,7 +5,7 @@ import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.new_job_utils.models.PhotoType
 
-class LinkCaptureToJobItemEstimateUseCase(
+class LinkCaptureToJobtemEstimateUseCase(
     private val capturedPictureRepository: CapturedPictureRepository,
     private val jobCreationDataRepository: JobCreationDataRepository
 ) {

@@ -15,14 +15,9 @@ class CapturedPictureRepository(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) {
 
-    val capturedPhotos : LiveData<List<UnallocatedPhotoDTO>>?
+    val capturedPhotos : LiveData<List<UnallocatedPhotoDTO>>? = appDb.getUnallocatedPhotoDao().getAllPhotos()
 
     val searchResults = MutableLiveData<List<UnallocatedPhotoDTO>>()
-
-    // createUnallocatedPhoto
-    init {
-        capturedPhotos = appDb.getUnallocatedPhotoDao().getAllPhotos()
-    }
 
     val coroutineScope = CoroutineScope(dispatchers.main())
 

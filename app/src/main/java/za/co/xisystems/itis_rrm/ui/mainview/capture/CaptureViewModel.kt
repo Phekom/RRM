@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
+import za.co.xisystems.itis_rrm.data._commons.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.UnallocatedPhotoDTO
 import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
@@ -22,7 +23,6 @@ import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.utils.DateUtil
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-import za.co.xisystems.itis_rrm.utils.SqlLitUtils
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.lazyDeferred
 import java.io.File
@@ -91,41 +91,6 @@ class CaptureViewModel(
         )
     }
 
-//    fun createUnallocatedPhoto(
-//        filenamePath: Map<String, String>,
-//        currentLocation: LocationModel,
-//        pointLocation: Double
-//    ) = viewModelScope.launch(ioContext) {
-//
-//        val photoId = SqlLitUtils.generateUuid()
-//        val bitmap = photoUtil.getPhotoBitmapFromFile(
-//            Uri.fromFile(File(filenamePath["path"]!!)),
-//            PhotoQuality.ORIGINAL
-//        )
-//        val newPhoto = UnallocatedPhotoDTO(
-//            id = 0,
-//            descr = "Watch this space for TFLite predictions",
-//            filename = filenamePath["filename"]!!,
-//            photoDate = DateUtil.dateToString(Date())!!,
-//            photoId = photoId,
-//            photoLatitude = currentLocation.latitude,
-//            photoLongitude = currentLocation.longitude,
-//            kmMarker = 0.0,
-//            photoPath = filenamePath["path"]!!,
-//            recordSynchStateId = 0,
-//            recordVersion = 0,
-//            routeMarker = currentLocation.toString(),
-//            allocated = false,
-//            pxHeight = bitmap?.height ?: -1,
-//            pxWidth = bitmap?.width ?: -1
-//        )
-//
-//        capturedPicsRepository.insertUnallocatedPhoto(newPhoto)
-//        bitmap?.recycle()
-//        withContext(mainContext) {
-//            lastPhoto.value = XIEvent(newPhoto)
-//        }
-//    }
 
     @Transaction
     private fun eraseExistingPhoto(photoId: String, fileName: String, photoPath: String) =

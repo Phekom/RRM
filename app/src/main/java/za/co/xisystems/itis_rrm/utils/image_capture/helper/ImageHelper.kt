@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.utils.image_capture.helper
 
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
 
@@ -61,7 +62,7 @@ object ImageHelper {
     }
 
     fun getImageCollectionUri(): Uri {
-        return if (DeviceHelper.isMinSdk29) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     }
 }

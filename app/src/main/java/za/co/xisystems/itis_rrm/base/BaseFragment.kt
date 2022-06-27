@@ -59,7 +59,7 @@ abstract class BaseFragment(
 ) : Fragment(), IProgressView, DIAware {
     override val di by lazy { (requireActivity().applicationContext as MainApp).di }
 
-    private lateinit var sharedViewModel: SharedViewModel
+    lateinit var sharedViewModel: SharedViewModel
     private val shareFactory: SharedViewModelFactory by instance()
     private val armoury: XIArmoury by instance()
     protected var coordinator: View? = null

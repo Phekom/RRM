@@ -17,6 +17,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.KeyEvent
@@ -158,23 +159,36 @@ class EstimatePhotoFragment : LocationFragment() {
                 enhancedLocation,
                 locationMatcherResult.keyPoints,
             )
-
 //            updateCamera(enhancedLocation)
         }
     }
-    private var images = ArrayList<Image>()
+
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
     private var _ui : FragmentPhotoEstimateBinding? = null
     private val ui get() = _ui!!
+
+    private var images = ArrayList<Image>()
     private var imageProvider = ImageProvider.CAMERA
     private var imageProviderInterceptor: ((ImageProvider) -> Unit)? = null
     private var dismissListener: DismissListener? = null
     private val launcher = registerImagePicker {
         uiScope.launch(dispatchers.io()) {
             images = it
-            val uri = photoUtil.getPhotoPathFromExternalDirectory(images[0].name)
-            processAndSetImage(uri, "GALLERY")
+            if (images.isEmpty()) {
+                Looper.prepare()
+                extensionToast(
+                    title = "Error Missing Image",
+                    message = "No Image Seleted.",
+                    style = ToastStyle.DELETE,
+                    position = ToastGravity.BOTTOM,
+                    duration = ToastDuration.LONG
+                )
+            }else{
+                val uri = photoUtil.getPhotoPathFromExternalDirectory(images[0].name)
+                processAndSetImage(uri, "GALLERY")
+            }
+
         }
     }
 
@@ -339,7 +353,6 @@ class EstimatePhotoFragment : LocationFragment() {
             setTitle( getString(R.string.edit_estimate))
             setOnBackClickListener(backClickListener)
         }
-
         return ui.root
     }
 
@@ -497,23 +510,24 @@ class EstimatePhotoFragment : LocationFragment() {
         location.apply {
             when {
                 hasAccuracy() -> {
-                    if (accuracy < 20.0F ){
+//                    if (accuracy < 20.0F ){
                         _ui?.group13loading?.visibility = View.GONE
                         _ui?.linearlayouthorizon?.visibility = View.VISIBLE
                         _ui?.lowBtns?.visibility = View.VISIBLE
                         _ui?.photoLin?.visibility = View.VISIBLE
                     // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
-                    }else{
-                        _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
-                        _ui?.lowBtns?.visibility = View.INVISIBLE
-                        _ui?.group13loading?.visibility = View.VISIBLE
-                        _ui?.textViewloading?.setText(R.string.updating_accuracy)
-                        extensionToast(
-                            message = "GPS Location Accuracy is $accuracy \n and Not Good For Validation!\n Please Stand In One Position",
-                            style = ToastStyle.WARNING,
-                            position = ToastGravity.BOTTOM
-                        )
-                    }
+//                    }else{
+//                        _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
+//                        _ui?.lowBtns?.visibility = View.INVISIBLE
+//                        _ui?.group13loading?.visibility = View.VISIBLE
+//                        _ui?.textViewloading?.setText(R.string.updating_accuracy)
+//                        extensionToast(
+//                            title = "GPS Location Accuracy is $accuracy OR Lower",
+//                            message = "And Not Good For Validation!\nPlease Stand In One Position",
+//                            style = ToastStyle.WARNING,
+//                            position = ToastGravity.BOTTOM
+//                        )
+//                    }
                 }
                 else ->
                     ToastUtils().toastShort(requireContext(), "GPS Location Accuracy Not Available At this place")
@@ -1037,8 +1051,7 @@ class EstimatePhotoFragment : LocationFragment() {
         estimateLocation: LocationModel,
         filePath: Map<String, String>,
         itemidPhototype: Map<String, String>,
-        imageFileName : String
-    ) = withContext(uiScope.coroutineContext) {
+        imageFileName : String ) = withContext(uiScope.coroutineContext) {
 
         val itemId = item?.itemId ?: itemidPhototype["itemId"]
 
