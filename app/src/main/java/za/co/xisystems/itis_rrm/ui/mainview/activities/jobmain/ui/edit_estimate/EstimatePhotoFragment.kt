@@ -510,24 +510,24 @@ class EstimatePhotoFragment : LocationFragment() {
         location.apply {
             when {
                 hasAccuracy() -> {
-//                    if (accuracy < 20.0F ){
+                    if (accuracy < 22.0F ){
                         _ui?.group13loading?.visibility = View.GONE
                         _ui?.linearlayouthorizon?.visibility = View.VISIBLE
                         _ui?.lowBtns?.visibility = View.VISIBLE
                         _ui?.photoLin?.visibility = View.VISIBLE
                     // ToastUtils().toastShort(requireContext(), location.accuracy.toString())
-//                    }else{
-//                        _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
-//                        _ui?.lowBtns?.visibility = View.INVISIBLE
-//                        _ui?.group13loading?.visibility = View.VISIBLE
-//                        _ui?.textViewloading?.setText(R.string.updating_accuracy)
-//                        extensionToast(
-//                            title = "GPS Location Accuracy is $accuracy OR Lower",
-//                            message = "And Not Good For Validation!\nPlease Stand In One Position",
-//                            style = ToastStyle.WARNING,
-//                            position = ToastGravity.BOTTOM
-//                        )
-//                    }
+                    }else{
+                        _ui?.linearlayouthorizon?.visibility = View.INVISIBLE
+                        _ui?.lowBtns?.visibility = View.INVISIBLE
+                        _ui?.group13loading?.visibility = View.VISIBLE
+                        _ui?.textViewloading?.setText(R.string.updating_accuracy)
+                        extensionToast(
+                            title = "GPS Location Accuracy is $accuracy OR Higher",
+                            message = "And Not Good For Validation!\nPlease Stand In One Position",
+                            style = ToastStyle.WARNING,
+                            position = ToastGravity.BOTTOM
+                        )
+                    }
                 }
                 else ->
                     ToastUtils().toastShort(requireContext(), "GPS Location Accuracy Not Available At this place")

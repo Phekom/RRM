@@ -29,15 +29,7 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.AppDatabase
 import za.co.xisystems.itis_rrm.data.localDB.dao.JobDao
-import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WorkflowJobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -520,6 +512,18 @@ class WorkDataRepository(
     ): List<JobItemEstimateDTO> {
         return withContext(dispatchers.io()) {
             appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID)
+        }
+    }
+
+    suspend fun getParentSectionItem(itemCode: String?): SectionItemDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getSectionItemDao().getParentSectionItem(itemCode)
+        }
+    }
+
+    suspend fun getProjectItemForProjectItemId(projectItemId: String): ProjectItemDTO {
+        return withContext(dispatchers.io()) {
+            appDb.getProjectItemDao().getProjectItemForProjectItemId(projectItemId)
         }
     }
 

@@ -51,7 +51,6 @@ object ImageHelper {
         return indexes
     }
 
-
     fun isGifFormat(image: Image): Boolean {
         val fileName = image.name;
         val extension = if (fileName.contains(".")) {
@@ -62,7 +61,9 @@ object ImageHelper {
     }
 
     fun getImageCollectionUri(): Uri {
-        return if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            }
         else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     }
 }

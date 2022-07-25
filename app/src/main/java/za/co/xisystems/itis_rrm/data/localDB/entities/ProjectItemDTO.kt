@@ -49,6 +49,8 @@ data class ProjectItemDTO(
     val itemId: String,
     @SerializedName("Descr")
     val descr: String?,
+    @SerializedName("ParentDescr")
+    val parentDescr: String?, //"Repair of existing fence of greater than 100 m lengths:"
     @SerializedName("ItemCode")
     val itemCode: String?,
     @Nullable
@@ -77,6 +79,7 @@ data class ProjectItemDTO(
         id = parcel.readInt(),
         itemId = parcel.readString()!!,
         descr = parcel.readString(),
+        parentDescr = parcel.readString(),
         itemCode = parcel.readString(),
         itemSections = arrayListOf<ItemSectionDTO>().apply {
             parcel.readList(this.toList(), ItemSectionDTO::class.java.classLoader)
@@ -96,6 +99,7 @@ data class ProjectItemDTO(
         parcel.writeInt(id)
         parcel.writeString(itemId)
         parcel.writeString(descr)
+        parcel.writeString(parentDescr)
         parcel.writeString(itemCode)
         parcel.writeDouble(tenderRate)
         parcel.writeString(uom)

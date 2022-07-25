@@ -30,12 +30,7 @@ import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobEstimateWorksPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.WfWorkStepDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.WorkDataRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -127,9 +122,21 @@ class WorkViewModel(
         }
     }
 
+    suspend fun getProjectItemForProjectItemId(projectItemId: String): ProjectItemDTO {
+        return withContext(ioContext) {
+            workDataRepository.getProjectItemForProjectItemId(projectItemId)
+        }
+    }
+
     suspend fun getDescForProjectItemId(projectItemId: String): String {
         return withContext(ioContext) {
             workDataRepository.getProjectItemDescription(projectItemId)
+        }
+    }
+
+    suspend fun getParentSectionItem(itemCode: String?): SectionItemDTO {
+        return withContext(ioContext) {
+            workDataRepository.getParentSectionItem(itemCode)
         }
     }
 

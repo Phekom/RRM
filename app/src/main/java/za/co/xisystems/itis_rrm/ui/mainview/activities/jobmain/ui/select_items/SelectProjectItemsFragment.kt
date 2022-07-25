@@ -78,7 +78,7 @@ class SelectProjectItemsFragment : BaseFragment() {
             val sectionItems = selectItemsViewModel.getSectionItemsForProject2(contractVoId)
             binding.dataLoading2.visibility = View.VISIBLE
 
-            sectionItems.observe(viewLifecycleOwner, { sectionData ->
+            sectionItems.observe(viewLifecycleOwner) { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
                 binding.dataLoading2.visibility = View.GONE
                 for (item in sectionData.indices) {
@@ -98,7 +98,7 @@ class SelectProjectItemsFragment : BaseFragment() {
                                 binding.itemRecyclerView.startAnimation(bounce_1000)
                             }
                             selectedSectionItem = item
-                            setRecyclerItems2(contractVoId, item.sectionItemId, )
+                            setRecyclerItems2(contractVoId, item.sectionItemId,)
                         }
                     }
                 )
@@ -114,7 +114,7 @@ class SelectProjectItemsFragment : BaseFragment() {
                     animate = true
                     false
                 }
-            })
+            }
         }
     }
 
@@ -123,7 +123,7 @@ class SelectProjectItemsFragment : BaseFragment() {
             val sectionItems = selectItemsViewModel.getSectionItemsForProject(projectId)
             binding.dataLoading2.visibility = View.VISIBLE
 
-            sectionItems.observe(viewLifecycleOwner, { sectionData ->
+            sectionItems.observe(viewLifecycleOwner) { sectionData ->
                 val sectionSelections = arrayOfNulls<String?>(sectionData.size)
                 binding.dataLoading2.visibility = View.GONE
                 for (item in sectionData.indices) {
@@ -159,7 +159,7 @@ class SelectProjectItemsFragment : BaseFragment() {
                     animate = true
                     false
                 }
-            })
+            }
         }
     }
 

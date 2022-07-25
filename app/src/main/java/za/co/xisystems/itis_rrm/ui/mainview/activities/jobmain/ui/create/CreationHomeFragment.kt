@@ -114,11 +114,7 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             .addCallback(this, callback)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _ui = FragmentCreationHomeBinding.inflate(inflater, container, false)
         _ui?.toolbar?.apply {
             setOnBackClickListener(backClickListener)
@@ -386,10 +382,7 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
         return createdJob
     }
 
-    private fun setContractAndProjectSelection(
-        newJob: JobDTO?,
-        view: View
-    ) {
+    private fun setContractAndProjectSelection(newJob: JobDTO?, view: View ) {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = CreationHomeFragmentDirections
@@ -708,7 +701,6 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             startActivity(home)
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

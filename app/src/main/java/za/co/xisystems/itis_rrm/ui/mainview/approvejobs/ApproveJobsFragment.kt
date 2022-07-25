@@ -197,10 +197,10 @@ class ApproveJobsFragment : BaseFragment() {
     private suspend fun fetchJobsFromServices() {
         try {
             val freshJobs = approveViewModel.offlineUserTaskList.await()
-            freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, {
+            freshJobs.distinctUntilChanged().observeOnce(viewLifecycleOwner) {
                 _ui?.jobsSwipeToRefresh?.isRefreshing = false
                 protectedFetch(veiled = true, { fetchLocalJobs() }, { retryFetchRemoteJobs() })
-            })
+            }
         } catch (throwable: Throwable) {
             val message = "Failed to retrieve remote jobs: ${throwable.message ?: XIErrorHandler.UNKNOWN_ERROR}"
             Timber.e(throwable, message)

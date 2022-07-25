@@ -32,15 +32,16 @@ interface ProjectItemDao {
 
     @Query(
         "INSERT INTO PROJECT_ITEM_TABLE " +
-            "(itemId ,itemCode,descr, itemSections, tenderRate, uom, " +
+            "(itemId ,itemCode,descr,parentDescr, itemSections, tenderRate, uom, " +
             "workflowId,sectionItemId, quantity, estimateId, projectId) " +
-            "VALUES (:itemId, :itemCode,:descr, :itemSections, :tenderRate, " +
+            "VALUES (:itemId, :itemCode,:descr,:parentDescr, :itemSections, :tenderRate, " +
             ":uom, :workflowId, :sectionItemId, :quantity, :estimateId, :projectId)"
     )
     fun insertItem(
         itemId: String,
         itemCode: String?,
         descr: String?,
+        parentDescr: String?,
         itemSections: ArrayList<ItemSectionDTO> = arrayListOf(),
         tenderRate: Double,
         uom: String?,
@@ -53,6 +54,10 @@ interface ProjectItemDao {
 
     @Query("SELECT descr FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getProjectItemDescription(itemId: String): String
+
+    @Query("SELECT * FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
+    fun getProjectItemForProjectItemId(itemId: String): ProjectItemDTO
+
 
     @Query("SELECT uom FROM PROJECT_ITEM_TABLE WHERE itemId = :itemId")
     fun getUOMForProjectItemId(itemId: String): String?

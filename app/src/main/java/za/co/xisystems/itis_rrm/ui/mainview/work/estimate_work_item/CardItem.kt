@@ -29,9 +29,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastDuration
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
-import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.databinding.WorkListItemBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.services.LocationModel
@@ -44,14 +42,14 @@ import za.co.xisystems.itis_rrm.utils.Coroutines
 
 open class CardItem(
     val activity: FragmentActivity?,
-    val desc: String,
+    val projectItem : ProjectItemDTO,
     val qty: String,
     val rate: String,
     val estimateId: String,
     val workViewModel: WorkViewModel,
     val jobItemEstimate: JobItemEstimateDTO,
     val job: JobDTO,
-    val myLocation: LocationModel?,
+    val myLocation: LocationModel?
 ) : BindableItem<WorkListItemBinding>() {
     var selectedLocationPoint: Point? = null
     var estimatePhotoStart: JobItemEstimatesPhotoDTO? = null
@@ -77,6 +75,55 @@ open class CardItem(
                     estimate.estimateId
                 )
                 Navigation.findNavController(view!!).navigate(navDirection)
+            }
+        }
+    }
+
+    /**
+     * Perform any actions required to set up the view for display.
+     *
+     * @param viewBinding The ViewBinding to bind
+     * @param position The adapter position
+     */
+    override fun bind(viewBinding: WorkListItemBinding, position: Int) {
+//        val projectItem = workViewModel.getProjectItemForProjectItemId(item.projectItemId!!)
+//        val itemCode = projectItem.itemCode?.split(".")?.get(0)+"0"
+//        val sectionItem = workViewModel.getParentSectionItem(item.projectItemId!!, itemCode)
+        viewBinding.apply {
+
+            Coroutines.main {
+//                val itemCode = projectItem.itemCode?.split(".")?.get(0)+"0"
+//                val sectionItem = workViewModel.getParentSectionItem(itemCode)
+                estimatePhotoStart = workViewModel.getEstimateStartPhotoForId(jobItemEstimate.estimateId)
+                expandableChildTextView.text = projectItem.descr
+                expandableParentTextView.text = projectItem.parentDescr
+//                ToastUtils().toastLong(activity, sectionItem.description)
+                qtyTextView.text = qty
+                lineAmountTextView.text = rate
+                when {
+                    myLocation == null -> {
+                        activity!!.extensionToast(
+                            title = "Missing location",
+                            message = "Please turn on your location services and try again",
+                            style = ToastStyle.WARNING,
+                            position = ToastGravity.CENTER,
+                            duration = ToastDuration.LONG
+                        )
+                    }
+                    estimatePhotoStart == null ||
+                        estimatePhotoStart?.photoLongitude == null ||
+                        estimatePhotoStart?.photoLatitude == null -> {
+                        activity!!.extensionToast(
+                            title = "Missing photographs",
+                            message = "Please download this job again. Pull down to refresh",
+                            style = ToastStyle.WARNING,
+                            position = ToastGravity.CENTER,
+                            duration = ToastDuration.LONG
+                        )
+                    }
+
+                    else -> navigateOrWork(myLocation)
+                }
             }
         }
     }
@@ -118,50 +165,6 @@ open class CardItem(
             }
             create()
             show()
-        }
-    }
-
-    /**
-     * Perform any actions required to set up the view for display.
-     *
-     * @param viewBinding The ViewBinding to bind
-     * @param position The adapter position
-     */
-    override fun bind(viewBinding: WorkListItemBinding, position: Int) {
-
-        viewBinding.apply {
-
-            Coroutines.main {
-                estimatePhotoStart = workViewModel.getEstimateStartPhotoForId(jobItemEstimate.estimateId)
-                expandableChildTextView.text = desc
-                qtyTextView.text = qty
-                lineAmountTextView.text = rate
-                when {
-
-                    myLocation == null -> {
-                        activity!!.extensionToast(
-                            title = "Missing location",
-                            message = "Please turn on your location services and try again",
-                            style = ToastStyle.WARNING,
-                            position = ToastGravity.CENTER,
-                            duration = ToastDuration.LONG
-                        )
-                    }
-                    estimatePhotoStart == null ||
-                        estimatePhotoStart?.photoLongitude == null ||
-                        estimatePhotoStart?.photoLatitude == null -> {
-                        activity!!.extensionToast(
-                            title = "Missing photographs",
-                            message = "Please download this job again. Pull down to refresh",
-                            style = ToastStyle.WARNING,
-                            position = ToastGravity.CENTER,
-                            duration = ToastDuration.LONG
-                        )
-                    }
-
-                    else -> navigateOrWork(myLocation)
-                }
-            }
         }
     }
 

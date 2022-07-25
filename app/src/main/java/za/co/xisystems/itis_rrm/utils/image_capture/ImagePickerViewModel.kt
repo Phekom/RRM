@@ -2,9 +2,7 @@ package za.co.xisystems.itis_rrm.utils.image_capture
 
 import android.app.Application
 import android.content.ContentUris
-import android.os.Build
 import android.provider.MediaStore
-import android.provider.MediaStore.setRequireOriginal
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -65,6 +63,7 @@ class ImagePickerViewModel(
 
 
 
+
     suspend fun fetchImagesFromExternalStorage(): ArrayList<Image> {
         if (contextRef.get() == null) return arrayListOf()
 
@@ -102,15 +101,23 @@ class ImagePickerViewModel(
                     val bucketName = cursor.getString(bucketNameColumn)
 
                     var photoUri = ContentUris.withAppendedId(imageCollectionUri, id)
-//                    if (bucketName.equals("RRM Apps Photos")){
-//                        val image = Image(photoUri, name, bucketId, bucketName)
-//                        images.add(image)
-//                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        photoUri = setRequireOriginal(photoUri)
-                    }else{
-                        photoUri = setRequireOriginal(photoUri)
+                    if (bucketName.equals("RRM Apps Photos")){
+                        val image = Image(photoUri, name, bucketId, bucketName)
+                        images.add(image)
                     }
+
+
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                        if (bucketName.equals("RRM Apps Photos")){
+//                            val image = Image(photoUri, name, bucketId, bucketName)
+//                            images.add(image)
+//                        }
+//                        //photoUri = setRequireOriginal(photoUri)
+//                    }else {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                            photoUri = setRequireOriginal(photoUri)
+//                        }
+//                    }
                     val image = Image(photoUri, name, bucketId, bucketName)
                     images.add(image)
                 }

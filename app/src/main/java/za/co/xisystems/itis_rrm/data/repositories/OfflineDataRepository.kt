@@ -665,6 +665,7 @@ class OfflineDataRepository(
                             itemId = item.itemId,
                             itemCode = item.itemCode,
                             descr = item.descr,
+                            parentDescr = item.parentDescr,
                             itemSections = item.itemSections,
                             tenderRate = item.tenderRate,
                             uom = item.uom,

@@ -125,7 +125,7 @@ class MeasureFragment : BaseFragment() {
             ActivityIdConstants.JOB_ESTIMATE
         )
 
-        itemEstimateData.observeOnce(viewLifecycleOwner, { itemEstimateList ->
+        itemEstimateData.observeOnce(viewLifecycleOwner) { itemEstimateList ->
 
             if (itemEstimateList.isNullOrEmpty()) {
                 _ui?.noData?.visibility = View.VISIBLE
@@ -140,7 +140,7 @@ class MeasureFragment : BaseFragment() {
                 _ui?.noData?.visibility = View.GONE
                 initRecyclerView(jobHeaders.toMeasureListItems())
             }
-        })
+        }
     }
 
     private fun swipeToRefreshInit() {
@@ -162,7 +162,7 @@ class MeasureFragment : BaseFragment() {
         try {
             Coroutines.main {
                 val jobs = measureViewModel.offlineUserTaskList.await()
-                jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner, { works ->
+                jobs.distinctUntilChanged().observeOnce(viewLifecycleOwner) { works ->
                     if (works.isNullOrEmpty()) {
                         _ui?.noData?.visibility = View.VISIBLE
                         _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
@@ -173,7 +173,7 @@ class MeasureFragment : BaseFragment() {
                             fetchEstimateMeasures()
                         }
                     }
-                })
+                }
             }
         } catch (t: Throwable) {
             val fetchError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)
@@ -202,7 +202,7 @@ class MeasureFragment : BaseFragment() {
                 ActivityIdConstants.MEASURE_PART_COMPLETE
             )
 
-            jobEstimateData.distinctUntilChanged().observeOnce(viewLifecycleOwner, { jos ->
+            jobEstimateData.distinctUntilChanged().observeOnce(viewLifecycleOwner) { jos ->
                 if (jos.isNullOrEmpty()) {
                     _ui?.noData?.visibility = View.VISIBLE
                     _ui?.estimationsToBeMeasuredListView?.visibility = View.GONE
@@ -215,7 +215,7 @@ class MeasureFragment : BaseFragment() {
                     Timber.d("Job measures detected: ${measureItems.size}")
                     initRecyclerView(measureItems.toMeasureListItems())
                 }
-            })
+            }
         }
     }
 

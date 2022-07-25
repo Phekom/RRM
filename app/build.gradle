@@ -15,7 +15,6 @@ plugins {
     id "deploygate"
     id "eu.davidea.grabver"
     id "org.sonarqube"
-
 }
 
 versioning {
@@ -114,7 +113,6 @@ android {
                         "room.incremental"     : "true",
                         "room.expandProjection": "true"
                 ]
-
             }
         }
     }

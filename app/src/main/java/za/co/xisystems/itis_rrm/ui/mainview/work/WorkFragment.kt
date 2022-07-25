@@ -25,14 +25,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.whenCreated
 import androidx.lifecycle.whenResumed
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.ExpandableGroup
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -399,21 +397,22 @@ class WorkFragment : LocationFragment() {
         val receiver = this
         uiScope.launch(uiScope.coroutineContext) {
             try {
-                val desc =
-                    workViewModel.getDescForProjectItemId(item.projectItemId!!)
+//              val desc = workViewModel.getDescForProjectItemId(item.projectItemId!!)
+                val projectItem = workViewModel.getProjectItemForProjectItemId(item.projectItemId!!)
+
+//                ToastUtils().toastShort(requireContext(), sectionItem.description!!)
+
                 val uom = workViewModel.getUOMForProjectItemId(item.projectItemId!!)
                 val qty = item.qty.toString()
                 val rate = item.lineRate
                 val estimateId = item.estimateId
-                val friendlyUOM = if (uom.isNullOrEmpty()) {
-                    "each"
-                } else {
+                val friendlyUOM = if (uom.isNullOrEmpty()) { "each" } else {
                     this@WorkFragment.requireContext().uomForUI(uom)
                 }
 
                 val cardItem = CardItem(
                     activity = activity,
-                    desc = desc,
+                    projectItem = projectItem,
                     qty = "$qty $friendlyUOM",// @ ${DecimalFormat("#0.00").format(rate)} $friendlyUOM",
                     rate = DecimalFormat("#0.00").format(rate * qty.toDouble()),
                     estimateId = estimateId,
