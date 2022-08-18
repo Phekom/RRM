@@ -345,25 +345,31 @@ class CaptureGalleryFragment : LocationFragment() {
         }
     }
 
-    private suspend fun persistLocatedPhoto(
-//        currentLocation: LocationModel,
-//        imageUri: Uri
-//    ) {
-//        Coroutines.io {
-//            private suspend fun processAndSetImage(
-                currentLocation: LocationModel,
-                imageUri: Uri
+    private suspend fun persistLocatedPhoto( currentLocation: LocationModel, imageUri: Uri ) = withContext(uiScope.coroutineContext) {
 
-            ) = withContext(uiScope.coroutineContext) {
-
-
-                itemIdPhotoType["itemId"] = ""
-//            }
+            itemIdPhotoType["itemId"] = ""
             itemIdPhotoType["type"] = "unallocated"
 
-            filenamePath = photoUtil.saveImageToInternalStorage2(
-                 requireContext(),imageUri
-            )!! as HashMap<String, String>
+        var myresult: String = imageUri.path ?: ""
+        // get filename + ext of path
+        val cut1 = myresult.lastIndexOf('/')
+        if (cut1 != -1) myresult = myresult.substring(cut1 + 1)
+        val fileName = myresult
+
+        filenamePath = photoUtil.saveUnAllocatedImage(
+            requireContext(), config, fileName, imageUri, object : OnImageReadyListener {
+                override fun onImageReady(images: java.util.ArrayList<Image>) {
+                    finishCaptureImage(images)
+                }
+                override fun onImageNotReady() {
+                    finishCaptureImage(arrayListOf())
+                }
+            }) as HashMap<String, String>
+
+
+//            filenamePath = photoUtil.saveImageToInternalStorage2(
+//                 requireContext(),imageUri
+//            )!! as HashMap<String, String>
 
             val photo = captureViewModel.createUnallocatedPhoto(
                 filenamePath = filenamePath,

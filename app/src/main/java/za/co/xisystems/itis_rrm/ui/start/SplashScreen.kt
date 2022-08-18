@@ -216,8 +216,7 @@ class SplashScreen : AppCompatActivity(), DIAware {
         val resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity.applicationContext)
         if (resultCode != ConnectionResult.SUCCESS) {
             // This dialog will help the user update to the latest GooglePlayServices
-            val dialog =
-                GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
+            val dialog = GoogleApiAvailability.getInstance().getErrorDialog(activity, resultCode, 0)
             dialog?.show()
         }
         if (PermissionController.checkPermissionsEnabled(applicationContext)) {

@@ -167,10 +167,10 @@ open class ProjectItem(
     ) {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
-                val navDirections = AddProjectItemsFragmentDirections
-                        .actionNavigationAddItemsToEstimatePhotoFragment(newJob?.jobId, item.itemId, jobItemEstimate?.estimateId,newJob?.contractVoId,null)
-                Navigation.findNavController(view)
-                    .navigate(navDirections)
+                val navDirections =
+                    AddProjectItemsFragmentDirections.actionNavigationAddItemsToEstimatePhotoFragment(
+                        newJob, item.itemId, jobItemEstimate?.estimateId,newJob?.contractVoId,null)
+                Navigation.findNavController(view).navigate(navDirections)
             }
         }
     }

@@ -85,61 +85,119 @@ class DeferredLocationViewModel(
 
         locationJob.jobItemEstimates.forEachIndexed estimate@{ estIndex, uncheckedEstimate ->
             uncheckedEstimate.jobItemEstimatePhotos.forEachIndexed photo@{ phIndex, uncheckedPhoto ->
+                if (locationJob.sectionId.isNullOrEmpty()){
+                    val projectSectionId = jobCreationDataRepository.getProjectSectionIdForJobId(locationJob.jobId)
+//                    val prjSction = jobCreationDataRepository.getProjectSectionForId(projectSectionId)
+//                    prjSction.section
+                    val locationQuery = LocationValidation(
+                        projectId = locationJob.projectId!!,
+                        jobId = locationJob.jobId,
+                        estimateId = uncheckedEstimate.estimateId,
+                        userId = locationJob.userId.toString(),
+                        longitude = uncheckedPhoto.photoLongitude!!.round(8),
+                        latitude = uncheckedPhoto.photoLatitude!!.round(8),
+                        sectionId =  projectSectionId
+                    )
+                    val routeSectionResponse = getRouteSectionPoint(
+                        locationQuery
+                    )
 
-                val locationQuery = LocationValidation(
-                    projectId = locationJob.projectId!!,
-                    jobId = locationJob.jobId,
-                    estimateId = uncheckedEstimate.estimateId,
-                    userId = locationJob.userId.toString(),
-                    longitude = uncheckedPhoto.photoLongitude!!.round(8),
-                    latitude = uncheckedPhoto.photoLatitude!!.round(8),
-                    sectionId =  locationJob.sectionId
-                )
-                val routeSectionResponse = getRouteSectionPoint(
-                    locationQuery
-                )
+                    when (routeSectionResponse) {
 
-                when (routeSectionResponse) {
+                        is XIResult.Error -> {
+                            processRouteSectionError(
+                                routeSectionResponse,
+                                uncheckedPhoto,
+                                uncheckedEstimate,
+                                locationJob,
+                                estIndex,
+                                phIndex
+                            )
+                        }
 
-                    is XIResult.Error -> {
-                        processRouteSectionError(
-                            routeSectionResponse,
-                            uncheckedPhoto,
-                            uncheckedEstimate,
-                            locationJob,
-                            estIndex,
-                            phIndex
-                        )
-                    }
+                        is XIResult.Success<LocationValidation> -> {
+                            val routeSectionQuery = routeSectionResponse.data
+                            val projectSectionIdResponse = deferredLocationRepository.saveRouteSectionPoint(
+                                routeSectionQuery
+                            )
 
-                    is XIResult.Success<LocationValidation> -> {
-                        val routeSectionQuery = routeSectionResponse.data
-                        val projectSectionIdResponse = deferredLocationRepository.saveRouteSectionPoint(
-                            routeSectionQuery
-                        )
+                            processAndPersist(
+                                locationResult = projectSectionIdResponse,
+                                job = locationJob,
+                                uncheckedEstimate = uncheckedEstimate,
+                                uncheckedPhoto = uncheckedPhoto,
+                                estIndex = estIndex,
+                                phIndex = phIndex
+                            )
+                            if (projectSectionIdResponse is XIResult.Error) {
+                                handleLocationError(projectSectionIdResponse)
+                            } else if (projectSectionIdResponse is XIResult.Success &&
+                                validProjectSectionId.isNullOrBlank()
+                            ) {
+                                validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
 
-                        processAndPersist(
-                            locationResult = projectSectionIdResponse,
-                            job = locationJob,
-                            uncheckedEstimate = uncheckedEstimate,
-                            uncheckedPhoto = uncheckedPhoto,
-                            estIndex = estIndex,
-                            phIndex = phIndex
-                        )
-                        if (projectSectionIdResponse is XIResult.Error) {
-                            handleLocationError(projectSectionIdResponse)
-                        } else if (projectSectionIdResponse is XIResult.Success &&
-                            validProjectSectionId.isNullOrBlank()
-                        ) {
-                            validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
-
+                            }
+                        }
+                        else -> {
+                            Timber.d("^*^ $routeSectionResponse")
                         }
                     }
-                    else -> {
-                        Timber.d("^*^ $routeSectionResponse")
+
+                }else{
+                    val locationQuery = LocationValidation(
+                        projectId = locationJob.projectId!!,
+                        jobId = locationJob.jobId,
+                        estimateId = uncheckedEstimate.estimateId,
+                        userId = locationJob.userId.toString(),
+                        longitude = uncheckedPhoto.photoLongitude!!.round(8),
+                        latitude = uncheckedPhoto.photoLatitude!!.round(8),
+                        sectionId =  locationJob.sectionId
+                    )
+                    val routeSectionResponse = getRouteSectionPoint(
+                        locationQuery
+                    )
+
+                    when (routeSectionResponse) {
+
+                        is XIResult.Error -> {
+                            processRouteSectionError(
+                                routeSectionResponse,
+                                uncheckedPhoto,
+                                uncheckedEstimate,
+                                locationJob,
+                                estIndex,
+                                phIndex
+                            )
+                        }
+
+                        is XIResult.Success<LocationValidation> -> {
+                            val routeSectionQuery = routeSectionResponse.data
+                            val projectSectionIdResponse = deferredLocationRepository.saveRouteSectionPoint(
+                                routeSectionQuery
+                            )
+
+                            processAndPersist(
+                                locationResult = projectSectionIdResponse,
+                                job = locationJob,
+                                uncheckedEstimate = uncheckedEstimate,
+                                uncheckedPhoto = uncheckedPhoto,
+                                estIndex = estIndex,
+                                phIndex = phIndex
+                            )
+                            if (projectSectionIdResponse is XIResult.Error) {
+                                handleLocationError(projectSectionIdResponse)
+                            } else if (projectSectionIdResponse is XIResult.Success &&
+                                validProjectSectionId.isNullOrBlank()
+                            ) {
+                                validProjectSectionId = projectSectionIdResponse.data.projectSectionId!!
+
+                            }
+                        }
+                        else -> {
+                            Timber.d("^*^ $routeSectionResponse")
+                        }
                     }
                 }
-
 
             }
 
@@ -204,7 +262,7 @@ class DeferredLocationViewModel(
             phIndex = phIndex
         )
 //        if (routeSectionResponse.exception is LocationException) {
-        if (routeSectionResponse.message.isNullOrEmpty()) {
+        if (routeSectionResponse.message.isEmpty()) {
             return // Process the next photo
         } else {
             pushNonLocationException(routeSectionResponse)

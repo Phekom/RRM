@@ -23,7 +23,7 @@ class DeferredLocationRepository(
 
     companion object {
         const val DISTANCE = 100.0
-        const val IN_BUFFER = -1.0
+        const val IN_BUFFER = 0.0//-1.0
     }
 
 

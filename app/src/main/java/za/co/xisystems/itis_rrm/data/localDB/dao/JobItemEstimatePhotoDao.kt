@@ -78,6 +78,9 @@ interface JobItemEstimatePhotoDao {
     @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename)")
     fun checkIfJobItemEstimatePhotoExistsByName(filename: String): Boolean
 
+    @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE estimateId = :estimateId)")
+    fun checkIfJobItemEstimatePhotoExistsByEstimateId(estimateId: String): Boolean
+
     @Query("SELECT EXISTS (SELECT * FROM JOB_ITEM_ESTIMATE_PHOTO WHERE filename = :filename AND  estimateId = :estimateId)")
     fun checkIfJobItemEstimatePhotoExistsByNameAndEstimateId(filename: String, estimateId: String): Boolean
 

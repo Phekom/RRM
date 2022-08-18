@@ -192,7 +192,6 @@ class OfflineDataRepository(
     }
 
 
-
     suspend fun getJobsFromActId(activityId: Int): List<JobDTO> {
         return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobsFromActId(activityId)
@@ -256,6 +255,7 @@ class OfflineDataRepository(
             appDb.getProjectDao().getProjectDescription(projectId)
         }
     }
+
 
     suspend fun getProjectItemDescription(projectItemId: String): String {
         return withContext(dispatchers.io()) {
@@ -342,11 +342,11 @@ class OfflineDataRepository(
         }
     }
 
-    private fun savePositionItems( positions: ArrayList<JobPositionDTO>) {
+    private fun savePositionItems(positions: ArrayList<JobPositionDTO>) {
         try {
             positions?.forEach { position ->
                 appDb.getJobPositionDao().insertJobPosition(position)
-               // postEvent(XIResult.ProgressUpdate("positions", sectionCount.toFloat() / sectionSize.toFloat()))
+                // postEvent(XIResult.ProgressUpdate("positions", sectionCount.toFloat() / sectionSize.toFloat()))
             }
             postEvent(XIResult.ProgressUpdate("positions", -1.0f))
         } catch (throwable: Throwable) {
@@ -400,9 +400,9 @@ class OfflineDataRepository(
         projectMax = 0
 
         createWorkflowSteps()
-        if (contracts.isEmpty()){
+        if (contracts.isEmpty()) {
             Timber.e("Error saving contracts: NO Contracts Available")
-        }else{
+        } else {
             try {
                 val validContracts = contracts.filter { contract ->
                     contract.projects.isNotEmpty() && contract.contractId.isNotBlank()
@@ -498,7 +498,7 @@ class OfflineDataRepository(
                         newContractVos = true
                     }
 
-                   // Timber.d("pr**: $contractCount / $contractMax contracts")
+                    // Timber.d("pr**: $contractCount / $contractMax contracts")
                     Timber.d("pr**: $contractVoCount / $contractVosMax contractVos")
 
                     postEvent(
@@ -562,7 +562,7 @@ class OfflineDataRepository(
                     updateProjectSections(project.projectSections, project)
 
                     updateVOItems(project.voItems, project)
-                  //updateProjectVoItems(contractVo.projectVos!!, contractVo)
+                    //updateProjectVoItems(contractVo.projectVos!!, contractVo)
 
                     Timber.d("pr**: $contractCount / $contractMax contracts")
                     Timber.d("pr**: $projectCount / $projectMax projects")
@@ -719,11 +719,11 @@ class OfflineDataRepository(
         voItems?.forEach { voItem ->
             if (!appDb.getVoItemDao().checkIfExistsProjectVoItem(voItem.projectVoId)) {
                 try {
-                    if (voItem.itemCode.isNullOrEmpty()){
+                    if (voItem.itemCode.isNullOrEmpty()) {
 //                        voItem.setVoApprovalNumber(project.nRAApprovalNumber)
 //                        voItem.setVoNumber(contractVo.voNumber)
                         appDb.getVoItemDao().insertProjectVoItem(voItem)
-                    }else{
+                    } else {
                         val pattern = Pattern.compile("(.*?)\\.")
                         val matcher = pattern.matcher(voItem.itemCode)
                         if (matcher.find()) {
@@ -804,23 +804,26 @@ class OfflineDataRepository(
 
 
         jobDTO?.let { job ->
-
-            if (!appDb.getJobDao().checkIfJobExist(job.jobId)) {
+            val jobID = DataConversion.toBigEndian(job.jobId).toString()
+            if (!appDb.getJobDao().checkIfJobExist(jobID)) {
                 val newcontractID = appDb.getProjectDao().getContractIdForProjectId(DataConversion.toBigEndian(job.projectId!!).toString())
+
                 job.run {
                     setJobId(DataConversion.toBigEndian(jobId))
                     setProjectId(DataConversion.toBigEndian(projectId))
                     if (newcontractID != null) {
-                        setContractId(DataConversion.toBigEndian(newcontractID))
+                        setContractId(newcontractID)//DataConversion.toBigEndian(newcontractID))
                     }
                     if (contractVoId != null) {
                         setContractVoId(DataConversion.toBigEndian(contractVoId))
                     }
-                    setTrackRouteId(DataConversion.toBigEndian(trackRouteId))
+                    if (trackRouteId != null) {
+                        setTrackRouteId(DataConversion.toBigEndian(trackRouteId))
+                    }
                 }
-                jobDTO.perfitemGroupId = DataConversion.toBigEndian(jobDTO.perfitemGroupId)
-                jobDTO.projectVoId = DataConversion.toBigEndian(jobDTO.projectVoId)
-                appDb.getJobDao().insertOrUpdateJob(jobDTO)
+                job.perfitemGroupId = DataConversion.toBigEndian(job.perfitemGroupId)
+                job.projectVoId = DataConversion.toBigEndian(job.projectVoId)
+                appDb.getJobDao().insertOrUpdateJob(job)
             }
 
             saveJobSections(job)
@@ -891,7 +894,6 @@ class OfflineDataRepository(
             if (!appDb.getJobSectionDao().checkIfJobSectionExist(jobSection.jobSectionId)) {
                 jobSection.setJobSectionId(DataConversion.toBigEndian(jobSection.jobSectionId))
             }
-
             jobSection.setProjectSectionId(DataConversion.toBigEndian(jobSection.projectSectionId))
             jobSection.setJobId(DataConversion.toBigEndian(jobSection.jobId))
             appDb.getJobSectionDao().insertJobSection(
@@ -1205,10 +1207,11 @@ class OfflineDataRepository(
         postValue(photoMeasure.photo, filename)
     }
 
+
     private suspend fun getPhotoForJobItemEstimate(filename: String) {
         val photoEstimate = apiRequest { api.getPhotoEstimate(filename) }
         savePhoto(photoEstimate.photo, filename)
-        
+
     }
 
     private fun sendMSg(uploadResponse: String?) {
@@ -1281,34 +1284,36 @@ class OfflineDataRepository(
 
     private fun insertEntity(entity: ToDoListEntityDTO, jobId: String) {
         Coroutines.io {
-
-            if (!appDb.getEntitiesDao()
-                    .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
-            ) {
-                appDb.getEntitiesDao().insertEntitie(
-                    DataConversion.bigEndianToString(entity.trackRouteId!!),
-                    if (entity.actionable) 1 else 0,
-                    entity.activityId,
-                    entity.currentRouteId,
-                    entity.data,
-                    entity.description,
-                    entity.entities,
-                    entity.entityName,
-                    entity.location,
-                    entity.primaryKeyValues,
-                    entity.recordVersion!!,
-                    jobId
-                )
-
-                for (primaryKeyValue in entity.primaryKeyValues) {
-                    appDb.getPrimaryKeyValueDao().insertPrimaryKeyValue(
-                        primaryKeyValue.primary_key,
-                        DataConversion.bigEndianToString(primaryKeyValue.pValue!!),
+            if (entity.trackRouteId != null) {
+                if (!appDb.getEntitiesDao()
+                        .checkIfEntitiesExist(DataConversion.bigEndianToString(entity.trackRouteId!!))
+                ) {
+                    appDb.getEntitiesDao().insertEntitie(
                         DataConversion.bigEndianToString(entity.trackRouteId!!),
-                        entity.activityId
+                        if (entity.actionable) 1 else 0,
+                        entity.activityId,
+                        entity.currentRouteId,
+                        entity.data,
+                        entity.description,
+                        entity.entities,
+                        entity.entityName,
+                        entity.location,
+                        entity.primaryKeyValues,
+                        entity.recordVersion!!,
+                        jobId
                     )
+
+                    for (primaryKeyValue in entity.primaryKeyValues) {
+                        appDb.getPrimaryKeyValueDao().insertPrimaryKeyValue(
+                            primaryKeyValue.primary_key,
+                            DataConversion.bigEndianToString(primaryKeyValue.pValue!!),
+                            DataConversion.bigEndianToString(entity.trackRouteId!!),
+                            entity.activityId
+                        )
+                    }
                 }
             }
+
         }
     }
 
@@ -1520,6 +1525,7 @@ class OfflineDataRepository(
     private fun postValue(photo: String?, fileName: String) {
         savePhoto(photo, fileName)
     }
+
 
     private fun savePhoto(encodedPhoto: String?, fileName: String) {
         Coroutines.io {

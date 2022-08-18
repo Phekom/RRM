@@ -299,8 +299,8 @@
         android:label="Photograph Estimates"
         tools:layout="@layout/fragment_photo_estimate">
         <argument
-            android:name="jobId"
-            app:argType="string"
+            android:name="job"
+            app:argType="za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO"
             app:nullable="true" />
 
         <argument

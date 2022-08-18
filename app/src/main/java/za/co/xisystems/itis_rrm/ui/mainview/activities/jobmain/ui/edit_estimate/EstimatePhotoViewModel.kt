@@ -12,6 +12,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoPotholeResponse
 import za.co.xisystems.itis_rrm.data.repositories.JobCreationDataRepository
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.domain.ContractSelector
@@ -101,6 +102,12 @@ class EstimatePhotoViewModel(
         }
     }
 
+    suspend fun getPotholePhoto(jobId: String?) : PhotoPotholeResponse {
+        return withContext(dispatchers.io()) {
+            jobCreationDataRepository.getPotholePhoto(jobId!!)
+        }
+    }
+
     suspend fun updateEstimatePhotos(
         estimateId: String,
         estimatePhotos: java.util.ArrayList<JobItemEstimatesPhotoDTO>
@@ -162,6 +169,10 @@ class EstimatePhotoViewModel(
     }
 
 
+    suspend fun checkIfJobItemEstimatePhotoExistsByEstimateId(estimateId: String) = withContext(ioContext) {
+        return@withContext jobCreationDataRepository.checkIfJobItemEstimatePhotoExistsByEstimateId(estimateId)
+    }
+
     fun setSectionId(inSectionId: String) {
         sectionId.value = inSectionId
     }
@@ -170,7 +181,11 @@ class EstimatePhotoViewModel(
         return@withContext jobCreationDataRepository.getEstimatePhotoByName(imageFileName)
     }
 
-
+    suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO {
+        return withContext(ioContext) {
+            jobCreationDataRepository.getEstimateStartPhotoForId(estimateId)
+        }
+    }
 
     suspend fun createItemEstimate(
         itemId: String?,

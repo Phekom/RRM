@@ -23,6 +23,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.localDB.views.SectionMarker
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoPotholeResponse
 import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
 import za.co.xisystems.itis_rrm.domain.*
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
@@ -534,8 +535,7 @@ class JobCreationDataRepository(
         photoQuality: PhotoQuality
     ): ByteArray {
         val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
-        val bitmap =
-            photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
+        val bitmap = photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
         return photoUtil.getCompressedPhotoWithExifInfo(
             bitmap!!,
             filename
@@ -630,9 +630,37 @@ class JobCreationDataRepository(
         }
     }
 
+    suspend fun getProjectSectionIdForJobId(jobId: String?): String {
+        return withContext(dispatchers.io()) {
+            appDb.getJobSectionDao().getProjectSectionId(jobId!!)
+        }
+    }
+
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(dispatchers.io()) {
             appDb.getProjectDao().getProjectCodeForId(projectId)
+        }
+    }
+
+    suspend fun getPotholePhoto(jobId: String) : PhotoPotholeResponse {
+        val photoPothole = apiRequest { api.getPotholePhoto(jobId) }
+        postValue(photoPothole.photo, photoPothole.fileName!!)
+        return withContext(dispatchers.io()) {
+            photoPothole
+        }
+    }
+
+    private fun postValue(photo: String?, fileName: String) {
+        savePhoto(photo, fileName)
+    }
+
+
+
+    private fun savePhoto(encodedPhoto: String?, fileName: String) {
+        Coroutines.io {
+            if (encodedPhoto != null && fileName.isNotBlank()) {
+                photoUtil.persistImageToLocal(encodedPhoto, fileName)
+            }
         }
     }
 
@@ -779,6 +807,16 @@ class JobCreationDataRepository(
     suspend fun checkIfPhotoExistsByNameAndEstimateId(imageFileName: String, estimateId: String):
             Boolean = withContext(dispatchers.io()) {
         return@withContext appDb.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByNameAndEstimateId(imageFileName,estimateId)
+    }
+
+    @Transaction
+    suspend fun checkIfJobItemEstimatePhotoExistsByEstimateId(estimateId: String):
+            Boolean = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobItemEstimatePhotoDao().checkIfJobItemEstimatePhotoExistsByEstimateId(estimateId)
+    }
+
+    suspend fun getEstimateStartPhotoForId(estimateId: String): JobItemEstimatesPhotoDTO = withContext(dispatchers.io()) {
+        return@withContext appDb.getJobItemEstimatePhotoDao().getEstimateStartPhotoForId(estimateId)
     }
 
     suspend fun getServiceHealth(): Boolean {

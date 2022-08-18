@@ -1,6 +1,7 @@
 package za.co.xisystems.itis_rrm.logging
 
 import android.util.Log
+import com.github.ajalt.timberkt.Timber
 
 //
 // Created by Shaun McDonald on 2020/03/27.
@@ -13,17 +14,16 @@ class LameCrashLibrary private constructor() {
         val TAG: String = LameCrashLibrary::javaClass.name
 
         fun log(priority: Int, tag: String?, message: String?) {
-            // TODO add log entry to circular buffer.
             Log.println(priority, tag, lameFix(message))
         }
 
         fun logWarning(t: Throwable?) {
-            Log.w(TAG, lameFix(t?.message))
+            Timber.tag(TAG).w(lameFix(t?.message))
             t?.printStackTrace()
         }
 
         fun logError(t: Throwable?) {
-            Log.e(TAG, lameFix(t?.message))
+            Timber.tag(TAG).e(lameFix(t?.message))
             t?.printStackTrace()
         }
 
