@@ -134,6 +134,13 @@ interface BaseConnectionApi {
     ): Response<PhotoMeasureResponse>
 
     @FormUrlEncoded
+    @POST("GetPotholePhoto")
+    suspend fun getPotholePhoto(
+        @Field("JobId") jobId: String
+    ): Response<PhotoPotholeResponse>
+
+
+    @FormUrlEncoded
     @POST("WorkflowMoveV2")
     suspend fun getWorkflowMove(
         @Field("UserId") userId: String,

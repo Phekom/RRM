@@ -41,7 +41,7 @@ class WorkStateItem(
         position: Int,
         viewBinding: ListSelectorBinding
     ) {
-        // TODO (Replace this when Dynamic workflow is Functional)
+        // TO_DO (Replace this when Dynamic workflow is Functional)
         when (jobItemWorks?.actId) {
             15 -> {
                 selected_position = 0
@@ -59,6 +59,7 @@ class WorkStateItem(
                 selected_position = 4
             }
         }
+        
         if (selected_position == position) {
             viewBinding.stateBack.setBackgroundColor(
                 ContextCompat.getColor(

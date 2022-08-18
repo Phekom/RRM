@@ -651,7 +651,7 @@ class PhotoUtil private constructor(
         val currentFilePath = rrmFileUri.path
         try {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val direct = File(config.rootDirectory.toString())
                 if (!direct.exists()) {
                     direct.mkdirs()
@@ -680,7 +680,7 @@ class PhotoUtil private constructor(
                     }
                     reset(context)
                 }
-            } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {                //These for devices running on android < Q
+            } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {                //These for devices running on android < Q
                 //Output stream
                 var fos: OutputStream? = null
 
@@ -762,7 +762,6 @@ class PhotoUtil private constructor(
             Timber.e(ex, "Failed to create image file $imageFileName.jpg")
             null
         }
-
     }
 
     suspend fun getUnAllocatedUri(pictureFolder: File): Uri? = withContext(dispatchers.io()) {

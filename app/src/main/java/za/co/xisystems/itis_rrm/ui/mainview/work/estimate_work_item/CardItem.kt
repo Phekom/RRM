@@ -96,7 +96,7 @@ open class CardItem(
 //                val sectionItem = workViewModel.getParentSectionItem(itemCode)
                 estimatePhotoStart = workViewModel.getEstimateStartPhotoForId(jobItemEstimate.estimateId)
                 expandableChildTextView.text = projectItem.descr
-                expandableParentTextView.text = projectItem.parentDescr
+                expandableParentTextView.text = projectItem.parentDescr?:projectItem.itemCode
 //                ToastUtils().toastLong(activity, sectionItem.description)
                 qtyTextView.text = qty
                 lineAmountTextView.text = rate

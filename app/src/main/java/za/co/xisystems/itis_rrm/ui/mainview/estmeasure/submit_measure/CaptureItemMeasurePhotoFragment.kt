@@ -217,8 +217,8 @@ class CaptureItemMeasurePhotoFragment :
         _ui = null
     }
 
-    // TODO: Have location validated here
-    // TODO: Check earlier and get user to switch Location on.
+    // 2_DO: Have location validated here
+    // 2_DO: Check earlier and get user to switch Location on.
     private suspend fun saveImage(): JobItemMeasurePhotoDTO? = withContext(dispatchers.io()) {
         //  Location of picture
         val measurementLocation = getCurrentLocation()

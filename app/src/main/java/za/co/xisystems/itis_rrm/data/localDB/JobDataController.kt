@@ -38,9 +38,15 @@ object JobDataController {
         job.setContractId(DataConversion.toLittleEndian(job.contractId))
 
         job.jobSections.forEach { jobSection ->
-            jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
-            jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
-            jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
+            if (jobSection.recordVersion.equals(1)){
+
+            }else{
+                jobSection.setJobSectionId(DataConversion.toLittleEndian(jobSection.jobSectionId))
+                jobSection.setProjectSectionId(DataConversion.toLittleEndian(jobSection.projectSectionId))
+                jobSection.setJobId(DataConversion.toLittleEndian(jobSection.jobId))
+            }
+
+
         }
 
         job.jobItemEstimates.forEach { jie ->

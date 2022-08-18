@@ -161,22 +161,27 @@ class AddProjectItemsFragment : BaseFragment() {
 
             job = addViewModel.getJobForId(projectArgsData.jobId!!)
             _binding?.toolbar?.setTitle(job.descr)
-            val contractNo =
-                addViewModel.getContractNoForId(job.contractId)
-            val projectCode =
-                addViewModel.getProjectCodeForId(job.projectId)
-            val projectSection =
-                addViewModel.getProjectSectionForId(job.sectionId)
+            val contractNo = addViewModel.getContractNoForId(job.contractId)
+            val projectCode = addViewModel.getProjectCodeForId(job.projectId)
+//            if (job.descr.equals("Pothole Road Auth")) {
+//                val projectSection = addViewModel.getPotholePhoto(job.jobId)
+//            }
+
+
+
+
+
+
             if (job.voJob == getString(R.string.no)) {
                 binding.selectedVoTextView.text = getString(R.string.none_vo)
 
             } else {
                 if (projectArgsData.contractVoId.isNullOrBlank()) {
-                    extensionToast(
-                        "Contract VO ID / WA ID Missing ",
-                        ToastStyle.WARNING,
-                        ToastGravity.BOTTOM
-                    )
+//                    extensionToast(
+//                        "Contract VO ID / WA ID Missing ",
+//                        ToastStyle.WARNING,
+//                        ToastGravity.BOTTOM
+//                    )
                     binding.selectedVoTextView.text = getString(R.string.none_vo)
                     job.voJob = "No"
                 } else {
@@ -187,10 +192,20 @@ class AddProjectItemsFragment : BaseFragment() {
                 }
 
             }
-            val selectedSec = projectSection.route + projectSection.section + projectSection.direction
+            if (job.sectionId.isNullOrEmpty()){
+                val projectSectionId = addViewModel.getProjectSectionIdForJobId(job.jobId)
+                val prjSction = addViewModel.getProjectSectionForId(projectSectionId)
+                val section = prjSction.route+prjSction.section+prjSction.direction
+                binding.selectedSecTextView.text = section
+            }else{
+                val prjSction = addViewModel.getProjectSectionForId(job.sectionId!!)
+                val section = prjSction.route+prjSction.section+prjSction.direction
+                binding.selectedSecTextView.text = section
+            }
+           // val selectedSec = projectSection.route + projectSection.section + projectSection.direction
             binding.selectedContractTextView.text = contractNo
             binding.selectedProjectTextView.text = projectCode
-            binding.selectedSecTextView.text = selectedSec
+           // binding.selectedSecTextView.text = selectedSec
 
             when {
                 !projectArgsData.jobId.isNullOrBlank() -> {

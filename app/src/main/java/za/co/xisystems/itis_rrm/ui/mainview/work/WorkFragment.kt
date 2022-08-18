@@ -210,9 +210,9 @@ class WorkFragment : LocationFragment() {
         withContext(uiScope.coroutineContext) {
             try {
                 val jobs = workViewModel.offlineUserTaskList.await()
-                jobs.observeOnce(viewLifecycleOwner, { works ->
+                jobs.observeOnce(viewLifecycleOwner) { works ->
                     Timber.d("${works.size} / ${works.count()} loaded.")
-                })
+                }
             } catch (t: Throwable) {
                 val message = "Failed to fetch jobs from service: ${t.message ?: XIErrorHandler.UNKNOWN_ERROR}"
                 Timber.e(t, message)
@@ -244,7 +244,7 @@ class WorkFragment : LocationFragment() {
     private fun searchLocalJobs(query: String) = uiScope.launch(uiScope.coroutineContext) {
         initVeiledRecycler()
         val searchQuery = workViewModel.getSearchResults()
-        searchQuery.observe(viewLifecycleOwner, { searchResults ->
+        searchQuery.observe(viewLifecycleOwner) { searchResults ->
             if (searchResults.isNullOrEmpty()) {
                 _ui?.veiledWorkListView?.visibility = View.GONE
                 _ui?.noData?.visibility = View.VISIBLE
@@ -258,7 +258,7 @@ class WorkFragment : LocationFragment() {
                     this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                 }
             }
-        })
+        }
         workViewModel.searchJobs(query)
     }
 

@@ -459,7 +459,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             navApproveMeasures.isEnabled = false
 
             val userRoles = mainActivityViewModel.getRoles()
-            userRoles.observe(this, { roleList ->
+            userRoles.observe(this) { roleList ->
 
                 for (role in roleList) {
                     val roleID = role.roleDescription
@@ -572,7 +572,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         }
                     }
                 }
-            })
+            }
         }
     }
 
@@ -585,10 +585,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.JOB_PENDING_UPLOAD
-            ).observe(this@MainActivity, { newJobData ->
+            ).observe(this@MainActivity) { newJobData ->
                 val tasks = newJobData.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeUnSubmitted, tasks)
-            })
+            }
 
             // Corrections section is for Phase 2
 
@@ -596,36 +596,36 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             mainActivityViewModel.getJobsForActivityId2(
                 ActivityIdConstants.JOB_APPROVED,
                 ActivityIdConstants.ESTIMATE_INCOMPLETE
-            ).observe(this@MainActivity, { workList ->
+            ).observe(this@MainActivity) { workList ->
                 val tasks = workList.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeWork, tasks)
-            })
+            }
 
             // Estimate measurements
             mainActivityViewModel.getJobMeasureForActivityId(
                 ActivityIdConstants.ESTIMATE_MEASURE,
                 ActivityIdConstants.JOB_ESTIMATE,
                 ActivityIdConstants.MEASURE_PART_COMPLETE
-            ).observe(this@MainActivity, { measurementJobs ->
+            ).observe(this@MainActivity) { measurementJobs ->
                 val tasks = measurementJobs.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeEstMeasure, tasks)
-            })
+            }
 
             // Jobs awaiting approval
             mainActivityViewModel.getJobsForActivityId(
                 ActivityIdConstants.JOB_APPROVE
-            ).observe(this@MainActivity, { jobApprovalData ->
+            ).observe(this@MainActivity) { jobApprovalData ->
                 val tasks = jobApprovalData.count()
                 writeBadge(badgeApproveJobs, tasks)
-            })
+            }
 
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(this@MainActivity, {
+            ).observe(this@MainActivity){
                 val tasks = it.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeApprovMeasure, tasks)
-            })
+            }
         }
     }
 

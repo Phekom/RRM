@@ -14,7 +14,7 @@ import za.co.xisystems.itis_rrm.R
  * ProgressButton UI extensions for XI
  */
 
-// TODO: Exchange hard-coded colours to match the theme
+
 fun Button.initProgress(lifecycleOwner: LifecycleOwner) {
     lifecycleOwner.bindProgressButton(this)
     this.attachTextChangeAnimator {

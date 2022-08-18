@@ -69,12 +69,23 @@ class AddItemsViewModel(
         }
     }
 
+    suspend fun getProjectSectionIdForJobId(jobId: String): String {
+        return withContext(Dispatchers.IO) {
+            jobCreationDataRepository.getProjectSectionIdForJobId(jobId)
+        }
+    }
 
     suspend fun getProjectCodeForId(projectId: String?): String {
         return withContext(dispatchers.io()) {
             jobCreationDataRepository.getProjectCodeForId(projectId)
         }
     }
+
+//    suspend fun getPotholePhoto(jobId: String?) {
+//        return withContext(dispatchers.io()) {
+//            jobCreationDataRepository.getPotholePhoto(jobId!!)
+//        }
+//    }
 
     suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
         return withContext(dispatchers.io()) {

@@ -121,8 +121,8 @@ class MeasureFragment : BaseFragment() {
     private suspend fun fetchEstimateMeasures() {
         val itemEstimateData = measureViewModel.getJobMeasureForActivityId(
             ActivityIdConstants.ESTIMATE_MEASURE,
-            ActivityIdConstants.MEASURE_PART_COMPLETE,
-            ActivityIdConstants.JOB_ESTIMATE
+            ActivityIdConstants.JOB_ESTIMATE,
+            ActivityIdConstants.MEASURE_PART_COMPLETE
         )
 
         itemEstimateData.observeOnce(viewLifecycleOwner) { itemEstimateList ->

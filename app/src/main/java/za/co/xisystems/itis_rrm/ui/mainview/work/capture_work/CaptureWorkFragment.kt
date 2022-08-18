@@ -682,7 +682,7 @@ class CaptureWorkFragment : LocationFragment() {
 
         val estimateWorksData =
             workViewModel.getLiveJobEstimateWorksByEstimateId(estimateItemId)
-        estimateWorksData.observe(viewLifecycleOwner, { estimateWorks ->
+        estimateWorksData.observe(viewLifecycleOwner) { estimateWorks ->
 
             estimateWorks?.let { workItem ->
                 // Is work completed on this estimate?
@@ -704,7 +704,7 @@ class CaptureWorkFragment : LocationFragment() {
                     loadPictures(XIResult.Success(activeWorks))
                 }
             }
-        })
+        }
     }
 
     private fun submitEstimatesOrPop(
@@ -714,13 +714,13 @@ class CaptureWorkFragment : LocationFragment() {
         workViewModel.setWorkItemJob(estimateJobId)
 
         val estimateJobData = workViewModel.workItemJob
-        estimateJobData.observe(viewLifecycleOwner, { estimateJob ->
+        estimateJobData.observe(viewLifecycleOwner) { estimateJob ->
             if (estWorkDone == estimateJob?.jobItemEstimates?.size) {
                 collectCompletedEstimates(estimateJob.jobId)
             } else {
                 popViewOnWorkSubmit()
             }
-        })
+        }
 
     }
 
@@ -745,16 +745,15 @@ class CaptureWorkFragment : LocationFragment() {
         uiScope.launch(dispatchers.main()) {
             val workflowStepData = workViewModel.getWorkFlowCodes(id)
             workflowStepData.observe(
-                viewLifecycleOwner,
-                { workflowSteps ->
-                    jobWorkStep = workflowSteps as ArrayList<WfWorkStepDTO>
+                viewLifecycleOwner
+            ) { workflowSteps ->
+                jobWorkStep = workflowSteps as ArrayList<WfWorkStepDTO>
 
-                    initRecyclerView(
-                        estimateWorksList.toWorkStateItems(),
-                        workflowSteps
-                    )
-                }
-            )
+                initRecyclerView(
+                    estimateWorksList.toWorkStateItems(),
+                    workflowSteps
+                )
+            }
         }
     }
 

@@ -72,6 +72,7 @@ import za.co.xisystems.itis_rrm.data.localDB.entities.ItemDTOTemp
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimatesPhotoDTO
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoPotholeResponse
 import za.co.xisystems.itis_rrm.databinding.FragmentPhotoEstimateBinding
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
@@ -104,8 +105,9 @@ import kotlin.collections.set
  * Updated by Shaun McDonald on 2021/05/18
  * Last modified on 2021/05/18, 10:26
  * Copyright (c) 2021.  XI Systems  - All rights reserved
- * * Updated by Francis Mahlava on 2022/01/23
+ * Updated by Francis Mahlava on 2022/01/23
  * Updated by Francis Mahlava on 2022/03/04
+ *
  */
 
 
@@ -132,6 +134,7 @@ class EstimatePhotoFragment : LocationFragment() {
     private var newJobItemEstimate: JobItemEstimateDTO? = null
     var quantity: Double = 1.0
     private var estimateId: String? = null
+    var photoData :PhotoPotholeResponse? = null
     private lateinit var newJobItemEstimatesPhotosList: ArrayList<JobItemEstimatesPhotoDTO>
     private lateinit var newJobItemEstimatesList: ArrayList<JobItemEstimateDTO>
     internal var description: String? = null
@@ -202,13 +205,13 @@ class EstimatePhotoFragment : LocationFragment() {
             uiScope.launch(dispatchers.io()) {
                 imageUri?.let { realUri ->
 
-                    // implemented below
-                    val bitmap = getScreenShotFromView(ui.estimatemapview)
-
-                    // if bitmap is not null then save it to gallery
-                    if (bitmap != null) {
-                        saveMediaToStorage(bitmap)
-                    }
+//                    // implemented below
+//                    val bitmap = getScreenShotFromView(ui.estimatemapview)
+//
+//                    // if bitmap is not null then save it to gallery
+//                    if (bitmap != null) {
+//                        saveMediaToStorage(bitmap)
+//                    }
 
                     processAndSetImage(realUri, "CAMERA")
                 }
@@ -328,7 +331,7 @@ class EstimatePhotoFragment : LocationFragment() {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = EstimatePhotoFragmentDirections
-                    .actionEstimatePhotoFragmentToNavigationAddItems(editEstimateData.itemId!!, editEstimateData.jobId,"")
+                    .actionEstimatePhotoFragmentToNavigationAddItems(editEstimateData.itemId!!, editEstimateData.job?.jobId,"")
                 Navigation.findNavController(view).navigate(navDirection)
             }
         }
@@ -463,7 +466,37 @@ class EstimatePhotoFragment : LocationFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         var stateRestored = false
-        if (editEstimateData.jobId?.isNotBlank() == true) {
+        if (editEstimateData.job?.jobId?.isNotBlank() == true) {
+//            if (editEstimateData.job?.descr.equals("Pothole Road Auth")){
+//                Coroutines.main {
+//                    readNavArgs()
+//                    stateRestored = true
+//////                    val exist =  estimatePhotoViewModel.checkIfJobItemEstimatePhotoExistsByEstimateId(editEstimateData.estimateId!!)
+//////                    if (exist) {
+//////                        val photo = estimatePhotoViewModel.getEstimateStartPhotoForId(editEstimateData.estimateId!!)
+//////                        val uri = photoUtil.getPhotoPathFromExternalDirectory(photo.filename)
+//////                        GlideApp.with(this)
+//////                            .load(uri)
+//////                            .centerCrop()
+//////                            .error(R.drawable.no_image)
+//////                            .into(_ui?.startImageView!!)
+//////                        processAndSetImage(uri, "POTHOLE")
+//////                    }else{
+////                        photoData = estimatePhotoViewModel.getPotholePhoto(editEstimateData.job?.jobId)
+////                        val uri = photoUtil.getPhotoPathFromExternalDirectory(photoData!!.fileName!!)
+////                        GlideApp.with(this)
+////                            .load(uri)
+////                            .centerCrop()
+////                            .error(R.drawable.no_image)
+////                            .into(_ui?.startImageView!!)
+////                        processAndSetImage(uri, "POTHOLE")
+//////                    }
+//                }
+//            }else{
+//                readNavArgs()
+//                stateRestored = true
+//            }
+
             readNavArgs()
             stateRestored = true
         }
@@ -551,7 +584,7 @@ class EstimatePhotoFragment : LocationFragment() {
         }
 
         withContext(uiScope.coroutineContext) {
-            val  myJobDTO = estimatePhotoViewModel.getJobForId(editEstimateData.jobId!!)
+            val  myJobDTO = estimatePhotoViewModel.getJobForId(editEstimateData.job?.jobId!!)
             onJobFound(myJobDTO)
         }
 
@@ -573,8 +606,8 @@ class EstimatePhotoFragment : LocationFragment() {
 
         editEstimateData?.let { navArgs ->
 
-            if (!navArgs.jobId.isNullOrEmpty()) {
-                estimatePhotoViewModel.setJobToEdit(navArgs.jobId.toString())
+            if (!navArgs.job?.jobId.isNullOrEmpty()) {
+                estimatePhotoViewModel.setJobToEdit(navArgs.job?.jobId.toString())
             }
             if (!navArgs.itemId.isNullOrEmpty()) {
                 estimatePhotoViewModel.setCurrentProjectItem(navArgs.itemId.toString())
@@ -821,7 +854,7 @@ class EstimatePhotoFragment : LocationFragment() {
     private fun navToAddProject(view: View) {
         val directions = EstimatePhotoFragmentDirections.actionEstimatePhotoFragmentToNavigationAddItems(
             editEstimateData.itemId!!,
-            editEstimateData.jobId!!,
+            editEstimateData.job?.jobId!!,
             editEstimateData.contractVoId?:"")
         Navigation.findNavController(view).navigate(directions)
     }
@@ -1000,7 +1033,7 @@ class EstimatePhotoFragment : LocationFragment() {
                 Timber.e(e)
                 throw e
             }
-        } else {
+        } else {   //if(provider == "GALLERY") {
         /* *
          *  provider == "GALLERY"
          *  Location of picture
@@ -1044,6 +1077,42 @@ class EstimatePhotoFragment : LocationFragment() {
                 throw e
             }
         }
+
+//        else {
+//        /* *
+//         *  provider == "POTHOLE"
+//         *  Location of picture
+//         */
+//        try {
+//
+//            val estimateLocation = LocationModel(
+//                latitude = photoData?.latitude!!.toDouble(),
+//                longitude = photoData?.longitude!!.toDouble(),
+//                accuracy = 0F,
+//                bearing = 0F
+//            )
+//            val imageFileName = photoData?.fileName!!
+//            val path = imageUri.path
+//            val map: HashMap<String, String> =
+//                HashMap()
+//            map["filename"] = imageFileName
+//            map["path"] = path!!
+//            filenamePath = map
+//
+//            //ToastUtils().toastShort(requireContext(), "$estimatephotodata")
+//            processPhotoEstimate(
+//                estimateLocation = estimateLocation,
+//                filePath = filenamePath,
+//                itemidPhototype = itemIdPhotoType,
+//                imageFileName
+//            )
+//
+//        } catch (e: Exception) {
+//            toast(R.string.error_getting_image)
+//            Timber.e(e)
+//            throw e
+//        }
+//    }
 
     }
 

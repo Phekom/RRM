@@ -40,11 +40,11 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId and measureActId IN (:activityId2,:activityId3) ORDER BY measureActId DESC ")
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND (measureActId =:activityId2 OR measureActId =:activityId3) ORDER BY measureActId DESC ")
     fun getJobMeasureForActivityId(actId: Int, activityId2: Int, activityId3: Int): LiveData<List<JobItemEstimateDTO>>
 
-    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND measureActId =:activityId ORDER BY measureActId ASC ")
-    fun getJobMeasureForActivityId2(actId: Int, activityId: Int): LiveData<List<JobItemEstimateDTO>>
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE actId = :actId AND measureActId =:activityId ORDER BY measureActId DESC ")
+    fun getJobMeasureForActivityId9and10(actId: Int, activityId: Int): LiveData<List<JobItemEstimateDTO>>
 
     @Query("SELECT qty FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun getQuantityForEstimationItemId(estimateId: String): LiveData<Double>
