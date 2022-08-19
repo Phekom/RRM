@@ -88,28 +88,26 @@ class SplashScreen : AppCompatActivity(), DIAware {
     }
 
 
-
-
     private fun acquireUser(noInternetDialog: NoInternetDialog) {
-            uiScope.launch(uiScope.coroutineContext) {
-                val user = splashViewModel.user.await()
-                user.observe(this@SplashScreen, Observer { userInstance ->
-                    if (userInstance != null) {
-                        if(noInternetDialog.isShowing){
-                            ToastUtils().toastShort(this@SplashScreen, "Check Internet Connection")
-                        }else{
-                            Coroutines.main {
-                                try {
-                                    val newVersion = BuildConfig.VERSION_NAME
-                                    val response = splashViewModel.getAppVersionCheck(newVersion)
-                                    if (response.errorMessage.equals("")) {
-                                        startActivity(Intent(baseContext, LoginActivity::class.java))
-                                    } else {
-                                        promptUserToForNewVersion(response)
-                                    }
-                                } catch (t: Throwable) {
-                                   ToastUtils().toastShort(this@SplashScreen, "You Seem To have Little or No Network Connection")
+        uiScope.launch(uiScope.coroutineContext) {
+            val user = splashViewModel.user.await()
+            user.observe(this@SplashScreen, Observer { userInstance ->
+                if (userInstance != null) {
+                    if (noInternetDialog.isShowing) {
+                        ToastUtils().toastShort(this@SplashScreen, "Check Internet Connection")
+                    } else {
+                        Coroutines.main {
+                            try {
+                                val newVersion = BuildConfig.VERSION_NAME
+                                val response = splashViewModel.getAppVersionCheck(newVersion)
+                                if (response.errorMessage.equals("")) {
+                                    startActivity(Intent(baseContext, LoginActivity::class.java))
+                                } else {
+                                    promptUserToForNewVersion(response)
                                 }
+                            } catch (t: Throwable) {
+                                ToastUtils().toastShort(this@SplashScreen, "You Seem To have Little or No Network Connection")
+                            }
 //                                finally {
 //                                    Snackbar.make(
 //                                        this@SplashScreen,
@@ -123,14 +121,14 @@ class SplashScreen : AppCompatActivity(), DIAware {
 //                                }
 
 
-                            }
                         }
-
-                    } else {
-                        startActivity(Intent(this@SplashScreen, RegisterActivity::class.java))
                     }
-                })
-            }
+
+                } else {
+                    startActivity(Intent(this@SplashScreen, RegisterActivity::class.java))
+                }
+            })
+        }
 
     }
 
@@ -150,7 +148,7 @@ class SplashScreen : AppCompatActivity(), DIAware {
                 // Restart MyTask after 3 seconds
                 getInternetConnectionResult(noInternetDialog)
             }).show()
-        }else{
+        } else {
             if (!ServiceUtil.isNetworkConnected(this@SplashScreen)) {
                 noInternetDialog.showDialog()
                 Snackbar.make(
@@ -177,24 +175,47 @@ class SplashScreen : AppCompatActivity(), DIAware {
 
 
     private fun promptUserToForNewVersion(response: VersionCheckResponse) = Coroutines.ui {
-        val prodVersionlink = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
-        val syncDialog: AlertDialog.Builder =
-            AlertDialog.Builder(this)
-                .setTitle("New Version Available")
-                .setMessage(response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) + "Release Date " + response.releaseDate)
-                .setCancelable(false)
-                .setIcon(R.drawable.ic_warning_yellow)
-                .setNegativeButton(R.string.continue_old) { _, _ ->
-                    startActivity(Intent(baseContext, LoginActivity::class.java))
-                }
-                .setPositiveButton(R.string.ok) { _, _ ->
-                    val intent = Intent(
-                        Intent.ACTION_VIEW, Uri.parse(prodVersionlink)
-                    )
-                    startActivity(intent)
-                }
 
-        syncDialog.show()
+        if (BuildConfig.API_HOST.contains("https://itisqa")) {
+            val prodVersionlink = "https://itisqa.nra.co.za/portal/mobile/rrm_app.apk"
+            val syncDialog: AlertDialog.Builder =
+                AlertDialog.Builder(this)
+                    .setTitle("New QA Version Available")
+                    .setMessage(response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) + "Release Date " + response.releaseDate)
+                    .setCancelable(false)
+                    .setIcon(R.drawable.ic_warning_yellow)
+                    .setNegativeButton(R.string.continue_old) { _, _ ->
+                        startActivity(Intent(baseContext, LoginActivity::class.java))
+                    }
+                    .setPositiveButton(R.string.ok) { _, _ ->
+                        val intent = Intent(
+                            Intent.ACTION_VIEW, Uri.parse(prodVersionlink)
+                        )
+                        startActivity(intent)
+                    }
+            syncDialog.show()
+        } else {
+
+            val prodVersionlink = "https://itis.nra.co.za/portal/mobile/rrm_app.apk"
+            val syncDialog: AlertDialog.Builder =
+                AlertDialog.Builder(this)
+                    .setTitle("New Version Available")
+                    .setMessage(response.errorMessage + getString(R.string.new_line) + getString(R.string.new_line) + "Release Date " + response.releaseDate)
+                    .setCancelable(false)
+                    .setIcon(R.drawable.ic_warning_yellow)
+                    .setNegativeButton(R.string.continue_old) { _, _ ->
+                        startActivity(Intent(baseContext, LoginActivity::class.java))
+                    }
+                    .setPositiveButton(R.string.ok) { _, _ ->
+                        val intent = Intent(
+                            Intent.ACTION_VIEW, Uri.parse(prodVersionlink)
+                        )
+                        startActivity(intent)
+                    }
+
+            syncDialog.show()
+        }
+
     }
 
 
