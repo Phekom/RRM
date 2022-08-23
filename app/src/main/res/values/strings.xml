@@ -278,7 +278,7 @@
     <string name="captured_photo_of_hazard_or_defect">Captured photo of road hazard or defect</string>
     <string name="job_no">Job No:</string>
     <string name="measurement_photograph">Measurement Photograph</string>
-
+    <string name="continue_forward">Continue</string>
     <string name="error_no_camera">No camera found.</string>
     <string name="error_open_camera">Could not open camera.</string>
     <string name="action_ok">OK</string>
