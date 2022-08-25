@@ -1,9 +1,10 @@
 package za.co.xisystems.itis_rrm.utils.image_capture.helper
 
 import android.net.Uri
-import android.os.Build
 import android.provider.MediaStore
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
+import java.io.File
 
 /**
  * Created by Francis Mahlava on 2021/11/23.
@@ -51,6 +52,7 @@ object ImageHelper {
         return indexes
     }
 
+
     fun isGifFormat(image: Image): Boolean {
         val fileName = image.name;
         val extension = if (fileName.contains(".")) {
@@ -60,10 +62,11 @@ object ImageHelper {
         return extension.equals("gif", ignoreCase = true)
     }
 
-    fun getImageCollectionUri(): Uri {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            }
+    suspend fun getImageCollectionUri(photoUtil: PhotoUtil): Uri {
+        return if (DeviceHelper.isMinSdk29) MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        //else  if (DeviceHelper.isMinSdk26) MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
     }
+
+
 }

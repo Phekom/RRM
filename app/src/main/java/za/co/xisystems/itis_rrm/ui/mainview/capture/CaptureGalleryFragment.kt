@@ -48,6 +48,7 @@ import kotlin.collections.set
 
 class CaptureGalleryFragment : LocationFragment() {
 
+
     companion object {
         fun newInstance() = CaptureGalleryFragment()
         const val REQUEST_CAMERA_PERMISSIONS = 5050
@@ -55,20 +56,21 @@ class CaptureGalleryFragment : LocationFragment() {
     }
 
     private var alertDialog: AlertDialog? = null
-    private var images = ArrayList<Image>()
+    private var images = java.util.ArrayList<Image>()
 
     private var itemIdPhotoType = HashMap<String, String>()
     private lateinit var captureViewModel: CaptureViewModel
-
+//    override val di by closestDI()
     private var _ui: FragmentCaptureGalleryBinding? = null
     private val ui get() = _ui!!
     private val photoUtil: PhotoUtil by instance()
-    var photoType: PhotoType = PhotoType.START
+
     private val galleryItems = ArrayList<JobItemEstimatesPhotoDTO>()
     private val captureFactory: CaptureViewModelFactory by instance()
     private var imageUri: Uri? = null
     private var rrmFileUri: Uri? = null
-    private var filenamePath: HashMap<String, String> = HashMap()
+    private var filenamePath = HashMap<String, String>()
+    // private var uiScope = UiLifecycleScope()
 
     /**
      * ActivityResultContract for taking a photograph
@@ -89,51 +91,31 @@ class CaptureGalleryFragment : LocationFragment() {
     )
 
 
-//    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSaved ->
-//        if (isSaved) {
-//            imageUri?.let { realUri ->
-//                var myresult: String = realUri.path ?: ""
-//                // get filename + ext of path
-//                val cut1 = myresult.lastIndexOf('/')
-//                if (cut1 != -1) myresult = myresult.substring(cut1 + 1)
-//                val fileName = myresult
-//
-//                rrmFileUri = realUri
-//                photoUtil.saveUnAllocatedImage(
-//                    requireContext(),
-//                    config, fileName,realUri,
-//                    object : OnImageReadyListener {
-//                        override fun onImageReady(images: java.util.ArrayList<Image>) {
-//                            finishCaptureImage(images)
-//                        }
-//
-//                        override fun onImageNotReady() {
-//                            finishCaptureImage(arrayListOf())
-//                        }
-//                    })
-//                processAndSetImage(realUri)
-//            }
-//
-//        } else {
-//            imageUri?.let { failedUri ->
-//                uiScope.launch(dispatchers.io()) {
-//                    val filenamePath = File(failedUri.path!!)
-//                    photoUtil.deleteImageFile(filenamePath.toString())
-//                }
-//            }
-//        }
-//        this.photosDone()
-//    }
-
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { isSaved ->
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { isSaved ->
         if (isSaved) {
-            uiScope.launch(dispatchers.io()) {
-                imageUri?.let { realUri ->
-                    processAndSetImage(realUri)
-                }
+            imageUri?.let { realUri ->
+                var myresult: String = realUri.path ?: ""
+                // get filename + ext of path
+                val cut1 = myresult.lastIndexOf('/')
+                if (cut1 != -1) myresult = myresult.substring(cut1 + 1)
+                val fileName = myresult
+
+                rrmFileUri = realUri
+                photoUtil.saveUnAllocatedImage(
+                    requireContext(),
+                    config, fileName,realUri,
+                    object : OnImageReadyListener {
+                        override fun onImageReady(images: java.util.ArrayList<Image>) {
+                            finishCaptureImage(images)
+                        }
+
+                        override fun onImageNotReady() {
+                            finishCaptureImage(arrayListOf())
+                        }
+                    })
+                processAndSetImage(realUri)
             }
+
         } else {
             imageUri?.let { failedUri ->
                 uiScope.launch(dispatchers.io()) {
@@ -142,7 +124,9 @@ class CaptureGalleryFragment : LocationFragment() {
                 }
             }
         }
+        this.photosDone()
     }
+
 
     private fun finishCaptureImage(images: java.util.ArrayList<Image>) {
         val data = Intent()
@@ -218,14 +202,50 @@ class CaptureGalleryFragment : LocationFragment() {
                 REQUEST_CAMERA_PERMISSIONS
             )
         } else {
-            photoType = PhotoType.START
-            launchCamera(REQUEST_IMAGE_CAPTURE, photoType)
+            launchCamera()
         }
+
+
+//        val permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//        PermissionHelper.checkPermission(
+//            requireActivity(),
+//            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//            object : PermissionHelper.PermissionAskListener {
+//                override fun onNeedPermission() {
+//                    PermissionHelper.requestAllPermissions(
+//                        requireActivity(),
+//                        permissions,
+//                        Constants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
+//                    )
+//                }
+//
+//                override fun onPermissionPreviouslyDenied() {
+//                    PermissionHelper.requestAllPermissions(
+//                        requireActivity(),
+//                        permissions,
+//                        Constants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
+//                    )
+//                }
+//
+//                override fun onPermissionDisabled() {
+//                    showOpenSettingDialog()
+//                }
+//
+//                override fun onPermissionGranted() {
+//                    launchCamera()
+//                }
+//            })
 
     }
 
     private fun showOpenSettingDialog() {
         val builder = AlertDialog.Builder(this.requireContext(), R.style.Theme_AppCompat_Light_Dialog)
+//        val builder = AlertDialog.Builder(
+//            ContextThemeWrapper(
+//                requireActivity(),
+//                R.style.Theme_AppCompat_Light_Dialog
+//            )
+//        )
         with(builder) {
             setMessage(R.string.msg_no_external_storage_permission)
             setNegativeButton(R.string.action_cancel) { _, _ ->
@@ -242,7 +262,7 @@ class CaptureGalleryFragment : LocationFragment() {
     }
 
 
-    private fun launchCamera(REQUEST_IMAGE_CAPTURE: Int, photoType: PhotoType) {
+    private fun launchCamera() {
         val imageFileName = UUID.randomUUID()
         this.takingPhotos()
         Coroutines.io {
@@ -253,77 +273,6 @@ class CaptureGalleryFragment : LocationFragment() {
         }
 
     }
-
-//    private fun launchCamera(reqCode: Int, photoType: PhotoType) {
-//        Coroutines.main {
-//
-//            toggleLongRunning(true)
-//            itemIdPhotoType["itemId"] = ""
-//            itemIdPhotoType["type"] = photoType.name
-//
-//            Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { takePictureIntent ->
-//                sharedViewModel.toggleLongRunning(true)
-//                val photoFile: File? = try {
-//                    photoUtil.createImageFile()
-//                } catch (ex: IOException) {
-//                    ToastUtils().toastShort(requireContext(), ex.message)
-//                    null
-//                }
-//                // Continue only if the File was successfully created
-//                photoFile?.also {
-//                    imageUri = photoUtil.getUriFromPath(it.path)
-//                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-//                    takePictureIntent.putExtra(
-//                        MediaStore.EXTRA_SCREEN_ORIENTATION,
-//                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-//                    )
-//                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-//                    takePictureIntent.putExtra("photoType", itemIdPhotoType["type"])
-//                    takePictureIntent.putExtra("itemId", itemIdPhotoType["itemId"])
-//                    startActivityForResult(
-//                        takePictureIntent, reqCode
-//                    )
-//                }
-//            }
-//        }
-//
-//    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(
-            requestCode,
-            resultCode,
-            data
-        ) // If the image capture activity was called and was successful
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            // Process the image and set it to the TextView
-            if (imageUri != null) {
-                uiScope.launch(uiScope.coroutineContext) {
-                    processAndSetImage(
-                        imageUri!!
-                    )
-                }
-            } else {
-                Snackbar.make(
-                    ui.root,
-                    "Image Saving Error Please Re-Capture",
-                    Snackbar.LENGTH_INDEFINITE
-                ).setAction(getString(R.string.retry)) {
-                    launchCamera(requestCode, photoType)
-                }.show()
-            }
-        } else { // Otherwise, delete the temporary image file
-            uiScope.launch(uiScope.coroutineContext) {
-                photoUtil.deleteImageFile(filenamePath.toString())
-            }
-        }
-        toggleLongRunning(false)
-    }
-
-
-
-
-
 
     private fun loadPictures(galleryItems: ArrayList<JobItemEstimatesPhotoDTO>) = Coroutines.main {
         val filenames = galleryItems.map { photo -> photo.photoPath }
@@ -339,37 +288,23 @@ class CaptureGalleryFragment : LocationFragment() {
     private fun processAndSetImage(realUri: Uri) {
         val photoLocation = this.getLocation()
         if (photoLocation != null) {
-            uiScope.launch(dispatchers.io()) {
             persistLocatedPhoto(photoLocation, realUri)
-        }
         }
     }
 
-    private suspend fun persistLocatedPhoto( currentLocation: LocationModel, imageUri: Uri ) = withContext(uiScope.coroutineContext) {
+    private fun persistLocatedPhoto(
+        currentLocation: LocationModel,
+        imageUri: Uri
+    ) {
+        Coroutines.io {
 
             itemIdPhotoType["itemId"] = ""
             itemIdPhotoType["type"] = "unallocated"
 
-        var myresult: String = imageUri.path ?: ""
-        // get filename + ext of path
-        val cut1 = myresult.lastIndexOf('/')
-        if (cut1 != -1) myresult = myresult.substring(cut1 + 1)
-        val fileName = myresult
-
-        filenamePath = photoUtil.saveUnAllocatedImage(
-            requireContext(), config, fileName, imageUri, object : OnImageReadyListener {
-                override fun onImageReady(images: java.util.ArrayList<Image>) {
-                    finishCaptureImage(images)
-                }
-                override fun onImageNotReady() {
-                    finishCaptureImage(arrayListOf())
-                }
-            }) as HashMap<String, String>
-
-
-//            filenamePath = photoUtil.saveImageToInternalStorage2(
-//                 requireContext(),imageUri
-//            )!! as HashMap<String, String>
+            filenamePath = photoUtil.saveImageToInternalStorage(
+                imageUri
+                        //requireContext(), imageUri
+            )!! as HashMap<String, String>
 
             val photo = captureViewModel.createUnallocatedPhoto(
                 filenamePath = filenamePath,
@@ -384,4 +319,5 @@ class CaptureGalleryFragment : LocationFragment() {
             }
         }
     }
+}
 

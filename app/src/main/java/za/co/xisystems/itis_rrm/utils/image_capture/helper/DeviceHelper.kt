@@ -9,7 +9,9 @@ import za.co.xisystems.itis_rrm.R
 
 object DeviceHelper {
 
-    //val isMinSdk29 get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    val isMinSdk29 get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    val isMinSdk26 get() = Build.VERSION.SDK_INT <= Build.VERSION_CODES.P
 
     fun checkCameraAvailability(context: Context): Boolean {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)

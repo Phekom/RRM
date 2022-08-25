@@ -12,7 +12,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Compliant -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- Compliant -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- Compliant -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" /><!-- Compliant -->
     <uses-permission android:name="android.permission.CAMERA" /> <!-- Compliant -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" /> <!-- Compliant -->
     <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />

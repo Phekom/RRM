@@ -10,11 +10,7 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.content.res.AssetFileDescriptor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
+import android.graphics.*
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -40,14 +36,10 @@ import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import za.co.xisystems.itis_rrm.utils.image_capture.camera.OnImageReadyListener
-import za.co.xisystems.itis_rrm.utils.image_capture.helper.DeviceHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
 import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
 import java.io.*
-import java.util.Base64
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 import kotlin.math.roundToLong
 
 class PhotoUtil private constructor(
@@ -275,7 +267,7 @@ class PhotoUtil private constructor(
     suspend fun saveImageToInternalStorage(
         imageUri: Uri
     ): HashMap<String, String>? = withContext(dispatchers.io()) {
-        var scaledUri = imageUri
+        var scaledUri : Uri = imageUri
         return@withContext try {
             lateinit var scaledBitmap: Bitmap
             val options = BitmapFactory.Options()
@@ -548,21 +540,11 @@ class PhotoUtil private constructor(
      * Encode bitmap array to a Base64 string for transmission to the backend.
      */
     fun encode64Pic(photo: ByteArray): String {
-        return when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
-                Base64.getEncoder().encodeToString(photo)
-            else ->
-                // Fallback for pre-Marshmallow
-                android.util.Base64.encodeToString(photo, android.util.Base64.DEFAULT)
-        }
+        return Base64.getEncoder().encodeToString(photo)
     }
 
     private fun decode64Pic(photo: String): ByteArray {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Base64.getDecoder().decode(photo)
-        } else {
-            android.util.Base64.decode(photo, android.util.Base64.DEFAULT)
-        }
+        return Base64.getDecoder().decode(photo)
     }
 
     private val authority = BuildConfig.APPLICATION_ID + ".provider"
@@ -651,7 +633,7 @@ class PhotoUtil private constructor(
         val currentFilePath = rrmFileUri.path
         try {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val direct = File(config.rootDirectory.toString())
                 if (!direct.exists()) {
                     direct.mkdirs()
@@ -680,28 +662,73 @@ class PhotoUtil private constructor(
                     }
                     reset(context)
                 }
-            } else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {                //These for devices running on android < Q
-                //Output stream
-                var fos: OutputStream? = null
-
-                val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
-                 //   Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                val image = File(imagesDir, currentFileName)
-                fos = FileOutputStream(image)
-
             } else {
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(currentFilePath),
+                try {
+                    lateinit var scaledBitmap: Bitmap
+                    val options = BitmapFactory.Options()
+                    lateinit var result: String
+                    var newFileUri: Uri? = rrmFileUri
+                    if (newFileUri?.scheme == "content") {
+                        val cursor =
+                            appContext.contentResolver.query(newFileUri!!, null, null, null, null)
+
+                        cursor?.run {
+                            try {
+                                when {
+                                    cursor.moveToFirst() -> { // local filesystem
+                                        var index = cursor.getColumnIndex("_data")
+                                        if (index == -1) { // google drive
+                                            index = cursor.getColumnIndex("_display_name")
+                                        }
+                                        result = cursor.getString(index)
+                                        newFileUri =
+                                            if (result.isBlank()) return else Uri.parse(result)
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                Timber.e(e, "Ërror loading photo $newFileUri")
+                            } finally {
+                                cursor.close()
+                            }
+                        }
+                    }
+                    result = newFileUri?.path ?: ""
+                    // get filename + ext of path
+                    val cut = result.lastIndexOf('/')
+                    if (cut != -1) result = result.substring(cut + 1)
+                    val imageFileName = result
+                    val direct = File(context.getExternalFilesDir(null).toString() + File.separator + config.subDirectory )
+//                    val direct = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                    if (!direct.exists()) {
+                        direct.mkdirs()
+                    }
+                    val relativePath = direct.toString() + File.separator + imageFileName
+                    //val relativePath = direct.toString() + File.separator + config.subDirectory + File.separator + imageFileName
+
+                    val map: HashMap<String, String> =
+                        HashMap()
+                    map["filename"] = imageFileName
+                    map["path"] = relativePath
+                    map
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Timber.e(e, "error saving photo: $e")
                     null
-                ) { _, _ ->
-                    val images = arrayListOf(
-                        Image(rrmFileUri, currentFileName, 0, config.subDirectory!!)
-                    )
-                    imageReadyListener.onImageReady(images)
-                    reset(context)
                 }
+//                MediaScannerConnection.scanFile(
+//                    context,
+//                    arrayOf(currentFilePath),
+//                    null
+//                ) { _, _ ->
+//                    val images = arrayListOf(
+//                        Image(rrmFileUri, currentFileName, 0, config.subDirectory!!)
+//                    )
+//                    imageReadyListener.onImageReady(images)
+//                    reset(context)
+//                }
             }
+
+
         } catch (e: Exception) {
             newFileUri?.let {
                 contentResolver.delete(it, null, null)
@@ -764,7 +791,7 @@ class PhotoUtil private constructor(
         }
     }
 
-    suspend fun getUnAllocatedUri(pictureFolder: File): Uri? = withContext(dispatchers.io()) {
+    internal suspend fun getUnAllocatedUri(pictureFolder: File): Uri? = withContext(dispatchers.io()) {
         try {
             return@withContext FileProvider.getUriForFile(
                 appContext,

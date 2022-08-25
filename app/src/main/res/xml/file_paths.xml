@@ -13,4 +13,5 @@
         name="gallery"
         path="files/Gallery"
         />
+    <external-path name="external_files" path="."/>
 </paths>

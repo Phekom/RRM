@@ -6,7 +6,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import za.co.xisystems.itis_rrm.utils.image_capture.camera.CameraActivity
-import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageConstants
+import za.co.xisystems.itis_rrm.utils.image_capture.helper.Constants
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
 import za.co.xisystems.itis_rrm.utils.image_capture.model.ImagePickerConfig
 
@@ -45,14 +45,12 @@ private fun createImagePickerIntent(context: Context, config: ImagePickerConfig)
     } else {
         intent = Intent(context, ImagePickerActivity::class.java)
     }
-    intent.putExtra(ImageConstants.EXTRA_CONFIG, config)
+    intent.putExtra(Constants.EXTRA_CONFIG, config)
     return intent
 }
 
 fun getImages(data: Intent?): ArrayList<Image> {
-    return if (data != null) {
-        data.getParcelableArrayListExtra(ImageConstants.EXTRA_IMAGES)!!
-    }
+    return if (data != null) data.getParcelableArrayListExtra(Constants.EXTRA_IMAGES)!!
     else arrayListOf()
 }
 

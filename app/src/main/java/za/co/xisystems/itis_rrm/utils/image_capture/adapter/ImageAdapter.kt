@@ -1,6 +1,5 @@
 package za.co.xisystems.itis_rrm.utils.image_capture.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -38,7 +37,6 @@ internal class ImageAdapter(private val context: Context) :
         return images.size
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setData(images: List<Image>?) {
         this.images.clear()
         if (images != null) {

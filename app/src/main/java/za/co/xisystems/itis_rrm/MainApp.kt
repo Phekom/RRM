@@ -68,7 +68,6 @@ import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
 import za.co.xisystems.itis_rrm.ui.start.SplashActivityViewModelFactory
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
-import za.co.xisystems.itis_rrm.utils.image_capture.camera.CaptureImagesViewModelFactory
 
 /**
  * Created by Francis Mahlava on 2019/10/23.
@@ -99,7 +98,7 @@ open class MainApp : Application(), DIAware {
         bind { singleton { SplashActivityViewModelFactory(instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
-        bind { provider { CaptureImagesViewModelFactory(instance(), instance()) } }
+//        bind { provider { CaptureImagesViewModelFactory(instance(), instance()) } }
 
         bind { provider { CreationViewModelFactory(jobCreationDataRepository = instance(),userRepository = instance(),
             application = this@MainApp, photoUtil = instance())
@@ -173,7 +172,7 @@ open class MainApp : Application(), DIAware {
                 )
             }
         }
-        bind { provider { ImagePickerViewModelFactory(this@MainApp, photoUtil = instance()) } }
+        bind { provider { ImagePickerViewModelFactory(instance(),this@MainApp, photoUtil = instance()) } }
         bind { provider { DeferredLocationViewModelFactory(instance(), instance(), this@MainApp) } }
         bind { provider { MeasureViewModelFactory(this@MainApp, instance(), instance()) } }
         bind { provider { UnSubmittedViewModelFactory(instance()) } }

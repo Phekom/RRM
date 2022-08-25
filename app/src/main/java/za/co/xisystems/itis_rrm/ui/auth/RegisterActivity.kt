@@ -122,7 +122,7 @@ class RegisterActivity : BaseActivity(), AuthListener, DIAware {
                             ToastUtils().toastShort(this@RegisterActivity, "Check Internet Connection")
                         } else {
                             val loggedInUser = viewModel.user.await()
-                            loggedInUser.observe(this@RegisterActivity, { user ->
+                            loggedInUser.observe(this@RegisterActivity) { user ->
                                 // Register the user
                                 if (user != null) {
                                     when {
@@ -139,7 +139,7 @@ class RegisterActivity : BaseActivity(), AuthListener, DIAware {
                                         }
                                     }
                                 }
-                            })
+                            }
                         }
                     }
 

@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageProvider
 import za.co.xisystems.itis_rrm.utils.image_capture.listener.DismissListener
 import za.co.xisystems.itis_rrm.utils.image_capture.listener.ResultListener
 

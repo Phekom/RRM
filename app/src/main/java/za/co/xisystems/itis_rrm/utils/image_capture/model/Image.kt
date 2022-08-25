@@ -12,18 +12,13 @@ data class Image(
     var uri: Uri,
     var name: String,
     var bucketId: Long = 0,
-    var bucketName: String = "",
-    var latitude: Double = 0.0,
-    var longitude: Double = 0.0
-
+    var bucketName: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(Uri::class.java.classLoader)!!,
         parcel.readString()!!,
         parcel.readLong(),
-        parcel.readString()!!,
-        parcel.readDouble(),
-        parcel.readDouble()
+        parcel.readString()!!
     ) {
     }
 
@@ -32,8 +27,6 @@ data class Image(
         parcel.writeString(name)
         parcel.writeLong(bucketId)
         parcel.writeString(bucketName)
-        parcel.writeDouble(latitude)
-        parcel.writeDouble(longitude)
     }
 
     override fun describeContents(): Int {

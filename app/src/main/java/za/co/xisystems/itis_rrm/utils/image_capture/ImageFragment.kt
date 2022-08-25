@@ -9,8 +9,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import org.kodein.di.instance
-import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
-import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.databinding.ImagepickerFragmentBinding
 import za.co.xisystems.itis_rrm.utils.image_capture.adapter.ImagePickerAdapter
@@ -18,9 +16,9 @@ import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.LayoutManagerHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.listener.OnImageSelectListener
 import za.co.xisystems.itis_rrm.utils.image_capture.model.CallbackStatus
+import za.co.xisystems.itis_rrm.utils.image_capture.model.ImageResult
 import za.co.xisystems.itis_rrm.utils.image_capture.model.GridCount
 import za.co.xisystems.itis_rrm.utils.image_capture.model.Image
-import za.co.xisystems.itis_rrm.utils.image_capture.model.ImageResult
 import za.co.xisystems.itis_rrm.utils.image_capture.widget.GridSpacingItemDecoration
 
 /**
@@ -113,9 +111,9 @@ class ImageFragment : BaseFragment() {
         }
 
         viewModel.apply {
-            result.observe(viewLifecycleOwner) {
+            result.observe(viewLifecycleOwner, {
                 handleResult(it)
-            }
+            })
             selectedImages.observe(viewLifecycleOwner, selectedImageObserver)
         }
 

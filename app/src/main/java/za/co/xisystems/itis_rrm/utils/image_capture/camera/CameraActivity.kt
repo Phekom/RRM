@@ -4,23 +4,24 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.launch
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.databinding.ImagepickerActivityCameraBinding
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
+import za.co.xisystems.itis_rrm.ui.mainview.capture.CaptureViewModelFactory
+import za.co.xisystems.itis_rrm.utils.Coroutines
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
-
 import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModel
 import za.co.xisystems.itis_rrm.utils.image_capture.ImagePickerViewModelFactory
+import za.co.xisystems.itis_rrm.utils.image_capture.helper.Constants
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.DeviceHelper
-import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageConstants
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.PermissionHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.PermissionHelper.hasGranted
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.PermissionHelper.openAppSettings
@@ -77,7 +78,7 @@ class CameraActivity : BaseActivity() {
         viewModel = ViewModelProvider(this, captureFactory).get(
             ImagePickerViewModel::class.java
         )
-        config = intent.getParcelableExtra(ImageConstants.EXTRA_CONFIG)!!
+        config = intent.getParcelableExtra(Constants.EXTRA_CONFIG)!!
         config.initDefaultValues(this@CameraActivity)
 
         binding = ImagepickerActivityCameraBinding.inflate(layoutInflater)
@@ -113,7 +114,7 @@ class CameraActivity : BaseActivity() {
     }
 
     private fun captureImageWithPermission() {
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+        if (DeviceHelper.isMinSdk29) {
             captureImage()
             return
         }
@@ -127,7 +128,7 @@ class CameraActivity : BaseActivity() {
                     PermissionHelper.requestAllPermissions(
                         this@CameraActivity,
                         permissions,
-                        ImageConstants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
+                        Constants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
                     )
                 }
 
@@ -135,7 +136,7 @@ class CameraActivity : BaseActivity() {
                     PermissionHelper.requestAllPermissions(
                         this@CameraActivity,
                         permissions,
-                        ImageConstants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
+                        Constants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION
                     )
                 }
 
@@ -193,7 +194,7 @@ class CameraActivity : BaseActivity() {
         grantResults: IntArray
     ) {
         when (requestCode) {
-            ImageConstants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION -> {
+            Constants.RC_WRITE_EXTERNAL_STORAGE_PERMISSION -> {
                 if (hasGranted(grantResults)) {
                     captureImage()
                 } else {
@@ -209,7 +210,7 @@ class CameraActivity : BaseActivity() {
 
     private fun finishCaptureImage(images: ArrayList<Image>) {
         val data = Intent()
-        data.putParcelableArrayListExtra(ImageConstants.EXTRA_IMAGES, images)
+        data.putParcelableArrayListExtra(Constants.EXTRA_IMAGES, images)
         setResult(Activity.RESULT_OK, data)
         finish()
     }

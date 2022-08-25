@@ -18,9 +18,9 @@ enum class RootDirectory(val value: String) {
 
 @Parcelize
 class ImagePickerConfig(
-    var statusBarColor: String = "#db5134",
+    var statusBarColor: String = "#000000",
     var isLightStatusBar: Boolean = false,
-    var toolbarColor: String = "#db5134",
+    var toolbarColor: String = "#212121",
     var toolbarTextColor: String = "#FFFFFF",
     var toolbarIconColor: String = "#FFFFFF",
     var backgroundColor: String = "#424242",

@@ -6,10 +6,11 @@ import android.provider.MediaStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import za.co.xisystems.itis_rrm.forge.DispatcherProvider
+import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 import za.co.xisystems.itis_rrm.utils.image_capture.helper.ImageHelper
 import za.co.xisystems.itis_rrm.utils.image_capture.model.CallbackStatus
@@ -24,15 +25,12 @@ import java.lang.ref.WeakReference
  * Created by Francis Mahlava on 2021/11/23.
  */
 
-class ImagePickerViewModel(
-    application: Application,
-    var photoUtil: PhotoUtil,
-    val dispatchers: DispatcherProvider
-) : AndroidViewModel(application) {
+class ImagePickerViewModel(private val unallocatedRepository: CapturedPictureRepository, application: Application, photoUtil: PhotoUtil) : AndroidViewModel(application) {
 
     private val contextRef = WeakReference(application.applicationContext)
     private lateinit var config: ImagePickerConfig
     private var job: Job? = null
+    private var photoUtil = photoUtil
 
     lateinit var selectedImages: MutableLiveData<ArrayList<Image>>
     val result = MutableLiveData(ImageResult(CallbackStatus.IDLE, arrayListOf()))
@@ -44,13 +42,13 @@ class ImagePickerViewModel(
 
     fun getConfig() = config
 
-    fun fetchImages() {
+    fun fetchImages(activity: ImagePickerActivity) {
         if (job != null) return
 
         result.postValue(ImageResult(CallbackStatus.FETCHING, arrayListOf()))
         job = viewModelScope.launch() {
             try {
-                val images = fetchImagesFromExternalStorage()
+                val images = fetchImagesFromExternalStorage(activity)
 
                 result.postValue(ImageResult(CallbackStatus.SUCCESS, images))
             } catch (e: Exception) {
@@ -63,11 +61,10 @@ class ImagePickerViewModel(
 
 
 
-
-    suspend fun fetchImagesFromExternalStorage(): ArrayList<Image> {
+    private suspend fun fetchImagesFromExternalStorage(activity: ImagePickerActivity): ArrayList<Image> {
         if (contextRef.get() == null) return arrayListOf()
 
-        return withContext(dispatchers.io()) {
+        return withContext(Dispatchers.IO) {
             val projection = arrayOf(
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
@@ -75,7 +72,7 @@ class ImagePickerViewModel(
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
             )
 
-             val imageCollectionUri = ImageHelper.getImageCollectionUri()
+             val imageCollectionUri = ImageHelper.getImageCollectionUri(photoUtil)
 
             contextRef.get()!!.contentResolver.query(
                 imageCollectionUri,
@@ -100,26 +97,21 @@ class ImagePickerViewModel(
                     val bucketId = cursor.getLong(bucketIdColumn)
                     val bucketName = cursor.getString(bucketNameColumn)
 
-                    var photoUri = ContentUris.withAppendedId(imageCollectionUri, id)
-                    if (bucketName.equals("RRM Apps Photos")){
-                        val image = Image(photoUri, name, bucketId, bucketName)
+                    val uri = ContentUris.withAppendedId(imageCollectionUri, id)
+                    if (bucketName.equals("RRM App Photos")){
+                        val image = Image(uri, name, bucketId, bucketName)
+                        images.add(image)
+                    }else{
+                        val contentUri = ContentUris.withAppendedId(
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                            id
+                        )
+                        val image = Image(contentUri, name, bucketId, bucketName)
                         images.add(image)
                     }
 
-
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                        if (bucketName.equals("RRM Apps Photos")){
-//                            val image = Image(photoUri, name, bucketId, bucketName)
-//                            images.add(image)
-//                        }
-//                        //photoUri = setRequireOriginal(photoUri)
-//                    }else {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                            photoUri = setRequireOriginal(photoUri)
-//                        }
-//                    }
-                    val image = Image(photoUri, name, bucketId, bucketName)
-                    images.add(image)
+//                    val image = Image(uri, name, bucketId, bucketName)
+//                    images.add(image)
                 }
                 cursor.close()
                 images

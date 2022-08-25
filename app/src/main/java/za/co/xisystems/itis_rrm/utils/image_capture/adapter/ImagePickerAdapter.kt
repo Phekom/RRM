@@ -1,10 +1,10 @@
 package za.co.xisystems.itis_rrm.utils.image_capture.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -99,12 +99,14 @@ class ImagePickerAdapter(
     }
 
     private fun setupItemForeground(view: View, isSelected: Boolean) {
-        view.foreground = if (isSelected) ColorDrawable(
-            ContextCompat.getColor(
-                context,
-                R.color.black_alpha_30
-            )
-        ) else null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            view.foreground = if (isSelected) ColorDrawable(
+                ContextCompat.getColor(
+                    context,
+                    R.color.black_alpha_30
+                )
+            ) else null
+        }
     }
 
     private fun selectOrRemoveImage(image: Image, position: Int) {
@@ -136,14 +138,13 @@ class ImagePickerAdapter(
             imageSelectListener.onSingleModeImageSelected(image)
         }
     }
-    @SuppressLint("NotifyDataSetChanged")
+
     fun setData(images: List<Image>) {
         this.images.clear()
         this.images.addAll(images)
         notifyDataSetChanged()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setSelectedImages(selectedImages: ArrayList<Image>) {
         this.selectedImages.clear()
         this.selectedImages.addAll(selectedImages)
