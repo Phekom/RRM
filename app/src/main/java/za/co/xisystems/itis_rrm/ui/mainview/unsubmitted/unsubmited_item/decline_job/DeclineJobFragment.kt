@@ -189,7 +189,7 @@ class DeclineJobFragment : LocationFragment() {
 
             if (canMove) {
                 if (this@DeclineJobFragment.requireContext().isConnected) {
-                    val isSuccess  = viewModel.submitForDecline(declinedata)
+                    val isSuccess  = viewModel.submitForDecline(declinedata , requireActivity())
                     if (isSuccess == "Successful") {
                         ToastUtils().toastShort(requireContext(), "Decline $isSuccess")
                         Coroutines.io {
