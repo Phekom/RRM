@@ -109,7 +109,7 @@ class WorkFragment : LocationFragment() {
 
     private fun refreshEstimateJobsFromLocal() = uiScope.launch(dispatchers.ui()) {
         val localJobs = workViewModel.getAllWork()
-        localJobs?.observe(viewLifecycleOwner, { jobsList ->
+        localJobs?.observe(viewLifecycleOwner) { jobsList ->
             _ui?.group7Loading?.visibility = View.GONE
             if (jobsList.isNullOrEmpty()) {
                 _ui?.veiledWorkListView?.visibility = View.GONE
@@ -124,7 +124,7 @@ class WorkFragment : LocationFragment() {
                     this@WorkFragment.initRecyclerView(headerItems.toWorkListItems())
                 }
             }
-        })
+        }
     }
 
     private val backClickListener = View.OnClickListener {
@@ -259,7 +259,7 @@ class WorkFragment : LocationFragment() {
                 }
             }
         }
-        workViewModel.searchJobs(query)
+       // workViewModel.searchJobs(query)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -320,7 +320,7 @@ class WorkFragment : LocationFragment() {
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     when (query.isNullOrBlank()) {
                         true -> refreshEstimateJobsFromLocal()
-                        else -> searchLocalJobs(query)
+                        //else -> //searchLocalJobs(query)
                     }
                     return false
                 }
@@ -375,10 +375,20 @@ class WorkFragment : LocationFragment() {
             ExpandableGroup(expandableHeaderItem, false).apply {
                 val estimates = workViewModel.getJobEstimationItemsForJobId(
                     jobDTO.jobId,
-                    ActivityIdConstants.ESTIMATE_INCOMPLETE
+                    ActivityIdConstants.ESTIMATE_INCOMPLETE,
+                    ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE
                 )
-                estimates.forEach { item ->
-                    createCardItem(item, jobDTO)
+                val estWorkDone: Int = getEstimatesCompleted(jobDTO.jobId)
+                if (estWorkDone != jobDTO.jobItemEstimates.size) {
+                    estimates.forEach { item ->
+                        if (item.actId == ActivityIdConstants.ESTIMATE_INCOMPLETE) {
+                            createCardItem(item, jobDTO)
+                        }
+                    }
+                } else {
+                    estimates.forEach { item ->
+                       createCardItem(item, jobDTO)
+                    }
                 }
                 jobId?.let { selectedJobId ->
                     if (selectedJobId == jobDTO.jobId) {
@@ -388,6 +398,14 @@ class WorkFragment : LocationFragment() {
                 expandableGroups.add(this)
             }
         }
+    }
+
+    private suspend fun getEstimatesCompleted(estimateJobId: String): Int {
+        return workViewModel.getJobItemsEstimatesDoneForJobId(
+            estimateJobId,
+            ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE,
+            ActivityIdConstants.EST_WORKS_COMPLETE
+        )
     }
 
     private fun ExpandableGroup.createCardItem(

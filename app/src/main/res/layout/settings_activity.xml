@@ -27,7 +27,7 @@
             android:id="@+id/username1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
+            android:textAllCaps="true"
             tools:text="Welcome "
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -39,6 +39,21 @@
         android:gravity="center"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reset_user"
+            android:id="@+id/reset_role_button"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/primaryColor"
+            android:padding="5dp"
+            android:visibility="gone"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            style="?android:attr/buttonBarButtonStyle" />
+
 
         <Button
             android:layout_width="wrap_content"

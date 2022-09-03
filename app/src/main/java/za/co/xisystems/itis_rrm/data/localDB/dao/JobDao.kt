@@ -7,6 +7,7 @@
 /**
  * Updated by Shaun McDonald on 2021/05/14
  * Last modified on 2021/05/14, 19:43
+ * Last modified by Francis Mahlava on 2022/08/29, 23:22
  * Copyright (c) 2021.  XI Systems  - All rights reserved
  **/
 
@@ -52,6 +53,9 @@ interface JobDao {
 
     @Query("SELECT * FROM JOB_TABLE WHERE actId = null OR actId = 0 and deleted = 0")
     fun checkIfUnsubmittedJobsExist(): Boolean
+
+    @Query("UPDATE JOB_TABLE SET actId =:actId WHERE jobId = :jobId AND deleted = 0")
+    fun updateJobID(actId: Int?, jobId: String?)
 
     @Query("UPDATE JOB_TABLE SET route =:route, section =:section WHERE jobId = :jobId AND deleted = 0")
     fun updateAllJobs(route: String?, section: String?, jobId: String?)
@@ -115,25 +119,21 @@ interface JobDao {
 
     @RewriteQueriesToDropUnusedColumns
     @Query(
-        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN " +
-            "JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
-            "WHERE j.actId = :jobActId and e.ActId = :estimateActId " +
-            "ORDER BY DATE(j.approvalDate) DESC, jiNO ASC"
+        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e ON e.JobId = j.jobId " +
+            "WHERE j.actId = :jobActId and e.ActId = :estimateActId OR e.ActId = :estimateActId2 ORDER BY DATE(j.approvalDate) DESC, jiNO ASC"
 
     )
-    fun getJobsByJobAndEstimateActivityIds(jobActId: Int, estimateActId: Int): LiveData<List<JobDTO>>?
+    fun getJobsByJobAndEstimateActivityIds(jobActId: Int, estimateActId: Int,estimateActId2: Int): LiveData<List<JobDTO>>?
 
     @Query(
         " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
-            "ON e.JobId = j.jobId WHERE j.actId = :actId " +
-            "AND e.ActId = :actId2 AND j.deleted = 0 " +
+            "ON e.JobId = j.jobId WHERE j.actId = :jobApproved " +
+            "AND (e.ActId = :estimateIncomplete OR e.ActId = :estimateWorkPartComplete) AND j.deleted = 0 " +
             "ORDER BY jiNo ASC "
     )
     @RewriteQueriesToDropUnusedColumns
-    fun getJobsForActivityIds1(actId: Int, actId2: Int): LiveData<List<JobDTO>>
+    fun getJobWorkForActivityId(jobApproved: Int, estimateIncomplete: Int, estimateWorkPartComplete: Int): LiveData<List<JobDTO>>
 
-    //    LiveData<List<JobDTO>>
-// OR e.ActId Like 8
     @Query(
         "UPDATE JOB_TABLE SET sectionId =:sectionId ,startKm =:startKM , endKm =:endKM ," +
             "jobItemEstimates =:newJobItemEstimatesList, jobSections =:jobItemSectionArrayList" +
@@ -148,20 +148,20 @@ interface JobDao {
         jobItemSectionArrayList: ArrayList<JobSectionDTO>
     )
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query(
-        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
-            "ON e.JobId = j.jobId WHERE j.actId = :jobActId " +
-            "AND e.ActId = :estimateActId AND j.deleted = 0 AND (j.jiNo LIKE :criteria " +
-            "OR j.descr LIKE :criteria)" +
-            "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
-    )
+//    @RewriteQueriesToDropUnusedColumns
+//    @Query(
+//        " SELECT j.*, e.* FROM JOB_TABLE AS j JOIN JOB_ITEM_ESTIMATE AS e " +
+//            "ON e.JobId = j.jobId WHERE j.actId = :jobActId " +
+//            "AND e.ActId = :estimateActId AND j.deleted = 0 AND (j.jiNo LIKE :criteria " +
+//            "OR j.descr LIKE :criteria)" +
+//            "ORDER BY DATETIME(j.workStartDate) DESC, jiNO ASC"
+//    )
 
-    fun findWork(
-        criteria: String,
-        jobActId: Int = ActivityIdConstants.JOB_APPROVED,
-        estimateActId: Int = ActivityIdConstants.ESTIMATE_INCOMPLETE
-    ): List<JobDTO>
+//    fun findWork(
+//        criteria: String,
+//        jobActId: Int = ActivityIdConstants.JOB_APPROVED,
+//        estimateActId: Int = ActivityIdConstants.ESTIMATE_INCOMPLETE
+//    ): List<JobDTO>
 
     @Query("SELECT * FROM JOB_TABLE WHERE jobId = :jobId AND deleted = 0")
     fun getJobForJobId(jobId: String): JobDTO
@@ -190,8 +190,9 @@ interface JobDao {
     fun getAllWork(): LiveData<List<JobDTO>>? =
         getJobsByJobAndEstimateActivityIds(
             jobActId = ActivityIdConstants.JOB_APPROVED,
-            estimateActId = ActivityIdConstants.ESTIMATE_INCOMPLETE
+            estimateActId = ActivityIdConstants.ESTIMATE_INCOMPLETE,
+            estimateActId2 = ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE
         )
 
-    fun searchJobs(criteria: String) = findWork(criteria)
+   // fun searchJobs(criteria: String) = findWork(criteria)
 }

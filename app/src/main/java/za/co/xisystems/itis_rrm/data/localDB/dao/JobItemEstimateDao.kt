@@ -34,8 +34,11 @@ interface JobItemEstimateDao {
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE estimateId = :estimateId")
     fun checkIfJobItemEstimateExist(estimateId: String): Boolean
 
+    @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId AND (actId = :actID OR actId = :actID2)")
+    fun getJobEstimationItemsForJobId(jobId: String, actID: Int, actID2: Int ): List<JobItemEstimateDTO>
+
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId AND actId = :actID")
-    fun getJobEstimationItemsForJobId(jobId: String, actID: Int): List<JobItemEstimateDTO>
+    fun getValidEstimatesForJobId(jobId: String, actID: Int ): List<JobItemEstimateDTO>
 
     @Query("SELECT * FROM JOB_ITEM_ESTIMATE WHERE jobId = :jobId")
     fun getJobEstimationItemsForJobId2(jobId: String): LiveData<List<JobItemEstimateDTO>>

@@ -149,6 +149,12 @@ interface BaseConnectionApi {
         @Field("Direction") direction: Int
     ): Response<WorkflowMoveResponse>
 
+
+    @POST("CancelRRMJob")
+    suspend fun cancelRRMJob(
+        @Body cancelRRMJobItems: JsonObject
+    ): Response<JobCancelResponse>
+
     @POST("SaveMeasurementItems")
     suspend fun saveMeasurementItems(
         @Body measurementItems: JsonObject

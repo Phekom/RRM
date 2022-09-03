@@ -22,11 +22,11 @@ class JobCreationViewModel(
         offlineDataRepository.getUser()
     }
 
-    suspend fun getJobsForActivityId2(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActivityIds1(activityId1, activityId2)
-        }
-    }
+//    suspend fun getJobsForActivityId2(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+//        return withContext(Dispatchers.IO) {
+//            offlineDataRepository.getJobsForActivityIds1(activityId1, activityId2)
+//        }
+//    }
 
     suspend fun getJobsForActivityId(vararg activityIds: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {

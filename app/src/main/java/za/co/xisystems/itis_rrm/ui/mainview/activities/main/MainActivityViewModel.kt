@@ -22,9 +22,9 @@ class MainActivityViewModel(
         offlineDataRepository.getUser()
     }
 
-    suspend fun getJobsForActivityId2(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobWorkForActivityId(jobApproved: Int, estimateIncomplete: Int, estimateWorkPartComplete: Int): LiveData<List<JobDTO>> {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActivityIds1(activityId1, activityId2)
+            offlineDataRepository.getJobWorkForActivityId(jobApproved, estimateIncomplete, estimateWorkPartComplete)
         }
     }
 

@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.github.ajalt.timberkt.Timber
 import com.google.android.gms.common.ConnectionResult
@@ -25,6 +24,7 @@ import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
+import za.co.xisystems.itis_rrm.data.preferences.MyAppPrefsManager
 import za.co.xisystems.itis_rrm.databinding.ActivityRegisterBinding
 import za.co.xisystems.itis_rrm.extensions.isConnected
 import za.co.xisystems.itis_rrm.ui.auth.model.AuthViewModel
@@ -46,7 +46,7 @@ class RegisterActivity : BaseActivity(), AuthListener, DIAware {
         Manifest.permission.ACCESS_NETWORK_STATE,
         Manifest.permission.ACCESS_WIFI_STATE,
     )
-
+    var myAppPrefsManager: MyAppPrefsManager? = null
     private var pinAlert: AlertDialog? = null
     private var builder: AlertDialog.Builder? = null
     override var gpsEnabled = false
@@ -67,7 +67,7 @@ class RegisterActivity : BaseActivity(), AuthListener, DIAware {
         viewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
         viewModel.setupAuthListener(this)
         val noInternetDialog: NoInternetDialog = NoInternetDialog.Builder(this@RegisterActivity).build()
-
+        myAppPrefsManager = MyAppPrefsManager(this)
         if (startPermissionRequest(permissions)) {
             getInternetConnectionResult(noInternetDialog)
         } else {
@@ -111,7 +111,7 @@ class RegisterActivity : BaseActivity(), AuthListener, DIAware {
     private fun registerThisUser(view: View, username: TextInputEditText, password: TextInputEditText,
                                  noInternetDialog: NoInternetDialog) {
         uiScope.launch(uiScope.coroutineContext) {
-            viewModel.onRegButtonClick(view, username, password)
+            viewModel.onRegButtonClick(view, username, password, myAppPrefsManager)
             when (this@RegisterActivity.isConnected) {
                 true -> {
                     networkEnabled = true

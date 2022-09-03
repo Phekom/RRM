@@ -9,10 +9,6 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import za.co.xisystems.itis_rrm.data.repositories.CapturedPictureRepository
-import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
-import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
-import za.co.xisystems.itis_rrm.forge.DispatcherProvider
-import za.co.xisystems.itis_rrm.ui.start.SplashActivityViewModel
 import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
 @Suppress("UNCHECKED_CAST")

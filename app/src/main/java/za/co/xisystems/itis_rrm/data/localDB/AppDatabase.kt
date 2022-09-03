@@ -9,10 +9,7 @@
 package za.co.xisystems.itis_rrm.data.localDB
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import androidx.room.*
 import dev.matrix.roomigrant.GenerateRoomMigrations
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
@@ -45,7 +42,10 @@ import za.co.xisystems.itis_rrm.utils.DatetimeConverters
     ],
     views = [ContractSelectorView::class],
     exportSchema = true,
-    version = 35
+    autoMigrations = [
+        AutoMigration (from = 36, to = 37)
+    ],
+    version = 37
 )
 
 @TypeConverters(Converters::class, DatetimeConverters::class)

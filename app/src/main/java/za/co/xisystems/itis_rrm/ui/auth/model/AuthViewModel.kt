@@ -18,7 +18,7 @@ import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.UserDTO
 import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
-import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
+import za.co.xisystems.itis_rrm.data.preferences.MyAppPrefsManager
 import za.co.xisystems.itis_rrm.data.repositories.UserRepository
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
@@ -306,7 +306,8 @@ class AuthViewModel(
     fun onRegButtonClick(
         view: View,
         username: TextInputEditText,
-        password: TextInputEditText
+        password: TextInputEditText,
+        myAppPrefsManager: MyAppPrefsManager?
     ) = viewModelScope.launch(ioContext) {
         try {
             listenerNotify {
@@ -326,7 +327,7 @@ class AuthViewModel(
                     }
                 }
                 else -> {
-                    registerNewUser(username.text.toString(), password.text.toString())
+                    registerNewUser(username.text.toString(), password.text.toString(), myAppPrefsManager)
                 }
             }
         } catch (t: Throwable) {
@@ -340,7 +341,7 @@ class AuthViewModel(
         }
     }
 
-    private suspend fun registerNewUser(userName: String?, password: String?) {
+    private suspend fun registerNewUser(userName: String?, password: String?, myAppPrefsManager: MyAppPrefsManager?) {
         try {
 
             val phoneNumber = "12345457"
@@ -348,7 +349,12 @@ class AuthViewModel(
             val androidDevice =
                 "${R.string.android_sdk} ${VERSION.SDK_INT} " +
                     "${Build.BRAND} ${Build.MODEL} ${Build.DEVICE}"
-
+            val hashInput = userName.plus(androidDevice).plus(password)
+            myAppPrefsManager?.setAccessToken(
+                armoury.generateFutureToken(
+                SecureString(hashInput.toCharArray(), true)
+            ))
+            myAppPrefsManager?.setSigned(password)
             repository.userRegister(
                 userName!!.trim(),
                 password!!,

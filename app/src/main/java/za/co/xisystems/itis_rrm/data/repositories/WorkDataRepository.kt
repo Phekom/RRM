@@ -54,26 +54,22 @@ class WorkDataRepository(
     private var jobDao: JobDao = appDb.getJobDao()
     private val coroutineScope = CoroutineScope(dispatchers.main())
     var workStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
-    val allWork: LiveData<List<JobDTO>>?
-
-    init {
-        allWork = jobDao.getAllWork()
-    }
+    val allWork: LiveData<List<JobDTO>>? = jobDao.getAllWork()
 
     companion object {
         val TAG: String = WorkDataRepository::class.java.simpleName
     }
 
-    fun jobSearch(criteria: String) {
-        coroutineScope.launch(dispatchers.main()) {
-            searchResults.value = jobSearchAsync(criteria).await()
-        }
-    }
+//    fun jobSearch(criteria: String) {
+//        coroutineScope.launch(dispatchers.main()) {
+//            searchResults.value = jobSearchAsync(criteria).await()
+//        }
+//    }
 
-    private fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>> =
-        coroutineScope.async(dispatchers.io()) {
-            return@async jobDao.searchJobs(criteria.toRoomSearchString()) ?: listOf()
-        }
+//    private fun jobSearchAsync(criteria: String): Deferred<List<JobDTO>> =
+//        coroutineScope.async(dispatchers.io()) {
+//            return@async jobDao.searchJobs(criteria.toRoomSearchString()) ?: listOf()
+//        }
 
     private fun postWorkStatus(result: XIResult<String>) = coroutineScope.launch(dispatchers.main()) {
         workStatus.postValue(XIEvent(result))
@@ -85,11 +81,11 @@ class WorkDataRepository(
         }
     }
 
-    suspend fun getJobsForActivityIds(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
-        return withContext(dispatchers.io()) {
-            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
-        }
-    }
+//    suspend fun getJobsForActivityIds(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+//        return withContext(dispatchers.io()) {
+//            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2)
+//        }
+//    }
 
     suspend fun getJobsForActivityId(activityId1: Int): LiveData<List<JobItemEstimateDTO>> {
         return withContext(dispatchers.io()) {
@@ -508,10 +504,17 @@ class WorkDataRepository(
 
     suspend fun getJobEstimationItemsForJobId(
         jobID: String?,
-        actID: Int
+        actID: Int,
+        actID2: Int
     ): List<JobItemEstimateDTO> {
         return withContext(dispatchers.io()) {
-            appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID)
+            appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobID!!, actID, actID2)
+        }
+    }
+
+    suspend fun getJobEstimationItemsWorkPartDoneForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> {
+        return withContext(dispatchers.io()) {
+            appDb.getJobItemEstimateDao().getValidEstimatesForJobId(jobID!!, actID)
         }
     }
 

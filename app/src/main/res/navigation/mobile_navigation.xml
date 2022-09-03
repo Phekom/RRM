@@ -168,6 +168,9 @@
             app:popEnterAnim="@anim/animate_fade_enter"
             app:popExitAnim="@anim/animate_fade_enter"
             app:popUpTo="@id/nav_unSubmitted"/>
+        <action
+            android:id="@+id/action_navigation_un_submitted_to_declineJobFragment"
+            app:destination="@id/declineJobFragment" />
     </fragment>
 
 
@@ -190,7 +193,7 @@
 
 <!--    <fragment-->
 <!--        android:id="@+id/nav_unSubmitted"-->
-<!--        android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragment"-->
+<!--        android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.DeclineJobFragment"-->
 <!--        android:label="@string/menu_unSubmitted"-->
 <!--        tools:layout="@layout/fragment_unsubmittedjobs">-->
 <!--      -->
@@ -534,5 +537,22 @@
         app:destination="@id/nav_home"
         app:popUpTo="@id/nav_home"
         app:launchSingleTop="true" />
+
+
+    <fragment
+        android:id="@+id/declineJobFragment"
+        android:name="za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.decline_job.DeclineJobFragment"
+        android:label="DeclineJobFragment" >
+
+        <argument
+            android:name="jobId"
+            app:argType="string"
+            app:nullable="true" />
+
+        <action
+            android:id="@+id/action_declineJobFragment_to_navigation_un_submitted"
+            app:destination="@id/navigation_un_submitted" />
+    </fragment>
+
 
 </navigation>

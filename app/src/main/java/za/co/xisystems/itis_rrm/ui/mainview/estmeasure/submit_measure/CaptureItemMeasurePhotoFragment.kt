@@ -255,9 +255,8 @@ class CaptureItemMeasurePhotoFragment :
     }
 
     private fun takeMeasurePhoto() {
-
-        val builder =
-            AlertDialog.Builder(requireActivity(), android.R.style.Theme_DeviceDefault_Dialog)
+       // val alertDialog = AlertDialog.Builder(requireActivity())
+        val builder = AlertDialog.Builder(requireActivity())
         builder.setTitle(R.string.capture_measure_photo)
         builder.setIcon(R.drawable.ic_menu_camera)
         builder.setMessage(R.string.start_taking_photo)

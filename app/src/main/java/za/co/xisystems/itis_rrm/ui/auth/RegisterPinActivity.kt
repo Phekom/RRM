@@ -69,7 +69,7 @@ class RegisterPinActivity : BaseActivity(), AuthListener {
             }
 
             val loggedInUser = viewModel.user.await()
-            loggedInUser.observe(this, { user ->
+            loggedInUser.observe(this) { user ->
                 // Register the user
                 if (user?.pinHash != null) {
                     Intent(this, LoginActivity::class.java).also { login ->
@@ -78,7 +78,7 @@ class RegisterPinActivity : BaseActivity(), AuthListener {
                         startActivity(login)
                     }
                 }
-            })
+            }
             binding.serverTextView.setOnClickListener {
                 ToastUtils().toastServerAddress(appContext)
             }
