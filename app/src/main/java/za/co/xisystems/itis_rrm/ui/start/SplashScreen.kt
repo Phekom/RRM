@@ -25,8 +25,6 @@ import org.kodein.di.instance
 import za.co.xisystems.itis_rrm.BuildConfig
 import za.co.xisystems.itis_rrm.MainApp
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.custom.errors.ReceptionException
-import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
@@ -39,7 +37,6 @@ import za.co.xisystems.itis_rrm.ui.auth.RegisterActivity
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
 import za.co.xisystems.itis_rrm.utils.ConnectionLiveData
 import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
 import za.co.xisystems.itis_rrm.utils.ServiceUtil.isNetworkConnected
 
 @SuppressLint("CustomSplashScreen")
@@ -115,12 +112,36 @@ class SplashScreen : AppCompatActivity(), DIAware {
                     val healthResponse = splashViewModel.healthCheck()
                     if (healthResponse) {
                         val newVersion = BuildConfig.VERSION_NAME
-                        val response = splashViewModel.getAppVersionCheck(newVersion)
-                        if (response.errorMessage.equals("")) {
-                            acquireUser(noInternetDialog)
-                        } else {
-                            promptUserToForNewVersion(response)
-                        }
+                        //val isUserWorking = splashViewModel.checkUser(myAppPrefsManager)
+                        val user = splashViewModel.user.await()
+                        user.observe(this@SplashScreen, Observer { userInstance ->
+                            if (userInstance != null) {
+                                Coroutines.ui {
+                                    val isUserWorking = splashViewModel.checkUser(userInstance.userName , myAppPrefsManager)
+                                    if (isUserWorking == "N") {
+                                        Snackbar.make(
+                                            this@SplashScreen,
+                                            binding.root,
+                                            "You Seem To have No Access Please Contact Support",
+                                            Snackbar.LENGTH_INDEFINITE
+                                        ).setAction(getString(R.string.ok), View.OnClickListener
+                                        {
+                                            // continueWithout()
+                                        }).show()
+                                    }else{
+                                        val response = splashViewModel.getAppVersionCheck(newVersion)
+                                        if (response.errorMessage.equals("")) {
+                                            acquireUser(noInternetDialog)
+                                        } else {
+                                            promptUserToForNewVersion(response)
+                                        }
+                                    }
+                                }
+                            }else{
+                                startActivity(Intent(this@SplashScreen, RegisterActivity::class.java))
+                            }
+                        })
+
                     } else {
                         Snackbar.make(
                             this@SplashScreen,
@@ -146,6 +167,7 @@ class SplashScreen : AppCompatActivity(), DIAware {
             }
         }
     }
+
 
 
     private fun continueWithout() {

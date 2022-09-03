@@ -102,11 +102,6 @@ class EstimatePhotoViewModel(
         }
     }
 
-    suspend fun getPotholePhoto(jobId: String?) : PhotoPotholeResponse {
-        return withContext(dispatchers.io()) {
-            jobCreationDataRepository.getPotholePhoto(jobId!!)
-        }
-    }
 
     suspend fun updateEstimatePhotos(
         estimateId: String,

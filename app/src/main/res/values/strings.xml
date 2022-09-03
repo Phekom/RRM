@@ -70,6 +70,7 @@
     <string name="register">Register</string>
     <string name="reset_app">Reset App</string>
     <string name="reset_pin">Reset PIN</string>
+    <string name="reset_user">UpDate USER</string>
     <string name="save">Save</string>
     <string name="section">Section</string>
     <string name="some_super_long_item_name_in_case_it_gets_cut_off">Some super long item name in case it gets cut off</string>
@@ -86,6 +87,7 @@
     <string name="workflow_comment">Workflow Comment</string>
     <string name="yes">Yes</string>
     <string name="measurement_gallery">Measurement Gallery</string>
+    <string name="user_pass">Enter Password</string>
 
     <!-- Errors -->
     <string name="gps_not_connected">GPS Not Connected.</string>
@@ -106,6 +108,8 @@
     <string name="menu_work">Work</string>
     <string name="menu_estMeasure">Measure Estimates</string>
     <string name="menu_approvMeasure">Approve Measurements</string>
+    <string name="user_access">User Access Is Required</string>
+
 
     <!-- Sync Preferences -->
     <string name="notificationS_title">Vibrate</string>
@@ -340,7 +344,17 @@
     <string name="select_job_pos">Select Job Position</string>
     <string name="select_job_dir">Select Job Direction</string>
     <string name="image">Image</string>
-
+    <string name="comment">Add Comment</string>
+    <string name="add_comments_description">Enter Comment</string>
+    <string name="create_job">Create Job</string>
+    <string name="jiNo">JI Number</string>
+    <string name="ji_direction_choice">Please Select what you want to do with this Ji</string>
+    <string name="theimage">The Image</string>
+    <string name="longitude">Long</string>
+    <string name="latitude">Lat</string>
+    <string name="location_coordinates">Location</string>
+    <string name="decline">Decline Job</string>
+    <string name="comment_required">Please state the reason for declining</string>
     <string-array name="styling_options">
         <item>hide status bar</item>
         <item>images margin</item>

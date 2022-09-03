@@ -83,7 +83,7 @@ class WorkViewModel(
     }
 
     fun searchJobs(criteria: String) {
-        workDataRepository.jobSearch(criteria)
+       // workDataRepository.jobSearch(criteria)
     }
 
     fun getSearchResults(): MutableLiveData<List<JobDTO>> {
@@ -108,17 +108,30 @@ class WorkViewModel(
         }
     }
 
-    suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+
+
+    suspend fun getUpdatedJob(jobId: String): JobDTO {
         return withContext(ioContext) {
-            workDataRepository.getJobsForActivityIds(activityId1, activityId2)
-                .distinctUntilChanged()
+            offlineDataRepository.getUpdatedJob(jobId)
         }
     }
 
-    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> {
+//    suspend fun getJobsForActivityId(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+//        return withContext(ioContext) {
+//            workDataRepository.getJobsForActivityIds(activityId1, activityId2)
+//                .distinctUntilChanged()
+//        }
+//    }
+
+    suspend fun getJobEstimationItemsWorkPartDoneForJobId(jobID: String?, actID: Int): List<JobItemEstimateDTO> {
         return withContext(ioContext) {
-            return@withContext workDataRepository
-                .getJobEstimationItemsForJobId(jobID, actID)
+            return@withContext workDataRepository.getJobEstimationItemsWorkPartDoneForJobId(jobID, actID)
+        }
+    }
+
+    suspend fun getJobEstimationItemsForJobId(jobID: String?, actID: Int, actID2: Int): List<JobItemEstimateDTO> {
+        return withContext(ioContext) {
+            return@withContext workDataRepository.getJobEstimationItemsForJobId(jobID, actID, actID2)
         }
     }
 

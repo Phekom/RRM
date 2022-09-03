@@ -18,11 +18,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
-import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -46,7 +42,6 @@ import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.constants.Constants.TWO_SECONDS
 import za.co.xisystems.itis_rrm.databinding.ActivityMainBinding
 import za.co.xisystems.itis_rrm.delegates.viewBinding
-import za.co.xisystems.itis_rrm.ui.auth.LoginActivity
 import za.co.xisystems.itis_rrm.ui.base.BaseActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivity.Companion.FRAGMNT
@@ -54,11 +49,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.JobCreationActivi
 import za.co.xisystems.itis_rrm.ui.mainview.activities.settings.SettingsActivity
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeFragmentDirections
 import za.co.xisystems.itis_rrm.ui.scopes.UiLifecycleScope
-import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
-import za.co.xisystems.itis_rrm.utils.Coroutines
-import za.co.xisystems.itis_rrm.utils.ServiceUtil
-import za.co.xisystems.itis_rrm.utils.hideKeyboard
-import za.co.xisystems.itis_rrm.utils.toast
+import za.co.xisystems.itis_rrm.utils.*
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -74,7 +65,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private var badgeEstMeasure: TextView? = null
     private var badgeApprovMeasure: TextView? = null
     private lateinit var lm: LocationManager
-//    private var gpsEnabled = false
+
+    //    private var gpsEnabled = false
     private var networkEnabled = false
     private var uiScope = UiLifecycleScope()
     private var doubleBackToExitPressed = 0
@@ -97,6 +89,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         Manifest.permission.ACCESS_NETWORK_STATE,
         Manifest.permission.ACCESS_WIFI_STATE,
     )
+
     companion object {
         private const val PERMISSION_REQUEST = 42
         const val PROJECT_USER_ROLE_IDENTIFIER =
@@ -196,7 +189,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 // Restart MyTask after 3 seconds
                 getInternetConnectionResult(noInternetDialog)
             }).show()
-        }else{
+        } else {
             if (!ServiceUtil.isNetworkConnected(this@MainActivity)) {
                 noInternetDialog.showDialog()
                 Snackbar.make(
@@ -235,13 +228,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         try {
             gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
         } catch (e: Exception) {
-            Timber.e(e, { "GPS-related error" })
+            Timber.e(e) { "GPS-related error" }
         }
 
         try {
             networkEnabled = ServiceUtil.isNetworkAvailable(applicationContext)
         } catch (e: Exception) {
-            Timber.e(e, { "Network-related error" })
+            Timber.e(e) { "Network-related error" }
         }
 
         if (!gpsEnabled) { // notify user
@@ -347,9 +340,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         when (item.itemId) {
             R.id.nav_home -> {
-//                navController.navigate(home)
-//                toggle?.syncState()
-//                initializeCountDrawer()
                 Intent(this, MainActivity::class.java).also { home ->
                     toggle?.syncState()
                     initializeCountDrawer()
@@ -386,9 +376,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
             R.id.nav_work -> {
-//               val unsubDirections = HomeFragmentDirections.actionNavHomeToNavUnSubmitted()
-//                navController.navigate(home)
-//                navController.navigate(unsubDirections)
                 toggle?.syncState()
                 Intent(this, JobCreationActivity::class.java).also { create ->
                     create.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
@@ -407,20 +394,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
             R.id.nav_approveJobs -> {
-//                Intent(this, JobCreationActivity::class.java).also { create ->
-//                    create.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-//                    startActivity(create)
-//                }
                 val approveDirections = HomeFragmentDirections.actionNavHomeToNavApproveJobs()
                 navController.navigate(home)
                 navController.navigate(approveDirections)
                 toggle?.syncState()
             }
             R.id.nav_approveMeasure -> {
-//                Intent(this, JobCreationActivity::class.java).also { create ->
-//                    create.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-//                    startActivity(create)
-//                }
                 val approveMeasureDirections = HomeFragmentDirections.actionNavHomeToNavApproveMeasure()
                 navController.navigate(home)
                 navController.navigate(approveMeasureDirections)
@@ -460,34 +439,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
             val userRoles = mainActivityViewModel.getRoles()
             userRoles.observe(this) { roleList ->
+                val newRoleList = ArrayList<String>()
+                roleList.forEach { UseR ->
+                    newRoleList.add(UseR.roleDescription)
+                }
 
-                for (role in roleList) {
-                    val roleID = role.roleDescription
+                for (role in newRoleList) {
                     // Only enable what is needed for each role description.
                     // Users with multiple roles get 'best permissions'
                     when {
-                        roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-
-                            navUnsubmitted.isEnabled = true
-                            navUnsubmitted.isVisible = true
-
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-
-                            navApproveJobs.isEnabled = false
-                            navApproveJobs.isVisible = false
-
-                            navEstMeasures.isEnabled = false
-                            navEstMeasures.isVisible = false
-
-                            navApproveMeasures.isEnabled = false
-                            navApproveMeasures.isVisible = false
-
-                        }
-
-                        roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
+                        newRoleList.contains(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER) -> {
                             navCreate.isEnabled = false
                             navCreate.isVisible = false
 
@@ -508,68 +469,125 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                         }
 
-                        roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
+                        newRoleList.contains(PROJECT_USER_ROLE_IDENTIFIER) -> {
+                            if (newRoleList.contains(PROJECT_CONTRACTOR_ROLE_IDENTIFIER)){
+                                if (newRoleList.contains(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER)){
+                                    if (newRoleList.contains(PROJECT_ENGINEER_ROLE_IDENTIFIER)){
+                                        navCreate.isEnabled = true
+                                        navCreate.isVisible = true
 
-                            navUnsubmitted.isEnabled = true
-                            navUnsubmitted.isVisible = true
+                                        navUnsubmitted.isEnabled = true
+                                        navUnsubmitted.isVisible = true
 
-                            navWork.isEnabled = true
-                            navWork.isVisible = true
+                                        navWork.isEnabled = true
+                                        navWork.isVisible = true
 
-                            navApproveJobs.isEnabled = false
-                            navApproveJobs.isVisible = false
+                                        navApproveJobs.isEnabled = true
+                                        navApproveJobs.isVisible = true
 
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
+                                        navEstMeasures.isEnabled = true
+                                        navEstMeasures.isVisible = true
 
-                            navApproveMeasures.isEnabled = false
-                            navApproveMeasures.isVisible = false
+                                        navApproveMeasures.isEnabled = true
+                                        navApproveMeasures.isVisible = true
+                                    }else {
+                                        navCreate.isEnabled = true
+                                        navCreate.isVisible = true
+
+                                        navUnsubmitted.isEnabled = true
+                                        navUnsubmitted.isVisible = true
+
+                                        navWork.isEnabled = true
+                                        navWork.isVisible = true
+
+                                        navApproveJobs.isEnabled = false
+                                        navApproveJobs.isVisible = false
+
+                                        navEstMeasures.isEnabled = true
+                                        navEstMeasures.isVisible = true
+
+                                        navApproveMeasures.isEnabled = false
+                                        navApproveMeasures.isVisible = false
+                                    }
+                                }else{
+                                    navCreate.isEnabled = true
+                                    navCreate.isVisible = true
+
+                                    navUnsubmitted.isEnabled = true
+                                    navUnsubmitted.isVisible = true
+
+                                    navWork.isEnabled = true
+                                    navWork.isVisible = true
+
+                                    navApproveJobs.isEnabled = false
+                                    navApproveJobs.isVisible = false
+
+                                    navEstMeasures.isEnabled = false
+                                    navEstMeasures.isVisible = false
+
+                                    navApproveMeasures.isEnabled = false
+                                    navApproveMeasures.isVisible = false
+                                }
+                            } else if (newRoleList.contains(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER)){
+                                if (newRoleList.contains(PROJECT_ENGINEER_ROLE_IDENTIFIER)){
+                                    navCreate.isEnabled = true
+                                    navCreate.isVisible = true
+
+                                    navUnsubmitted.isEnabled = true
+                                    navUnsubmitted.isVisible = true
+
+                                    navWork.isEnabled = false
+                                    navWork.isVisible = false
+
+                                    navApproveJobs.isEnabled = true
+                                    navApproveJobs.isVisible = true
+
+                                    navEstMeasures.isEnabled = true
+                                    navEstMeasures.isVisible = true
+
+                                    navApproveMeasures.isEnabled = true
+                                    navApproveMeasures.isVisible = true
+                                }else {
+                                    navCreate.isEnabled = true
+                                    navCreate.isVisible = true
+
+                                    navUnsubmitted.isEnabled = true
+                                    navUnsubmitted.isVisible = true
+
+                                    navWork.isEnabled = false
+                                    navWork.isVisible = false
+
+                                    navApproveJobs.isEnabled = false
+                                    navApproveJobs.isVisible = false
+
+                                    navEstMeasures.isEnabled = true
+                                    navEstMeasures.isVisible = true
+
+                                    navApproveMeasures.isEnabled = false
+                                    navApproveMeasures.isVisible = false
+                                }
+                            } else {
+                                navCreate.isEnabled = true
+                                navCreate.isVisible = true
+
+                                navUnsubmitted.isEnabled = true
+                                navUnsubmitted.isVisible = true
+
+                                navWork.isEnabled = false
+                                navWork.isVisible = false
+
+                                navApproveJobs.isEnabled = false
+                                navApproveJobs.isVisible = false
+
+                                navEstMeasures.isEnabled = false
+                                navEstMeasures.isVisible = false
+
+                                navApproveMeasures.isEnabled = false
+                                navApproveMeasures.isVisible = false
+                            }
 
                         }
 
-                        roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-
-                            navUnsubmitted.isEnabled = true
-                            navUnsubmitted.isVisible = true
-
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-
-                            navApproveJobs.isEnabled = false
-                            navApproveJobs.isVisible = false
-
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
-
-                            navApproveMeasures.isEnabled = false
-                            navApproveMeasures.isVisible = false
-
-                        }
-
-                        roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-                            navCreate.isEnabled = true
-                            navCreate.isVisible = true
-
-                            navUnsubmitted.isEnabled = true
-                            navUnsubmitted.isVisible = true
-
-                            navWork.isEnabled = false
-                            navWork.isVisible = false
-
-                            navApproveJobs.isEnabled = true
-                            navApproveJobs.isVisible = true
-
-                            navEstMeasures.isEnabled = true
-                            navEstMeasures.isVisible = true
-
-                            navApproveMeasures.isEnabled = true
-                            navApproveMeasures.isVisible = true
-
-                        }
                     }
                 }
             }
@@ -593,9 +611,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             // Corrections section is for Phase 2
 
             // Estimates are approved and work can start
-            mainActivityViewModel.getJobsForActivityId2(
+            mainActivityViewModel.getJobWorkForActivityId(
                 ActivityIdConstants.JOB_APPROVED,
-                ActivityIdConstants.ESTIMATE_INCOMPLETE
+                ActivityIdConstants.ESTIMATE_INCOMPLETE,
+                ActivityIdConstants.ESTIMATE_WORK_PART_COMPLETE
             ).observe(this@MainActivity) { workList ->
                 val tasks = workList.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeWork, tasks)
@@ -622,7 +641,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             // Measurements are completed needs approval for payment
             mainActivityViewModel.getJobApproveMeasureForActivityId(
                 ActivityIdConstants.MEASURE_COMPLETE
-            ).observe(this@MainActivity){
+            ).observe(this@MainActivity) {
                 val tasks = it.distinctBy { job -> job.jobId }.count()
                 writeBadge(badgeApprovMeasure, tasks)
             }
@@ -630,7 +649,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     override fun startLongRunningTask() {
-        Timber.e{"starting task..."}
+        Timber.e { "starting task..." }
         binding.progressbar.visibility = View.VISIBLE
         // Make UI untouchable for duration of task
         window.setFlags(

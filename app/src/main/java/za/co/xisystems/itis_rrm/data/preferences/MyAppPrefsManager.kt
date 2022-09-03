@@ -234,6 +234,21 @@ class MyAppPrefsManager(context: Context) {
         prefsEditor.commit()
     }
 
+    fun getAccessToken(): String? {
+        return sharedPreferences.getString(
+            AUTHTOKEN,
+            ""
+        )
+    }
+
+    fun setAccessToken(signature: String?) {
+        prefsEditor.putString(
+            AUTHTOKEN,
+            signature
+        )
+        prefsEditor.commit()
+    }
+
     companion object {
         private const val PREF_NAME = "RRM_App_Prefs"
         private const val USER_LANGUAGE_ID = "language_ID"
@@ -252,6 +267,7 @@ class MyAppPrefsManager(context: Context) {
         private const val PRIVATE_MODE = 0
         private const val SIGNATURE = "signature"
         private const val FILTER_BY = "filter_by"
+        private const val AUTHTOKEN = "accesstoken"
     }
 
 // 	init {

@@ -11,8 +11,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Transaction
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.custom.errors.AuthException
+import za.co.xisystems.itis_rrm.custom.errors.ServiceException
+import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.events.XIEvent
 import za.co.xisystems.itis_rrm.custom.results.XIResult
@@ -22,9 +29,7 @@ import za.co.xisystems.itis_rrm.data.localDB.JobDataController
 import za.co.xisystems.itis_rrm.data.localDB.entities.*
 import za.co.xisystems.itis_rrm.data.network.BaseConnectionApi
 import za.co.xisystems.itis_rrm.data.network.SafeApiRequest
-import za.co.xisystems.itis_rrm.data.network.responses.HealthCheckResponse
-import za.co.xisystems.itis_rrm.data.network.responses.UploadImageResponse
-import za.co.xisystems.itis_rrm.data.network.responses.VersionCheckResponse
+import za.co.xisystems.itis_rrm.data.network.responses.*
 import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
@@ -44,6 +49,7 @@ class OfflineDataRepository(
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ) : SafeApiRequest() {
 
+    val workflowStatus: MutableLiveData<XIEvent<XIResult<String>>> = MutableLiveData()
     private var entitiesFetched = false
     private val conTracts = MutableLiveData<ArrayList<ContractDTO>>()
     private val sectionItems = MutableLiveData<ArrayList<String>>()
@@ -74,6 +80,8 @@ class OfflineDataRepository(
     private var newProjects: Boolean = false
     private var newContractVos: Boolean = false
     private var newProjectVos: Boolean = false
+    private val users = MutableLiveData<UserDTO>()
+
 
     init {
         conTracts.observeForever {
@@ -151,6 +159,10 @@ class OfflineDataRepository(
             }
         }
 
+        users.observeForever { user ->
+            saveUser(user)
+        }
+
     }
 
     companion object {
@@ -192,6 +204,7 @@ class OfflineDataRepository(
     }
 
 
+
     suspend fun getJobsFromActId(activityId: Int): List<JobDTO> {
         return withContext(dispatchers.io()) {
             appDb.getJobDao().getJobsFromActId(activityId)
@@ -204,9 +217,9 @@ class OfflineDataRepository(
         }
     }
 
-    suspend fun getJobsForActivityIds1(activityId1: Int, activityId2: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobWorkForActivityId(jobApproved: Int, estimateIncomplete: Int, estimateWorkPartComplete: Int): LiveData<List<JobDTO>> {
         return withContext(dispatchers.io()) {
-            appDb.getJobDao().getJobsForActivityIds1(activityId1, activityId2).distinctUntilChanged()
+            appDb.getJobDao().getJobWorkForActivityId(jobApproved, estimateIncomplete, estimateWorkPartComplete).distinctUntilChanged()
         }
     }
 
@@ -247,6 +260,14 @@ class OfflineDataRepository(
     suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
         return withContext(dispatchers.io()) {
             appDb.getProjectSectionDao().getSection(sectionId!!)
+        }
+    }
+
+    suspend fun getPotholePhoto(jobId: String) : PhotoPotholeResponse {
+        val photoPothole = apiRequest { api.getPotholePhoto(jobId) }
+        postValue(photoPothole.photo, photoPothole.fileName!!)
+        return withContext(dispatchers.io()) {
+            photoPothole
         }
     }
 
@@ -353,6 +374,10 @@ class OfflineDataRepository(
             Timber.e(throwable, "Exception caught saving positions items: ${throwable.message}")
         }
     }
+
+
+
+
 
 
     private fun saveSectionsItems(sections: ArrayList<String>?) {
@@ -590,54 +615,6 @@ class OfflineDataRepository(
     }
 
 
-//    @Transaction
-//    private fun updateProjectVoItems(projectVos: ArrayList<ProjectVoDTO>, contractVo: ContractVoDTO) {
-//        projectVos.forEach { projectVo ->
-//            if (!appDb.getProjectVoDao()
-//                    .checkItemExistsProjectVo(projectVo.projectVoId)
-//            ) {
-//                try {
-//                    if (projectVo.itemCode.isNullOrEmpty()){
-//                        projectVo.setVoApprovalNumber(contractVo.nRAApprovalNumber)
-//                        projectVo.setVoNumber(contractVo.voNumber)
-//                        appDb.getProjectVoDao().insertProjectVoItem(projectVo)
-//
-//                    }else{
-//                        val pattern = Pattern.compile("(.*?)\\.")
-//                        val matcher = pattern.matcher(projectVo.itemCode!!)
-//                        if (matcher.find()) {
-//                            val itemCode = "${matcher.group(1)}0"
-//                            //  Let's Get the ID Back on Match
-//                            val sectionItemId = appDb.getSectionItemDao()
-//                                .getSectionItemId(
-//                                    itemCode.replace(
-//                                        "\\s+".toRegex(),
-//                                        ""
-//                                    )
-//                                )
-//                            projectVo.setVoApprovalNumber(contractVo.nRAApprovalNumber)
-//                            projectVo.setVoNumber(contractVo.voNumber)
-//                            projectVo.setSectionItemId(sectionItemId)
-//                            projectVo.itemId = projectVo.itemCode
-//                            projectVo.workflowId = 4
-//                            appDb.getProjectVoDao().insertProjectVoItem(projectVo)
-//
-//                        }
-//
-//                    }
-//
-//
-//                } catch (ex: Exception) {
-//                    Timber.e(
-//                        ex,
-//                        "ProjectVo ${projectVo.projectVoId} -> ${ex.message}"
-//                    )
-//                }
-//            }
-//        }
-//    }
-
-
     @Transaction
     private fun updateProjectItems(
         distinctItems: List<ProjectItemDTO>,
@@ -830,7 +807,7 @@ class OfflineDataRepository(
 
             saveJobItemEstimates(job)
 
-            if (!job.jobItemMeasures.isNullOrEmpty()) {
+            if (job.jobItemMeasures.isNotEmpty()) {
                 saveJobItemMeasuresForJob(job)
             }
         }
@@ -988,26 +965,6 @@ class OfflineDataRepository(
                 // Only enable what is needed for each role description.
                 // Users with multiple roles get 'best permissions'
                 when {
-//                            roleID.equals(PROJECT_USER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-//
-//
-//                            }
-//
-//                            roleID.equals(PROJECT_SUB_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-//
-//
-//                            }
-//
-//                            roleID.equals(PROJECT_CONTRACTOR_ROLE_IDENTIFIER, ignoreCase = true) -> {
-//
-//
-//                            }
-//
-//                            roleID.equals(PROJECT_SITE_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
-//
-//
-//                            }
-
                     roleID.equals(PROJECT_ENGINEER_ROLE_IDENTIFIER, ignoreCase = true) -> {
                         if (!photoUtil.photoExist(jobItemEstimatePhoto.filename)) {
                             getPhotoForJobItemEstimate(jobItemEstimatePhoto.filename)
@@ -1739,6 +1696,57 @@ class OfflineDataRepository(
         }
     }
 
+    @Transaction
+    private fun saveUser(user: UserDTO) {
+        Coroutines.io {
+            if (user.userStatus == "N") {
+                val authException = AuthException("User Is Not Activated Please Contact Support")
+                throw  authException
+            } else {
+                if (!appDb.getUserDao().checkUserExists(user.userId)) {
+                    appDb.getUserDao().insert(user)
+                    if (user.userRoles.isNotEmpty()) {
+                        appDb.getUserRoleDao().deleteAll()
+                        user.userRoles.forEach { userRole ->
+                            appDb.getUserRoleDao().saveRole(userRole)
+                        }
+                    }
+                } else {
+                    if (user.userRoles.isNotEmpty()) {
+                        appDb.getUserRoleDao().deleteAll()
+                        user.userRoles.forEach { userRole ->
+                            appDb.getUserRoleDao().saveRole(userRole)
+                        }
+                    }
+
+                }
+            }
+        }
+
+    }
+
+
+    suspend fun checkUser(username: String, password: String, phoneNumber: String, imei: String, androidDevice: String): AuthResponse {
+        val authResponse = apiRequest { api.userRegister(androidDevice, imei, phoneNumber, username, password) }
+        Timber.d("$authResponse")
+        if (authResponse.errorMessage != null) {
+          removeUser()
+        } else {
+            authResponse.user?.let { concreteUser ->
+                users.postValue(concreteUser)
+            }
+        }
+        return withContext(dispatchers.io()) {
+            authResponse
+        }
+    }
+
+    private fun removeUser() {
+        Coroutines.io {
+            appDb.getUserDao().deleteUser()
+        }
+    }
+
     suspend fun getHealthCheck(): HealthCheckResponse {
         val userId = appDb.getUserDao().getUserID()
         val healthCheck = apiRequest { api.healthCheck(userId) }
@@ -1749,6 +1757,53 @@ class OfflineDataRepository(
 
     private fun JobItemMeasureDTO.setDeleted(i: Int) {
         this.deleted = i
+    }
+
+
+    suspend fun submitForDecline(declinedata: JobDeclineDTO?): String {
+        try {
+            val topic = "Declining Job"
+            var error = ""
+            val measureData = JsonObject()
+            val gson = Gson()
+            val newMeasure = gson.toJson(declinedata)
+            val jsonElement: JsonElement = JsonParser.parseString(newMeasure)
+            Timber.d("${jsonElement as JsonObject}")
+
+            val declineResponse = apiRequest { api.cancelRRMJob(jsonElement as JsonObject) }
+            val messages = declineResponse.errorMessage
+            if (declineResponse.errorMessage != null) {
+                postStatus(
+                    XIResult.Error(
+                        topic = topic,
+                        exception = ServiceException(messages!!),
+                        message = messages
+                    )
+                )
+
+            //    throw ServiceException(declineResponse.errorMessage)
+                error = declineResponse.errorMessage
+            } else {
+                updatedJob(declineResponse)
+                error ="Successful"
+            }
+            return error
+        } catch (exception: Exception) {
+            val errorMessage = "Failed to update measure: ${exception.message ?: XIErrorHandler.UNKNOWN_ERROR}"
+            throw TransmissionException(errorMessage, exception)
+        }
+    }
+
+    private fun postStatus(result: XIResult<String>) {
+        workflowStatus.postValue(XIEvent(result))
+    }
+
+
+    private fun updatedJob(declineResponse: JobCancelResponse) {
+        Coroutines.io {
+           val jobId =  DataConversion.toBigEndian(declineResponse.jobId)
+            appDb.getJobDao().updateJobID(declineResponse.activityID, jobId)
+        }
     }
 
 }

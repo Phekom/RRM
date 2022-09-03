@@ -1,4 +1,4 @@
-package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted
+package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.decline_job
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.localDB.entities.JobDeclineDTO
 import za.co.xisystems.itis_rrm.data.localDB.entities.ProjectSectionDTO
-import za.co.xisystems.itis_rrm.data.network.responses.PhotoPotholeResponse
 import za.co.xisystems.itis_rrm.data.repositories.OfflineDataRepository
+import za.co.xisystems.itis_rrm.utils.PhotoUtil
 
-class UnSubmittedViewModel(
-    private val offlineDataRepository: OfflineDataRepository
+class DeclineJobViewModel(
+    private val offlineDataRepository: OfflineDataRepository,
+    val photoUtil: PhotoUtil,
 ) : ViewModel() {
 
     val jobtoEdit_Item = MutableLiveData<JobDTO>()
@@ -20,11 +22,18 @@ class UnSubmittedViewModel(
         jobtoEdit_Item.postValue(editJob)
     }
 
-    suspend fun getJobsForActivityIds(vararg activityIds: Int): LiveData<List<JobDTO>> {
+    suspend fun getJobforId(jobId: String?): JobDTO {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.getJobsForActId(*activityIds)
+            offlineDataRepository.getUpdatedJob(jobId!!)
         }
     }
+
+    suspend fun submitForDecline(declinedata: JobDeclineDTO?) : String {
+        return withContext(Dispatchers.IO) {
+            offlineDataRepository.submitForDecline(declinedata)
+        }
+    }
+
 
     suspend fun getDescForProjectId(projectId: String): String {
         return withContext(Dispatchers.IO) {
@@ -33,11 +42,6 @@ class UnSubmittedViewModel(
     }
 
 
-    suspend fun getPotholePhoto(jobId: String?) : PhotoPotholeResponse {
-        return withContext(Dispatchers.IO) {
-            offlineDataRepository.getPotholePhoto(jobId!!)
-        }
-    }
 
     suspend fun getProjectSectionForId(sectionId: String?): ProjectSectionDTO {
         return withContext(Dispatchers.IO) {
@@ -76,4 +80,6 @@ class UnSubmittedViewModel(
             offlineDataRepository.getProjectSection(sectionId)
         }
     }
+
+
 }

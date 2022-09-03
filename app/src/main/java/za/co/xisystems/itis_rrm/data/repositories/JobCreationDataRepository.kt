@@ -642,13 +642,6 @@ class JobCreationDataRepository(
         }
     }
 
-    suspend fun getPotholePhoto(jobId: String) : PhotoPotholeResponse {
-        val photoPothole = apiRequest { api.getPotholePhoto(jobId) }
-        postValue(photoPothole.photo, photoPothole.fileName!!)
-        return withContext(dispatchers.io()) {
-            photoPothole
-        }
-    }
 
     private fun postValue(photo: String?, fileName: String) {
         savePhoto(photo, fileName)
@@ -725,7 +718,7 @@ class JobCreationDataRepository(
     }
 
     fun getValidEstimatesForJobId(jobId: String, actId: Int): List<JobItemEstimateDTO> {
-        return appDb.getJobItemEstimateDao().getJobEstimationItemsForJobId(jobId, actId)
+        return appDb.getJobItemEstimateDao().getValidEstimatesForJobId(jobId, actId)
     }
 
     fun getProjectItemById(itemId: String?): ItemDTOTemp {

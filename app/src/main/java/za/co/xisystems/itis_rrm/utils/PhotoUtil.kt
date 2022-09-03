@@ -19,6 +19,7 @@ import android.provider.MediaStore
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
 import androidx.exifinterface.media.ExifInterface
+import androidx.fragment.app.FragmentActivity
 import kotlinx.coroutines.withContext
 import org.apache.sanselan.ImageReadException
 import org.apache.sanselan.ImageWriteException
@@ -571,6 +572,21 @@ class PhotoUtil private constructor(
             uri
         } catch (e: Exception) {
             Timber.e(e, "Failed to extract image Uri: ${e.message}")
+            null
+        }
+    }
+
+    fun getUriFromPath2(requireActivity: FragmentActivity, photoPath: String): Uri? {
+        return try {
+            FileProvider.getUriForFile(
+                requireActivity, authority,
+                File(photoPath)
+            )
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e, "Could not load photo: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
+            null
+        } catch (e: IOException) {
+            Timber.e(e, "Could not load photo: ${e.message ?: XIErrorHandler.UNKNOWN_ERROR}")
             null
         }
     }

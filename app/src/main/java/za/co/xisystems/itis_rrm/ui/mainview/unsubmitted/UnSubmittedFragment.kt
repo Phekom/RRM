@@ -53,7 +53,7 @@ class UnSubmittedFragment : BaseFragment() {
                     home.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                     startActivity(home)
                 }
-//                Navigation.findNavController(this@UnSubmittedFragment.requireView())
+//                Navigation.findNavController(this@DeclineJobFragment.requireView())
 //                    .navigate(R.id.action_global_nav_home)
             }
         }
@@ -117,7 +117,7 @@ class UnSubmittedFragment : BaseFragment() {
                         ActivityIdConstants.JOB_PENDING_UPLOAD
                     )
 
-                measurements.observe(viewLifecycleOwner, { jobList ->
+                measurements.observe(viewLifecycleOwner) { jobList ->
                     if (jobList.isNullOrEmpty()) {
                         groupAdapter.clear()
                         _ui?.noData?.visibility = View.VISIBLE
@@ -127,7 +127,7 @@ class UnSubmittedFragment : BaseFragment() {
                         _ui?.incompleteJobListView?.visibility = View.VISIBLE
                         initRecyclerView(jobList.toUnSubmittedListItems())
                     }
-                })
+                }
             } catch (t: Throwable) {
                 Timber.e(t, "Failed to fetch unsubmitted jobs!")
                 val unsubError = XIResult.Error(t, t.message ?: XIErrorHandler.UNKNOWN_ERROR)

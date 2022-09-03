@@ -121,14 +121,11 @@ class JobDTO(
     @SerializedName("JobStatusId")
     val jobStatusId: Int,
 
-
     @SerializedName("QtyUpdateAllowed")
     val qtyUpdateAllowed: Int,
 
     @SerializedName("RecordSynchStateId")
     val recordSynchStateId: Int,
-
-
 
     @SerializedName("WorkCompleteDate")
     val workCompleteDate: String? = null,
@@ -166,8 +163,19 @@ class JobDTO(
     var deleted: Int = 0,
 
     @SerializedName("Vo_Job")
-    var voJob: String?,
-
+    var voJob: String? = null,
+    @SerializedName("JobType")
+    val jobType: String? = null,
+    @SerializedName("PHDmgEntryId")
+    var pHDmgEntryId: Int = 0,
+    @SerializedName("PHKM")
+    var pHKM: Double,
+    @SerializedName("PHLatitude")
+    var pHLatitude: Double,
+    @SerializedName("PHLongitude")
+    var pHLongitude: Double,
+    @SerializedName("PHRoute")
+    var pHRoute: String? = null,
 
 ) : Serializable, Parcelable {
 
@@ -230,6 +238,12 @@ class JobDTO(
         isSynced = parcel.readString(),
         deleted = parcel.readInt(),
         voJob = parcel.readString(),
+        jobType = parcel.readString(),
+        pHDmgEntryId = parcel.readInt(),
+        pHKM = parcel.readDouble(),
+        pHLatitude = parcel.readDouble(),
+        pHLongitude = parcel.readDouble(),
+        pHRoute = parcel.readString(),
     )
 
     companion object CREATOR : Creator<JobDTO> {
@@ -246,10 +260,7 @@ class JobDTO(
     private fun getJobEstimateIndexByItemId(itemId: String?): Int {
 
         jobItemEstimates.forEachIndexed { index, estimate ->
-            if (estimate.projectItemId != null && estimate.projectItemId.equals(
-                    itemId
-                )
-            ) {
+            if (estimate.projectItemId != null && estimate.projectItemId.equals(itemId)) {
                 return index
             }
         }
@@ -390,6 +401,14 @@ class JobDTO(
         parcel.writeList(jobSections.toList())
         parcel.writeList(jobItemMeasures.toList())
         parcel.writeList(jobItemEstimates.toList())
+        parcel.writeString(jobType)
+        parcel.writeInt(pHDmgEntryId?:0)
+        parcel.writeDouble(pHKM?:0.0)
+        parcel.writeDouble(pHLatitude?:0.0)
+        parcel.writeDouble(pHLongitude?:0.0)
+        parcel.writeString(pHRoute)
+
+
     }
 
     override fun describeContents(): Int {

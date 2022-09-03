@@ -376,7 +376,13 @@ class CreationHomeFragment : BaseFragment(), OfflineListener {
             sortString = null,
             activityId = 0,
             isSynced = null,
-            voJob = selectedVoJobYesNo
+            voJob = selectedVoJobYesNo,
+            jobType = "",
+            pHDmgEntryId = 0,
+            pHKM = 0.0,
+            pHLatitude = 0.0,
+            pHLongitude = 0.0,
+            pHRoute = ""
         )
         extensionToast(message = "New job created", style = ToastStyle.SUCCESS)
         return createdJob

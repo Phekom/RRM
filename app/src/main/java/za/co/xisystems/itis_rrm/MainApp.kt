@@ -62,6 +62,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.corrections.CorrectionsViewModelFact
 import za.co.xisystems.itis_rrm.ui.mainview.estmeasure.MeasureViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.home.HomeViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModelFactory
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.decline_job.DeclineJobViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToViewModelFactory
 import za.co.xisystems.itis_rrm.ui.snapcapture.gallery.CarouselViewModelFactory
@@ -95,10 +96,10 @@ open class MainApp : Application(), DIAware {
         bind { singleton { MeasureApprovalDataRepository(instance(), instance()) } }
         bind { singleton { DeferredLocationRepository(instance(), instance()) } }
         bind { singleton { CapturedPictureRepository(instance()) } }
-        bind { singleton { SplashActivityViewModelFactory(instance()) } }
+        bind { singleton { SplashActivityViewModelFactory(instance(), xiArmoury = instance()) } }
         bind { provider { GoToViewModelFactory(instance()) } }
         bind { provider { AuthViewModelFactory(instance(), instance(), instance(), this@MainApp) } }
-//        bind { provider { CaptureImagesViewModelFactory(instance(), instance()) } }
+        bind { provider { DeclineJobViewModelFactory(instance(),instance()) } }
 
         bind { provider { CreationViewModelFactory(jobCreationDataRepository = instance(),userRepository = instance(),
             application = this@MainApp, photoUtil = instance())

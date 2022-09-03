@@ -6,8 +6,11 @@
 
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog.Builder
 import android.view.View
+import android.widget.Button
+import android.widget.TextView
 import androidx.navigation.Navigation
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.BindableItem
@@ -22,6 +25,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
+import za.co.xisystems.itis_rrm.data.network.responses.PhotoPotholeResponse
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModel
@@ -43,7 +47,7 @@ class UnSubmittedJobItem(
     private val fragment: UnSubmittedFragment,
 ) : BindableItem<UnsubmtdJobListItemBinding>() {
     private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
-
+    var section = ""
     override fun bind(viewBinding: UnsubmtdJobListItemBinding, position: Int) {
 
         viewBinding.apply {
@@ -53,17 +57,17 @@ class UnSubmittedJobItem(
                 val descri = viewModel.getDescForProjectId(jobDTO.projectId!!)
                 unsubmittedProjectTextView.text = descri
 
-                if (jobDTO.sectionId.isNullOrEmpty()){
+                if (jobDTO.sectionId.isNullOrEmpty()) {
                     val projectSectionId = viewModel.getProjectSectionIdForJobId(jobDTO.jobId)
                     val prjSction = viewModel.getProjectSectionForId(projectSectionId)
-                    val section = prjSction.route+prjSction.section+prjSction.direction
+                    section = prjSction.route + prjSction.section + prjSction.direction
                     unsubmittedSectionTextView.text = section
-                }else{
+                } else {
                     val prjSction = viewModel.getProjectSectionForId(jobDTO.sectionId!!)
-                    if (prjSction == null){
+                    if (prjSction == null) {
                         unsubmittedSectionTextView.text = ""
-                    }else{
-                        val section = (prjSction.route + prjSction.section + prjSction.direction) ?: ""
+                    } else {
+                        section = (prjSction.route + prjSction.section + prjSction.direction) ?: ""
                         unsubmittedSectionTextView.text = section
                     }
                 }
@@ -94,7 +98,14 @@ class UnSubmittedJobItem(
 
         viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
-            sendJobToEdit(jobDTO, view)
+            Coroutines.main {
+                if (jobDTO.jobType == "Pothole"){
+                    decisionAlertdialog(view, jobDTO)
+                }else{
+                    sendJobToEdit(jobDTO, view)
+                }
+
+            }
         }
     }
 
@@ -146,16 +157,14 @@ class UnSubmittedJobItem(
         deleteAlert.show()
     }
 
-    private fun sendJobToEdit(jobData : JobDTO, view: View) {
+    private fun sendJobToEdit(jobData: JobDTO, view: View) {
         Coroutines.io {
             withContext(Dispatchers.Main.immediate) {
                 val navDirection = UnSubmittedFragmentDirections
-                    .actionNavigationUnSubmittedToNavigationAddItems(jobData.projectId!!, jobData.jobId,jobData.contractVoId)
-                Navigation.findNavController(view).navigate(navDirection)
+                    .actionNavigationUnSubmittedToNavigationAddItems(jobData.projectId!!, jobData.jobId, jobData.contractVoId)
+                Navigation.findNavController(fragment.requireView()).navigate(navDirection)
             }
         }
-
-
 
 
 //        Coroutines.main {
@@ -254,4 +263,57 @@ class UnSubmittedJobItem(
     private fun getItemId(position: Int): Long {
         return position.toLong()
     }
+
+    @SuppressLint("SetTextI18n")
+    private fun decisionAlertdialog(view: View, jobDTO: JobDTO) {
+        val textEntryView = fragment.layoutInflater.inflate(R.layout.unsubmitted_alert_dialog, null)
+        val jiNo = textEntryView.findViewById<View>(R.id.ji_numb) as TextView
+        val section = textEntryView.findViewById<View>(R.id.section_numb) as TextView
+        val decline = textEntryView.findViewById<View>(R.id.decline_job_button) as Button
+        val create = textEntryView.findViewById<View>(R.id.create_job_button) as Button
+        val latitude = textEntryView.findViewById<View>(R.id.latitudeText) as TextView
+        val longitude = textEntryView.findViewById<View>(R.id.longitudeText) as TextView
+
+
+        val alert: androidx.appcompat.app.AlertDialog = androidx.appcompat.app.AlertDialog.Builder(fragment.requireContext())
+            .setView(textEntryView)
+            .setIcon(R.drawable.ic_ji_direction)
+            .setTitle(R.string.ji_direction_choice)
+            .setMessage("Please Note if you decline a job instruction you will be required to give a valid reason")
+//            .setNegativeButton("decline", null)
+//            .setPositiveButton("create", null)
+            .create()
+
+        alert.setOnShowListener { dialog ->
+           Coroutines.ui{
+              // val photoData = viewModel.getPotholePhoto(jobDTO.jobId)
+               jiNo.text = "JI: ${jobDTO.jiNo}"
+               section.text = jobDTO.pHRoute ?: ""
+               latitude.text = jobDTO.pHLatitude.toString()?:""
+               longitude.text = jobDTO.pHLongitude.toString()?:""
+               decline.setOnClickListener {
+                   sendJobToDecline(jobDTO, view)
+                   dialog.dismiss()
+               }
+               create.setOnClickListener {
+                   sendJobToEdit(jobDTO, view)
+                   dialog.dismiss()
+               }
+           }
+        }
+
+        alert.show()
+    }
+
+    private fun sendJobToDecline(jobDTO: JobDTO, view: View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = UnSubmittedFragmentDirections
+                    .actionNavigationUnSubmittedToDeclineJobFragment(jobDTO.jobId)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
+        }
+    }
+
+
 }
