@@ -1,5 +1,6 @@
 package za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.decline_job
 
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,9 +29,9 @@ class DeclineJobViewModel(
         }
     }
 
-    suspend fun submitForDecline(declinedata: JobDeclineDTO?) : String {
+    suspend fun submitForDecline(declinedata: JobDeclineDTO?, activity: FragmentActivity) : String {
         return withContext(Dispatchers.IO) {
-            offlineDataRepository.submitForDecline(declinedata)
+            offlineDataRepository.submitForDecline(declinedata, activity)
         }
     }
 

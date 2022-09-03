@@ -7,6 +7,7 @@
 
 package za.co.xisystems.itis_rrm.data.repositories
 
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -17,6 +18,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import za.co.xisystems.itis_rrm.R
 import za.co.xisystems.itis_rrm.custom.errors.AuthException
 import za.co.xisystems.itis_rrm.custom.errors.ServiceException
 import za.co.xisystems.itis_rrm.custom.errors.TransmissionException
@@ -34,7 +36,9 @@ import za.co.xisystems.itis_rrm.forge.DefaultDispatcherProvider
 import za.co.xisystems.itis_rrm.forge.DispatcherProvider
 import za.co.xisystems.itis_rrm.ui.mainview.activities.main.MainActivity.Companion.PROJECT_ENGINEER_ROLE_IDENTIFIER
 import za.co.xisystems.itis_rrm.utils.*
+import za.co.xisystems.itis_rrm.utils.enums.PhotoQuality
 import java.io.File
+import java.io.IOException
 import java.util.regex.Pattern
 
 private val jobDataController: JobDataController? = null
@@ -1760,7 +1764,7 @@ class OfflineDataRepository(
     }
 
 
-    suspend fun submitForDecline(declinedata: JobDeclineDTO?): String {
+    suspend fun submitForDecline(declinedata: JobDeclineDTO?, activity: FragmentActivity): String {
         try {
             val topic = "Declining Job"
             var error = ""
@@ -1784,7 +1788,8 @@ class OfflineDataRepository(
             //    throw ServiceException(declineResponse.errorMessage)
                 error = declineResponse.errorMessage
             } else {
-                updatedJob(declineResponse)
+                uploadJobImages(declinedata, activity,declineResponse)
+
                 error ="Successful"
             }
             return error
@@ -1793,11 +1798,78 @@ class OfflineDataRepository(
             throw TransmissionException(errorMessage, exception)
         }
     }
+    private suspend fun uploadJobImages(
+        packageJob: JobDeclineDTO?,
+        activity: FragmentActivity,
+        declineResponse: JobCancelResponse
+    ) {
+        if (photoUtil.photoExist(packageJob?.fileName!!)) {
+            uploadRrmImage(
+                activity = activity,
+                filename = packageJob.fileName!!,
+                photoQuality = PhotoQuality.HIGH,
+                declineResponse
+            )
+        } else {
+            val message = "${packageJob.fileName} could not be loaded"
+            Timber.e(IOException(message), message)
+            return
+        }
+    }
+
+    private suspend fun uploadRrmImage(
+        activity: FragmentActivity,
+        filename: String,
+        photoQuality: PhotoQuality,
+        declineResponse: JobCancelResponse
+    ) {
+
+        val data: ByteArray = getData(filename, photoQuality)
+        processImageUpload(
+            filename,
+            activity.getString(R.string.jpg),
+            data,
+            declineResponse
+        )
+    }
+
+    private suspend fun getData(
+        filename: String,
+        photoQuality: PhotoQuality
+    ): ByteArray {
+        val uri = photoUtil.getPhotoPathFromExternalDirectory(filename)
+        val bitmap = photoUtil.getPhotoBitmapFromFile(uri, photoQuality)
+        return photoUtil.getCompressedPhotoWithExifInfo(
+            bitmap!!,
+            filename
+        )
+    }
+
+    private suspend fun processImageUpload(
+        filename: String, extension: String,
+        photo: ByteArray, declineResponse: JobCancelResponse
+    ) {
+        val imageData = JsonObject()
+        imageData.addProperty("Filename", filename)
+        imageData.addProperty("ImageByteArray", photoUtil.encode64Pic(photo))
+        imageData.addProperty("ImageFileExtension", extension)
+        Timber.d("Json Image: $imageData")
+
+        val uploadImageResponse = apiRequest { api.uploadRrmImage(imageData) }
+        if (uploadImageResponse.errorMessage.isNullOrEmpty()){
+            updatedJob(declineResponse)
+        }else {
+            uploadImageResponse.errorMessage?.let {
+                val message = "Failed to upload image: $it"
+                throw ServiceException(message)
+            }
+        }
+    }
+
 
     private fun postStatus(result: XIResult<String>) {
         workflowStatus.postValue(XIEvent(result))
     }
-
 
     private fun updatedJob(declineResponse: JobCancelResponse) {
         Coroutines.io {
@@ -1807,3 +1879,5 @@ class OfflineDataRepository(
     }
 
 }
+
+
