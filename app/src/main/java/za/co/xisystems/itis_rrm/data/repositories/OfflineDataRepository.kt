@@ -1866,7 +1866,6 @@ class OfflineDataRepository(
         }
     }
 
-
     private fun postStatus(result: XIResult<String>) {
         workflowStatus.postValue(XIEvent(result))
     }
