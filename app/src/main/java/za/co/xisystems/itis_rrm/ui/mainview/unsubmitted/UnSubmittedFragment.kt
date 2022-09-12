@@ -4,19 +4,17 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
-import za.co.xisystems.itis_rrm.base.BaseFragment
+import za.co.xisystems.itis_rrm.base.LocationFragment
 import za.co.xisystems.itis_rrm.custom.errors.XIErrorHandler
 import za.co.xisystems.itis_rrm.custom.results.XIResult
 import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
@@ -31,7 +29,7 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.unsubmited_item.UnSubmit
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
 
-class UnSubmittedFragment : BaseFragment() {
+class UnSubmittedFragment : LocationFragment() {
 
     private lateinit var addViewModel: AddItemsViewModel
     private val createFactory: AddItemsViewModelFactory by instance()
@@ -154,7 +152,7 @@ class UnSubmittedFragment : BaseFragment() {
                 unSubmittedViewModel,
                 addViewModel,
                 groupAdapter,
-                this@UnSubmittedFragment
+                this@UnSubmittedFragment//, currentLocation
             )
         }
     }

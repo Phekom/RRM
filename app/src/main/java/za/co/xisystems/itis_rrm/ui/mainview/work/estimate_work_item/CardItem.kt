@@ -133,7 +133,7 @@ open class CardItem(
         drive: String,
         selectedLocationPoint: Point,
         view: View,
-        workViewModel: WorkViewModel,
+        location: LocationModel,
         estimate: JobItemEstimateDTO,
         job: JobDTO
     ) {
@@ -146,14 +146,18 @@ open class CardItem(
             setMessage(drive)
             // Yes button
             setPositiveButton(R.string.ok) { _, _ ->
-
+                val myLocationPoint = Point.fromLngLat(
+                    location.longitude, location.latitude
+                )
                 if (this.context.isConnected) {
-                    Coroutines.main {
-                        workViewModel.goToWorkLocation(selectedLocationPoint)
-                        workViewModel.setWorkItemJob(job.jobId)
-                        workViewModel.setWorkItem(estimate.estimateId)
-                        Navigation.findNavController(view).navigate(R.id.action_nav_work_to_work_location)
+                    Coroutines.io {
+                        withContext(Dispatchers.Main.immediate) {
+                            val navDirection = WorkFragmentDirections
+                                .actionNavWorkToWorkLocation(selectedLocationPoint, myLocationPoint, job, estimate)
+                            Navigation.findNavController(view).navigate(navDirection)
+                        }
                     }
+
                 } else {
                     ToastUtils().toastLong(activity, activity.getString(R.string.no_connection_detected))
                 }
@@ -215,7 +219,7 @@ open class CardItem(
                         selectedLocationPoint =
                         selectedLocationPoint!!,
                         view = root,
-                        workViewModel = workViewModel,
+                        location = myLocation,
                         estimate = jobItemEstimate,
                         job = job
                     )

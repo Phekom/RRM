@@ -355,6 +355,7 @@
     <string name="location_coordinates">Location</string>
     <string name="decline">Decline Job</string>
     <string name="comment_required">Please state the reason for declining</string>
+    <string name="navigate_to">Navigate To Location</string>
     <string-array name="styling_options">
         <item>hide status bar</item>
         <item>images margin</item>

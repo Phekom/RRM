@@ -171,6 +171,9 @@
         <action
             android:id="@+id/action_navigation_un_submitted_to_declineJobFragment"
             app:destination="@id/declineJobFragment" />
+        <action
+            android:id="@+id/action_navigation_un_submitted_to_work_location"
+            app:destination="@id/work_location" />
     </fragment>
 
 
@@ -512,10 +515,27 @@
         android:name="za.co.xisystems.itis_rrm.ui.mainview.work.goto_work_location.GoToFragment"
         android:label="@string/goto_work_location"
         tools:layout="@layout/fragment_goto" >
+
         <argument
-            android:name="jobId"
-            app:argType="string"
+            android:name="jobPoint"
+            app:argType="com.mapbox.geojson.Point"
             app:nullable="true" />
+
+        <argument
+            android:name="myPoint"
+            app:argType="com.mapbox.geojson.Point"
+            app:nullable="true" />
+
+        <argument
+            android:name="job"
+            app:argType="za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO"
+            app:nullable="true" />
+
+        <argument
+            android:name="estimate"
+            app:argType="za.co.xisystems.itis_rrm.data.localDB.entities.JobItemEstimateDTO"
+            app:nullable="true" />
+
         <action
             android:id="@+id/action_work_location_to_captureWorkFragment"
             app:destination="@id/captureWorkFragment" />
