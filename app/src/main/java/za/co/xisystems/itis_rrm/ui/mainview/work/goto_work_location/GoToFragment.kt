@@ -9,9 +9,7 @@ import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -19,6 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.navArgs
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.api.directions.v5.DirectionsCriteria
@@ -86,7 +85,6 @@ import com.mapbox.navigation.ui.voice.model.SpeechValue
 import com.mapbox.navigation.ui.voice.model.SpeechVolume
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.kodein.di.android.x.closestDI
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -117,7 +115,10 @@ class GoToFragment : LocationFragment(), PermissionsListener {
     private val binding get() = _binding!!
     private val permissionsManager = PermissionsManager(this)
     private var myWorkLocationPoint: Point? = null
+    private var myLocationPoint: Point? = null
     private var distanceLeft = 0.0
+    val data : GoToFragmentArgs by navArgs()
+
 
     private companion object {
         private const val BUTTON_ANIMATION_DURATION = 1500L
@@ -147,6 +148,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             40.0 * pixelDensity
         )
     }
+
     private val landscapeOverviewPadding: EdgeInsets by lazy {
         EdgeInsets(
             30.0 * pixelDensity,
@@ -155,6 +157,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             20.0 * pixelDensity
         )
     }
+
     private val followingPadding: EdgeInsets by lazy {
         EdgeInsets(
             180.0 * pixelDensity,
@@ -163,6 +166,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             40.0 * pixelDensity
         )
     }
+
     private val landscapeFollowingPadding: EdgeInsets by lazy {
         EdgeInsets(
             30.0 * pixelDensity,
@@ -171,6 +175,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             40.0 * pixelDensity
         )
     }
+
     private lateinit var maneuverApi: MapboxManeuverApi
     private lateinit var tripProgressApi: MapboxTripProgressApi
     private lateinit var routeLineApi: MapboxRouteLineApi
@@ -356,38 +361,28 @@ class GoToFragment : LocationFragment(), PermissionsListener {
             ViewModelProvider(this.requireActivity(), workFactory).get(WorkViewModel::class.java)
         binding.startWorkBTN.visibility = View.GONE
 
-        workViewModel.myWorkItem.observe(
-            viewLifecycleOwner,
-            {
-                myWorkLocationPoint = it
+        myWorkLocationPoint = data.jobPoint
+        myLocationPoint = data.myPoint
+        if (data.estimate != null){
+            itemEstimate = data.estimate!!
+        }
 
-                mapboxMap = binding.mymapView.getMapboxMap()
-                // initialize the location puck
-                binding.mymapView.location.apply {
-                    this.locationPuck = LocationPuck2D(
-                        bearingImage = ContextCompat.getDrawable(
-                            requireContext(),
-                            R.drawable.mapbox_navigation_puck_icon
-                        )
-                    )
-                    setLocationProvider(navigationLocationProvider)
-                    enabled = true
-                }
+        itemEstimateJob = data.job!!
+        mapboxMap = binding.mymapView.getMapboxMap()
+        // initialize the location puck
+        binding.mymapView.location.apply {
+            this.locationPuck = LocationPuck2D(
+                bearingImage = ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.mapbox_navigation_puck_icon
+                )
+            )
+            setLocationProvider(navigationLocationProvider)
+            enabled = true
+        }
 
-                generateRoot(myWorkLocationPoint)
-            }
-        )
-        workViewModel.workItemJob.observe(viewLifecycleOwner, { estimateJob ->
-            estimateJob?.let {
-                itemEstimateJob = it
-            }
-        })
+        generateRoot(myWorkLocationPoint, myLocationPoint)
 
-        workViewModel.workItem.observe(viewLifecycleOwner, { estimate ->
-            estimate?.let {
-                itemEstimate = it
-            }
-        })
 
         binding.startWorkBTN.setOnClickListener {
             Coroutines.io {
@@ -410,9 +405,9 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         return super.getLocation()
     }
 
-    private fun generateRoot(structure: Point?) {
+    private fun generateRoot(structure: Point?, myLocationPoint: Point?) {
         initStyle()
-        initNavigation(structure)
+        initNavigation(structure, myLocationPoint)
     }
 
     private fun initStyle() {
@@ -428,7 +423,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
     }
 
     @SuppressLint("MagicNumber")
-    private fun initNavigation(structure: Point?) {
+    private fun initNavigation(structure: Point?, myLocationPoint: Point?) {
         // initialize Mapbox Navigation
         mapboxNavigation = if (MapboxNavigationProvider.isCreated()) {
             MapboxNavigationProvider.retrieve()
@@ -471,13 +466,13 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         if (mapboxNavigation.getRoutes().isEmpty()) {
             if (structure != null) {
                 val destination = Point.fromLngLat(structure.longitude(), structure.latitude())
-
+                val myLocation = Point.fromLngLat(myLocationPoint?.longitude()!!, myLocationPoint.latitude())
                 Coroutines.main {
                     // val originLocation = navigationLocationProvider.lastLocation
-                    val myOriginLocation: LocationModel? = this.getCurrentLocation()
+                    // val myOriginLocation: LocationModel? = this.getCurrentLocation()
                     val originLocation = Location("rrm").apply {
-                        longitude = myOriginLocation?.longitude!!
-                        latitude = myOriginLocation.latitude
+                        longitude = myLocation?.longitude()!!
+                        latitude = myLocation.latitude()
                         bearing = 10f
                     }
 //                    Toast.makeText(requireContext(),"${estimateLocation}", Toast.LENGTH_SHORT).show()
