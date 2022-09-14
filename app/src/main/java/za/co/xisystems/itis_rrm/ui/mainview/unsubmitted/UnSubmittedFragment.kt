@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.GroupieViewHolder
+import kotlinx.coroutines.launch
 import org.kodein.di.instance
 import timber.log.Timber
 import za.co.xisystems.itis_rrm.R
@@ -21,6 +22,7 @@ import za.co.xisystems.itis_rrm.custom.views.IndefiniteSnackbar
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.FragmentUnsubmittedjobsBinding
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
+import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.crashGuard
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.activities.jobmain.ui.add_items.AddItemsViewModelFactory
@@ -121,9 +123,11 @@ class UnSubmittedFragment : LocationFragment() {
                         _ui?.noData?.visibility = View.VISIBLE
                         _ui?.incompleteJobListView?.visibility = View.GONE
                     } else {
-                        _ui?.noData?.visibility = View.GONE
-                        _ui?.incompleteJobListView?.visibility = View.VISIBLE
-                        initRecyclerView(jobList.toUnSubmittedListItems())
+                        uiScope.launch(uiScope.coroutineContext) {
+                            _ui?.noData?.visibility = View.GONE
+                            _ui?.incompleteJobListView?.visibility = View.VISIBLE
+                            initRecyclerView(jobList.toUnSubmittedListItems())
+                        }
                     }
                 }
             } catch (t: Throwable) {
@@ -152,7 +156,7 @@ class UnSubmittedFragment : LocationFragment() {
                 unSubmittedViewModel,
                 addViewModel,
                 groupAdapter,
-                this@UnSubmittedFragment//, currentLocation
+                this@UnSubmittedFragment
             )
         }
     }

@@ -539,6 +539,12 @@
         <action
             android:id="@+id/action_work_location_to_captureWorkFragment"
             app:destination="@id/captureWorkFragment" />
+        <action
+            android:id="@+id/action_work_location_to_declineJobFragment"
+            app:destination="@id/declineJobFragment" />
+        <action
+            android:id="@+id/action_work_location_to_navigation_add_items"
+            app:destination="@id/navigation_add_items" />
     </fragment>
 
     <fragment

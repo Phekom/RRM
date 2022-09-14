@@ -17,7 +17,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
@@ -40,6 +43,9 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.trip.session.LocationMatcherResult
 import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import com.mapbox.turf.TurfConstants
+import com.mapbox.turf.TurfConversion
+import com.mapbox.turf.TurfMeasurement
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.viewbinding.BindableItem
 import com.xwray.groupie.viewbinding.GroupieViewHolder
@@ -54,6 +60,7 @@ import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity
 import za.co.xisystems.itis_rrm.custom.notifications.ToastGravity.BOTTOM
 import za.co.xisystems.itis_rrm.custom.notifications.ToastStyle
 import za.co.xisystems.itis_rrm.custom.results.XIResult
+import za.co.xisystems.itis_rrm.data._commons.views.ToastUtils
 import za.co.xisystems.itis_rrm.data.localDB.entities.JobDTO
 import za.co.xisystems.itis_rrm.databinding.UnsubmtdJobListItemBinding
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
@@ -63,6 +70,8 @@ import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirec
 import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedViewModel
 import za.co.xisystems.itis_rrm.utils.ActivityIdConstants
 import za.co.xisystems.itis_rrm.utils.Coroutines
+import java.util.*
+
 
 /**
  * Created by Francis Mahlava on 2019/12/22.
@@ -73,13 +82,14 @@ class UnSubmittedJobItem(
     private val viewModel: UnSubmittedViewModel,
     private val createModel: AddItemsViewModel,
     private val groupAdapter: GroupAdapter<GroupieViewHolder<UnsubmtdJobListItemBinding>>,
-    private val fragment: UnSubmittedFragment,
-//    val currentLocation: LocationModel?,
+    private val fragment: UnSubmittedFragment
 ) : BindableItem<UnsubmtdJobListItemBinding>() {
     private var clickListener: ((UnSubmittedJobItem) -> Unit)? = null
     var section = ""
+    var btncreate: LinearLayout? = null
+    var navTo: LinearLayout? = null
     var myLocation: Location? = null
-    var isWithin100m : Boolean  = false
+    var isWithin100m: Boolean = false
     private lateinit var mapboxMap: MapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
     private val navigationLocationProvider = NavigationLocationProvider()
@@ -88,8 +98,8 @@ class UnSubmittedJobItem(
             // You're going to need this when you
             // aren't driving.
             navigationLocationProvider.changePosition(rawLocation)
-//            updateCamera(rawLocation)
-            myLocation = rawLocation
+            updateDistance(rawLocation)
+
         }
 
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
@@ -101,6 +111,40 @@ class UnSubmittedJobItem(
         }
     }
 
+    private fun updateDistance(rawLocation: Location) {
+        myLocation = rawLocation
+        val myCurrentLocation = Point.fromLngLat(
+            rawLocation.longitude,
+            rawLocation.latitude
+        )
+
+        val destination = Point.fromLngLat(
+            jobDTO.pHLongitude, jobDTO.pHLatitude,
+        )
+
+        var straightDistanceBetweenDeviceAndTarget =
+            String.format(
+                Locale.US, "%.1f",
+                TurfConversion.convertLength(
+                    TurfMeasurement.distance(
+                        myCurrentLocation,
+                        destination, TurfConstants.UNIT_METERS
+                    ),
+                    TurfConstants.UNIT_METERS,
+                    TurfConstants.UNIT_KILOMETERS
+                )
+            )
+
+   //     ToastUtils().toastShort(fragment.requireContext(), straightDistanceBetweenDeviceAndTarget.toString())
+
+        if (straightDistanceBetweenDeviceAndTarget.toDouble() <= 0.15) {
+            navTo?.visibility = View.GONE
+            btncreate?.visibility = View.VISIBLE
+        } else {
+            navTo?.visibility = View.VISIBLE
+            btncreate?.visibility = View.GONE
+        }
+    }
 
 
     override fun bind(viewBinding: UnsubmtdJobListItemBinding, position: Int) {
@@ -149,14 +193,15 @@ class UnSubmittedJobItem(
             }
 
             updateItem(position)
+
         }
 
         viewBinding.root.setOnClickListener { view ->
             clickListener?.invoke(this)
             Coroutines.main {
-                if (jobDTO.jobType == "Pothole"){
-                    decisionAlertdialog(view, jobDTO, myLocation)
-                }else{
+                if (jobDTO.jobType == "Pothole") {
+                    decisionAlertdialog(view, jobDTO)
+                } else {
                     sendJobToEdit(jobDTO, view)
                 }
 
@@ -220,19 +265,6 @@ class UnSubmittedJobItem(
                 Navigation.findNavController(fragment.requireView()).navigate(navDirection)
             }
         }
-
-
-//        Coroutines.main {
-//            createModel.setJobToEdit(jobDTO.jobId)
-//        }
-//        val navDirection =
-//            UnSubmittedFragmentDirections.actionNavUnSubmittedToAddProjectFragment(
-//                jobDTO.projectId,
-//                jobDTO.jobId
-//            )
-//
-//        Navigation.findNavController(view)
-//            .navigate(navDirection)
     }
 
     private fun handleUploadResult(result: XIResult<Boolean>, position: Int, jobId: String) {
@@ -320,7 +352,7 @@ class UnSubmittedJobItem(
     }
 
     @SuppressLint("SetTextI18n")
-    private fun decisionAlertdialog(view: View, jobDTO: JobDTO, myLocation: Location?) {
+    private fun decisionAlertdialog(view: View, jobDTO: JobDTO) {
         val textEntryView = fragment.layoutInflater.inflate(R.layout.unsubmitted_alert_dialog, null)
         val jiNo = textEntryView.findViewById<View>(R.id.ji_numb) as TextView
         val section = textEntryView.findViewById<View>(R.id.section_numb) as TextView
@@ -330,9 +362,12 @@ class UnSubmittedJobItem(
         val longitude = textEntryView.findViewById<View>(R.id.longitudeText) as TextView
         val navigate = textEntryView.findViewById<View>(R.id.navigate_to) as Button
         val mapV = textEntryView.findViewById<View>(R.id.estimatemapview) as MapView
-        val buttons_lin1 = textEntryView.findViewById<View>(R.id.buttons_lin) as LinearLayout
+        val btncreate1 = textEntryView.findViewById<View>(R.id.buttons_lin) as LinearLayout
         val buttons_lin2 = textEntryView.findViewById<View>(R.id.buttons_lin1) as LinearLayout
-
+        btncreate1.visibility = View.GONE
+        buttons_lin2.visibility = View.GONE
+        btncreate = btncreate1
+        navTo =  buttons_lin2
         val alert: androidx.appcompat.app.AlertDialog = androidx.appcompat.app.AlertDialog.Builder(fragment.requireContext())
             .setView(textEntryView)
             .setCancelable(true)
@@ -344,68 +379,72 @@ class UnSubmittedJobItem(
             .create()
 
         alert.setOnShowListener { dialog ->
-           Coroutines.ui{
-               buttons_lin1.visibility = View.GONE
-               buttons_lin2.visibility = View.GONE
+            Coroutines.ui {
 
-               mapboxMap = mapV.getMapboxMap()
+                mapboxMap = mapV.getMapboxMap()
 
-               mapV.location.apply {
-                   setLocationProvider(navigationLocationProvider)
-                   enabled = true
-               }
-               mapboxMap.removeOnMapClickListener( OnMapClickListener {
-                   false
-               })
-               initMap(fragment, jobDTO, mapV, buttons_lin1, buttons_lin2)
+                mapV.location.apply {
+                    setLocationProvider(navigationLocationProvider)
+                    enabled = true
+                }
+                mapboxMap.removeOnMapClickListener(OnMapClickListener {
+                    false
+                })
+                initMap(fragment, jobDTO, mapV, btncreate1, buttons_lin2)
 
-              // val photoData = viewModel.getPotholePhoto(jobDTO.jobId)
-               jiNo.text = "JI: ${jobDTO.jiNo}"
-               section.text = jobDTO.pHRoute ?: ""
-               latitude.text = jobDTO.pHLatitude.toString()?:""
-               longitude.text = jobDTO.pHLongitude.toString()?:""
+                // val photoData = viewModel.getPotholePhoto(jobDTO.jobId)
+                jiNo.text = "JI: ${jobDTO.jiNo}"
+                section.text = jobDTO.pHRoute ?: ""
+                latitude.text = jobDTO.pHLatitude.toString() ?: ""
+                longitude.text = jobDTO.pHLongitude.toString() ?: ""
 
-               val  selectedLocationPoint = Point.fromLngLat(
-                   jobDTO.pHLongitude,jobDTO.pHLatitude
-               )
+                val selectedLocationPoint = Point.fromLngLat(
+                    jobDTO.pHLongitude, jobDTO.pHLatitude
+                )
 
 
-               decline.setOnClickListener {
-                   sendJobToDecline(jobDTO, view)
-                   // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
-                   mapboxNavigation.stopTripSession()
-                   // make sure to unregister the observer you have registered.
-                   mapboxNavigation.unregisterLocationObserver(locationObserver)
-                   mapboxNavigation.onDestroy()
-                   dialog.dismiss()
-               }
+                decline.setOnClickListener {
+                    sendJobToDecline(jobDTO, view)
+                    // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+                    mapboxNavigation.stopTripSession()
+                    // make sure to unregister the observer you have registered.
+                    mapboxNavigation.unregisterLocationObserver(locationObserver)
+                    mapboxNavigation.onDestroy()
+                    dialog.dismiss()
+                }
 
-               create.setOnClickListener {
-                   sendJobToEdit(jobDTO, view)
-                   // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
-                   mapboxNavigation.stopTripSession()
-                   // make sure to unregister the observer you have registered.
-                   mapboxNavigation.unregisterLocationObserver(locationObserver)
-                   mapboxNavigation.onDestroy()
-                   dialog.dismiss()
+                create.setOnClickListener {
+                    sendJobToEdit(jobDTO, view)
+                    // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+                    mapboxNavigation.stopTripSession()
+                    // make sure to unregister the observer you have registered.
+                    mapboxNavigation.unregisterLocationObserver(locationObserver)
+                    mapboxNavigation.onDestroy()
+                    dialog.dismiss()
 
-               }
+                }
 
-               navigate.setOnClickListener {
+                navigate.setOnClickListener {
 
-                   val  myLocationPoint = Point.fromLngLat(
-                       myLocation?.longitude!!,myLocation?.latitude!!
-                   )
-                   navigateTo(selectedLocationPoint, view, myLocationPoint, jobDTO)
-                   // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
-                   mapboxNavigation.stopTripSession()
-                   // make sure to unregister the observer you have registered.
-                   mapboxNavigation.unregisterLocationObserver(locationObserver)
-                   mapboxNavigation.onDestroy()
-                   dialog.dismiss()
-               }
+                    val myLocationPoint = myLocation?.longitude?.let { it1 ->
+                        myLocation?.latitude?.let { it2 ->
+                            Point.fromLngLat(
+                                it1, it2
+                            )
+                        }
+                    }
+                    if (myLocationPoint != null) {
+                        navigateTo(selectedLocationPoint, view, myLocationPoint, jobDTO)
+                    }
+                    // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+                    mapboxNavigation.stopTripSession()
+                    // make sure to unregister the observer you have registered.
+                    mapboxNavigation.unregisterLocationObserver(locationObserver)
+                    mapboxNavigation.onDestroy()
+                    dialog.dismiss()
+                }
 
-           }
+            }
         }
         alert.setOnCancelListener {
             // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
@@ -419,40 +458,15 @@ class UnSubmittedJobItem(
         alert.show()
     }
 
-    private fun checkDistance(potholJob: JobDTO, buttons_lin1: LinearLayout, buttons_lin2: LinearLayout) {
-        val results = FloatArray(1)
-        myLocation?.longitude?.let {
-            myLocation?.latitude?.let { it1 ->
-                Location.distanceBetween(
-                    potholJob.pHLatitude,
-                    potholJob.pHLongitude,
-                    it1,
-                    it,
-                    results
-                )
-            }
-        }
-        val distanceInMeters = results[0]
-        isWithin100m = distanceInMeters <= 150
-        if (isWithin100m){
-            buttons_lin1.visibility = View.VISIBLE
-            buttons_lin2.visibility = View.GONE
-        }else{
-            buttons_lin1.visibility = View.GONE
-            buttons_lin2.visibility = View.VISIBLE
-
-        }
-    }
-
     private fun initMap(fragment: UnSubmittedFragment, jobDTO: JobDTO, mapV: MapView, buttons_lin1: LinearLayout, buttons_lin2: LinearLayout) {
         initStyle(jobDTO, mapV)
-        initNavigation(fragment, jobDTO, mapV, buttons_lin1,buttons_lin2)
+        initNavigation(fragment, jobDTO, mapV, buttons_lin1, buttons_lin2)
     }
 
     private fun initStyle(jobDTO: JobDTO, mapV: MapView) {
         mapboxMap.loadStyleUri(
             Style.MAPBOX_STREETS, {
-                addAnnotationToMap(it, jobDTO,mapV)
+                addAnnotationToMap(it, jobDTO, mapV)
             },
             object : OnMapLoadErrorListener {
                 override fun onMapLoadError(eventData: MapLoadingErrorEventData) {
@@ -486,15 +500,15 @@ class UnSubmittedJobItem(
             }
             startTripSession()
             registerLocationObserver(locationObserver)
-            updateCamera(jobDTO, mapV)
-            checkDistance(jobDTO, buttons_lin1, buttons_lin2)
+            updateCamera(jobDTO, mapV, buttons_lin1, buttons_lin2)
+
         }
     }
 
     @Suppress("MagicNumber")
-    private fun updateCamera(location: JobDTO, mapV: MapView, ) {
+    private fun updateCamera(location: JobDTO, mapV: MapView, buttons_lin1: LinearLayout, buttons_lin2: LinearLayout) {
         val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
-        mapV.camera?.easeTo(
+        mapV.camera.easeTo(
             CameraOptions.Builder()
                 // Centers the camera to the lng/lat specified.
                 .center(Point.fromLngLat(location.pHLongitude, location.pHLatitude))
@@ -505,6 +519,10 @@ class UnSubmittedJobItem(
                 .build(),
             mapAnimationOptions
         )
+
+
+
+
     }
 
     private fun addAnnotationToMap(style: Style, jobDTO: JobDTO, mapV: MapView) {

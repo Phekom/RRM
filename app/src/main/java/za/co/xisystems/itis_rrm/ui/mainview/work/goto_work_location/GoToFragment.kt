@@ -12,6 +12,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -27,12 +30,15 @@ import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.bindgen.Expected
 import com.mapbox.geojson.Point
 import com.mapbox.maps.EdgeInsets
+import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
 import com.mapbox.maps.extension.observable.eventdata.MapLoadingErrorEventData
 import com.mapbox.maps.plugin.LocationPuck2D
 import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadErrorListener
+import com.mapbox.maps.plugin.gestures.OnMapClickListener
+import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.navigation.base.TimeFormat
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
@@ -99,6 +105,7 @@ import za.co.xisystems.itis_rrm.databinding.FragmentGotoBinding
 import za.co.xisystems.itis_rrm.extensions.displayPromptForEnablingGPS
 import za.co.xisystems.itis_rrm.services.LocationModel
 import za.co.xisystems.itis_rrm.ui.extensions.extensionToast
+import za.co.xisystems.itis_rrm.ui.mainview.unsubmitted.UnSubmittedFragmentDirections
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModel
 import za.co.xisystems.itis_rrm.ui.mainview.work.WorkViewModelFactory
 import za.co.xisystems.itis_rrm.utils.Coroutines
@@ -283,10 +290,12 @@ class GoToFragment : LocationFragment(), PermissionsListener {
                 binding.maneuverView.renderManeuvers(maneuvers)
             }
         )
+
         distanceLeft = tripProgressApi.getTripProgress(routeProgress).distanceRemaining
         if (distanceLeft.equals(0.0)) {
             binding.startWorkBTN.visibility = View.VISIBLE
         }
+
         // update bottom trip progress summary
         binding.tripProgressView.render(
             tripProgressApi.getTripProgress(routeProgress)
@@ -385,15 +394,19 @@ class GoToFragment : LocationFragment(), PermissionsListener {
 
 
         binding.startWorkBTN.setOnClickListener {
-            Coroutines.io {
-                workViewModel.setWorkItemJob(itemEstimateJob.jobId)
-                workViewModel.setWorkItem(itemEstimate.estimateId)
-                withContext(Dispatchers.Main.immediate) {
-                    val navDirection = GoToFragmentDirections.actionWorkLocationToCaptureWorkFragment(
-                        itemEstimateJob.jobId,
-                        itemEstimate.estimateId
-                    )
-                    Navigation.findNavController(requireView()).navigate(navDirection)
+            if (data.estimate == null){
+                decisionAlertdialog(requireView(), itemEstimateJob)
+            }else {
+                Coroutines.io {
+                    workViewModel.setWorkItemJob(itemEstimateJob.jobId)
+                    workViewModel.setWorkItem(itemEstimate.estimateId)
+                    withContext(Dispatchers.Main.immediate) {
+                        val navDirection = GoToFragmentDirections.actionWorkLocationToCaptureWorkFragment(
+                            itemEstimateJob.jobId,
+                            itemEstimate.estimateId
+                        )
+                        Navigation.findNavController(requireView()).navigate(navDirection)
+                    }
                 }
             }
         }
@@ -403,6 +416,100 @@ class GoToFragment : LocationFragment(), PermissionsListener {
 
     private fun getCurrentLocation(): LocationModel? {
         return super.getLocation()
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private fun decisionAlertdialog(view: View, jobDTO: JobDTO) {
+        val textEntryView = layoutInflater.inflate(R.layout.unsubmitted_alert_dialog2, null)
+        val jiNo = textEntryView.findViewById<View>(R.id.ji_numb) as TextView
+        val section = textEntryView.findViewById<View>(R.id.section_numb) as TextView
+        val decline = textEntryView.findViewById<View>(R.id.decline_job_button) as Button
+        val create = textEntryView.findViewById<View>(R.id.create_job_button) as Button
+        val latitude = textEntryView.findViewById<View>(R.id.latitudeText) as TextView
+        val longitude = textEntryView.findViewById<View>(R.id.longitudeText) as TextView
+        val navigate = textEntryView.findViewById<View>(R.id.navigate_to) as Button
+        val mapV = textEntryView.findViewById<View>(R.id.estimatemapview) as MapView
+        val btncreate1 = textEntryView.findViewById<View>(R.id.buttons_lin) as LinearLayout
+        val buttons_lin2 = textEntryView.findViewById<View>(R.id.buttons_lin1) as LinearLayout
+        btncreate1.visibility = View.VISIBLE
+        buttons_lin2.visibility = View.GONE
+        val alert: androidx.appcompat.app.AlertDialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setView(textEntryView)
+            .setCancelable(true)
+            .setIcon(R.drawable.ic_ji_direction)
+            .setTitle(R.string.ji_direction_choice)
+            .setMessage("Please Note if you decline a JI you will be required to give a valid reason")
+            .create()
+
+        alert.setOnShowListener { dialog ->
+            Coroutines.ui {
+
+
+                // val photoData = viewModel.getPotholePhoto(jobDTO.jobId)
+                jiNo.text = "JI: ${jobDTO.jiNo}"
+                section.text = jobDTO.pHRoute ?: ""
+                latitude.text = jobDTO.pHLatitude.toString() ?: ""
+                longitude.text = jobDTO.pHLongitude.toString() ?: ""
+
+                val selectedLocationPoint = Point.fromLngLat(
+                    jobDTO.pHLongitude, jobDTO.pHLatitude
+                )
+
+
+                decline.setOnClickListener {
+                    sendJobToDecline(jobDTO, view)
+                    // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+                    mapboxNavigation.stopTripSession()
+                    // make sure to unregister the observer you have registered.
+                    mapboxNavigation.unregisterLocationObserver(locationObserver)
+                    mapboxNavigation.onDestroy()
+                    dialog.dismiss()
+                }
+
+                create.setOnClickListener {
+                    sendJobToEdit(jobDTO, view)
+                    // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+                    mapboxNavigation.stopTripSession()
+                    // make sure to unregister the observer you have registered.
+                    mapboxNavigation.unregisterLocationObserver(locationObserver)
+                    mapboxNavigation.onDestroy()
+                    dialog.dismiss()
+
+                }
+            }
+        }
+        alert.setOnCancelListener {
+            // make sure to stop the trip session. In this case it is being called inside `onDestroy`.
+            mapboxNavigation.stopTripSession()
+            // make sure to unregister the observer you have registered.
+            mapboxNavigation.unregisterLocationObserver(locationObserver)
+            mapboxNavigation.onDestroy()
+        }
+
+
+        alert.show()
+    }
+
+
+    private fun sendJobToEdit(jobData: JobDTO, view: View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = GoToFragmentDirections
+                    .actionWorkLocationToNavigationAddItems(jobData.projectId!!, jobData.jobId, jobData.contractVoId)
+                Navigation.findNavController(requireView()).navigate(navDirection)
+            }
+        }
+    }
+
+    private fun sendJobToDecline(jobDTO: JobDTO, view: View) {
+        Coroutines.io {
+            withContext(Dispatchers.Main.immediate) {
+                val navDirection = GoToFragmentDirections
+                    .actionWorkLocationToDeclineJobFragment(jobDTO.jobId)
+                Navigation.findNavController(view).navigate(navDirection)
+            }
+        }
     }
 
     private fun generateRoot(structure: Point?, myLocationPoint: Point?) {
