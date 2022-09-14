@@ -268,8 +268,6 @@ open class MainApp : Application(), DIAware {
         }
     }
 
-
-
     override fun onTerminate() {
         super.onTerminate()
         AppDatabase.closeDown()
