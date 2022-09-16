@@ -539,7 +539,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
                 NavigationOptions.Builder(this.requireContext())
                     .accessToken(getString(R.string.mapbox_access_token))
                     // comment out the location engine setting block to disable simulation
-                    .locationEngine(replayLocationEngine)
+                    //.locationEngine(replayLocationEngine)
                     .build()
 
             ).apply {
@@ -755,7 +755,7 @@ class GoToFragment : LocationFragment(), PermissionsListener {
         mapboxNavigation.setRoutes(routes)
 
         // start location simulation along the primary route
-         //startSimulation(routes.first())
+         startSimulation(routes.first())
 
         // show UI elements
         binding.soundButton.visibility = View.VISIBLE
