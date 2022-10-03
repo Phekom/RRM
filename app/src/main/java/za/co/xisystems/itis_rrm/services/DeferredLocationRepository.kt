@@ -177,8 +177,41 @@ class DeferredLocationRepository(
         if (!projectSectionId.isNullOrBlank()) {
             return@withContext validateRouteSection(routeSectionQuery.projectId, routeSectionQuery )
         } else {
+            val closestEndKm =
+                appDb.getProjectSectionDao().findClosestEndKm(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!, routeSectionQuery.direction!!)
+                    ?: SectionBorder("x", -1.0)
+
+            val closestStartKm =
+                appDb.getProjectSectionDao().findClosestStartKm(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!, routeSectionQuery.direction!!)
+                    ?: SectionBorder("x", -1.0)
+
+
+            if(closestEndKm.kmMarker != -1.0 || closestStartKm.kmMarker != -1.0){
+
+                val distanceBack = abs(routeSectionQuery.pointLocation!! - closestEndKm.kmMarker)
+                val distanceForward = abs(closestStartKm.kmMarker - routeSectionQuery.pointLocation!!)
+                when {
+                    distanceBack < distanceForward -> {
+                        if (distanceBack <= 0.025){
+                            return@withContext validateRouteSection(routeSectionQuery.projectId, routeSectionQuery )
+                        }else{
+                            return@withContext findNearestSection(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!,
+                                routeSectionQuery.direction!! )
+                        }
+                    }
+                    else -> {
+                        if (distanceForward <= 0.025){
+                            return@withContext validateRouteSection(routeSectionQuery.projectId, routeSectionQuery )
+                        }else{
+                            return@withContext findNearestSection(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!,
+                                routeSectionQuery.direction!! )
+                        }
+                    }
+                }
+            }
+
             return@withContext findNearestSection(routeSectionQuery.route!!, routeSectionQuery.pointLocation!!,
-                routeSectionQuery.direction!! )
+                routeSectionQuery.direction!!)
         }
     }
 
@@ -197,6 +230,8 @@ class DeferredLocationRepository(
         val closestStartKm =
             appDb.getProjectSectionDao().findClosestStartKm(linearId, pointLocation, direction)
                 ?: SectionBorder("x", -1.0)
+
+
 
         if (closestEndKm.kmMarker != -1.0 || closestStartKm.kmMarker != -1.0) {
             val distanceBack = abs(pointLocation - closestEndKm.kmMarker)
