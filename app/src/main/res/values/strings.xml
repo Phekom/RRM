@@ -250,7 +250,8 @@
     <string name="default_uom">each</string>
     <string name="qty_rate">Qty / Rate</string>
     <string name="not_allowed">Work Process Not Permitted</string>
-    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>
+<!--    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoicHJpbmNldmFsaXVtIiwiYSI6ImNrcGczaDQzYzBvMmYycHJpdnU5azFjdjAifQ.HX-BT5rC7zop8PFjqVHzlQ</string>-->
+    <string name="mapbox_access_token" translatable="false">pk.eyJ1IjoiZXh0cmVtZWludGVsbGlnZW5jZXN5c3RlbXMiLCJhIjoiY2tuNW84NW44MDV5ZzJxcDF3MGxrajJzbSJ9.ygBHBpeWvuh5UHvITSXaKw</string>
     <string name="action_not_permitted">Work can only be initiated at the JI\'s location</string>
     <string name="goto_work_location">Drive To Work Site</string>
     <string name="work">Drive to Work</string>
